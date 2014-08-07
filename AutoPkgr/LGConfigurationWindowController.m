@@ -60,12 +60,37 @@
 @synthesize autoPkgStatusLabel;
 @synthesize gitStatusIcon;
 @synthesize autoPkgStatusIcon;
+@synthesize sendTestEmailStatus;
+@synthesize sendTestEmailSpinner;
+@synthesize testSmtpServerSpinner;
+@synthesize testSmtpServerStatus;
 
 static void *XXCheckForNewAppsAutomaticallyEnabledContext = &XXCheckForNewAppsAutomaticallyEnabledContext;
 static void *XXCheckForRepoUpdatesAutomaticallyEnabledContext = &XXCheckForRepoUpdatesAutomaticallyEnabledContext;
 static void *XXEmailNotificationsEnabledContext = &XXEmailNotificationsEnabledContext;
 static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 
+- (void)dealloc
+{
+    [smtpAuthenticationEnabledButton removeObserver:self forKeyPath:@"cell.state" context:XXAuthenticationEnabledContext];
+    [sendEmailNotificationsWhenNewVersionsAreFoundButton removeObserver:self forKeyPath:@"cell.state" context:XXEmailNotificationsEnabledContext];
+    [checkForNewVersionsOfAppsAutomaticallyButton removeObserver:self forKeyPath:@"cell.state" context:XXCheckForNewAppsAutomaticallyEnabledContext];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (id)initWithWindow:(NSWindow *)window
+{
+    self = [super initWithWindow:window];
+    if (self) {
+        // Initialization code here.
+        defaults = [NSUserDefaults standardUserDefaults];
+        NSNotificationCenter *ndc = [NSNotificationCenter defaultCenter];
+        [ndc addObserver:self selector:@selector(startProgressNotificationReceived:) name:kProgressStartNotification object:nil];
+        [ndc addObserver:self selector:@selector(stopProgressNotificationReceived:) name:kProgressStopNotification object:nil];
+        [ndc addObserver:self selector:@selector(updateProgressNotificationReceived:) name:kProgressMessageUpdateNotification object:nil];
+    }
+    return self;
+}
 
 - (void)awakeFromNib
 {
@@ -80,10 +105,10 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
                                                              context:XXEmailNotificationsEnabledContext];
 
     [checkForNewVersionsOfAppsAutomaticallyButton addObserver:self
-                         forKeyPath:@"cell.state"
-                            options:(NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld)
-                            context:XXCheckForNewAppsAutomaticallyEnabledContext];
-    
+                                                   forKeyPath:@"cell.state"
+                                                      options:(NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld)
+                                                      context:XXCheckForNewAppsAutomaticallyEnabledContext];
+
     // Set up buttons to save their defaults
     [smtpTLSEnabledButton setTarget:self];
     [smtpTLSEnabledButton setAction:@selector(changeTLSButtonState)];
@@ -98,13 +123,6 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     [checkForRepoUpdatesAutomaticallyButton setTarget:self];
     [checkForRepoUpdatesAutomaticallyButton setAction:@selector(changeCheckForRepoUpdatesAutomaticallyButtonState)];
     
-}
-
-- (void)dealloc
-{
-    [smtpAuthenticationEnabledButton removeObserver:self forKeyPath:@"cell.state" context:XXAuthenticationEnabledContext];
-    [sendEmailNotificationsWhenNewVersionsAreFoundButton removeObserver:self forKeyPath:@"cell.state" context:XXEmailNotificationsEnabledContext];
-    [checkForNewVersionsOfAppsAutomaticallyButton removeObserver:self forKeyPath:@"cell.state" context:XXCheckForNewAppsAutomaticallyEnabledContext];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -154,16 +172,6 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
             }
         }
     }
-}
-
-- (id)initWithWindow:(NSWindow *)window
-{
-    self = [super initWithWindow:window];
-    if (self) {
-        // Initialization code here.
-        defaults = [NSUserDefaults standardUserDefaults];
-    }
-    return self;
 }
 
 - (void)windowDidLoad
@@ -233,7 +241,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 
         if ([error code] == SSKeychainErrorNotFound) {
             NSLog(@"Keychain item not found for account %@.", smtpUsernameString);
-        } else if([error code] == SSKeychainErrorNoPassword) {
+        } else if ([error code] == SSKeychainErrorNoPassword) {
             NSLog(@"Found the keychain item for %@ but no password value was returned.", smtpUsernameString);
         } else if (error != nil) {
             NSLog(@"An error occurred when attempting to retrieve the keychain entry for %@. Error: %@", smtpUsernameString, [error localizedDescription]);
@@ -305,27 +313,126 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 {
     // Send a test email notification when the user
     // clicks "Send Test Email"
-    
+
+    // Handle UI
+    [sendTestEmailButton setEnabled:NO]; // disable button
+    [sendTestEmailStatus setHidden:YES]; // hide status light
+    [sendTestEmailSpinner setHidden:NO]; // show spinner
+    [sendTestEmailSpinner startAnimation:self]; // animate spinner
+    [self startProgressWithMessage:@"Sending test email"];
     // First saves the defaults
     [self save];
 
     // Create an instance of the LGEmailer class
     LGEmailer *emailer = [[LGEmailer alloc] init];
 
+    // Listen for notifications on completion
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(testEmailReceived:)
+                                                 name:kEmailSentNotification
+                                               object:emailer];
+
     // Send the test email notification by sending the
     // sendTestEmail message to our object
     [emailer sendTestEmail];
 }
 
+- (void)testEmailReceived:(NSNotification *)notification
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:kEmailSentNotification
+                                                  object:[notification object]];
+
+    [sendTestEmailButton setEnabled:YES]; // enable button
+
+    // Handle Spinner
+    [sendTestEmailSpinner stopAnimation:self]; // stop animation
+    [sendTestEmailSpinner setHidden:YES]; // hide spinner
+
+    // Show status light
+    [sendTestEmailStatus setHidden:NO]; // unhide status light
+
+    
+    NSError *e = [[notification userInfo] objectForKey:kEmailSentNotificationError]; // pull the error out of the userInfo dictionary
+    if (e) {
+        [sendTestEmailStatus setImage:[NSImage imageNamed:@"NSStatusUnavailable"]]; // change status red
+        NSLog(@"Error:  %@", e);
+        [[NSAlert alertWithError:e] beginSheetModalForWindow:self.window
+                                               modalDelegate:self
+                                              didEndSelector:nil
+                                                 contextInfo:nil];
+    } else {
+        [sendTestEmailStatus setImage:[NSImage imageNamed:@"NSStatusAvailable"]];
+    }
+
+    [self stopProgress:e];
+    
+}
+
+- (void)testSmtpServerPort:(id)sender
+{
+    if (![[smtpServer stringValue] isEqualToString:@""] && [smtpPort integerValue
+                                                            ] > 0 ) {
+
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+        // If a test is currently in progress we'll just remove the notification for it.
+        [center removeObserver:self
+                          name:kTestSmtpServerPortNotification
+                        object:nil];
+
+        // Set up the UI
+        [testSmtpServerStatus setHidden:YES];
+        [testSmtpServerSpinner setHidden:NO];
+        [testSmtpServerSpinner startAnimation:self];
+
+        LGTestPort *tester = [[LGTestPort alloc] init];
+
+        [center addObserver:self
+                   selector:@selector(testSmtpServerPortNotificationReceiver:)
+                       name:kTestSmtpServerPortNotification
+                     object:tester];
+
+        [tester testHost:[NSHost hostWithName:[smtpServer stringValue]]
+                withPort:[smtpPort integerValue]];
+
+    } else {
+        NSLog(@"Cannot test; either host is blank or port is unreadable.");
+    }
+}
+
+- (void)testSmtpServerPortNotificationReceiver:(NSNotification *)n
+{
+    // Set up the spinner and show the status image
+    [testSmtpServerSpinner setHidden:YES];
+    [testSmtpServerSpinner stopAnimation:self];
+    [testSmtpServerStatus setHidden:NO];
+
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:kTestSmtpServerPortNotification
+                                                  object:[n object]];
+
+    NSDictionary *d = [n userInfo];
+    NSString *r = [d objectForKey:kTestSmtpServerPortResult];
+    if ([r isEqualToString:kTestSmtpServerPortError]) {
+        [testSmtpServerStatus setImage:[NSImage imageNamed:@"NSStatusUnavailable"]];
+    } else if ([r isEqualToString:kTestSmtpServerPortSuccess]) {
+        [testSmtpServerStatus setImage:[NSImage imageNamed:@"NSStatusAvailable"]];
+    } else {
+        NSLog(@"Unexpected result for kTestSmtpServerPortError.");
+        [testSmtpServerStatus setImage:[NSImage imageNamed:@"NSStatusPartiallyAvailable"]];
+    }
+}
+
 - (void)save
 {
     [defaults setObject:[smtpServer stringValue] forKey:kSMTPServer];
-    [defaults setInteger:[smtpPort integerValue]forKey:kSMTPPort];
+    [defaults setInteger:[smtpPort integerValue] forKey:kSMTPPort];
     [defaults setObject:[smtpUsername stringValue] forKey:kSMTPUsername];
     [defaults setObject:[smtpFrom stringValue] forKey:kSMTPFrom];
     [defaults setBool:YES forKey:kHasCompletedInitialSetup];
     [defaults setObject:[localMunkiRepo stringValue] forKey:kLocalMunkiRepoPath];
-    
+
     // We use objectValue here because objectValue returns an
     // array of strings if the field contains a series of strings
     [defaults setObject:[smtpTo objectValue] forKey:kSMTPTo];
@@ -386,8 +493,14 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         [defaults setBool:NO forKey:kCheckForRepoUpdatesAutomaticallyEnabled];
     }
 
+    NSError *error;
     // Store the password used for SMTP authentication in the default keychain
-    [SSKeychain setPassword:[smtpPassword stringValue] forService:kApplicationName account:[smtpUsername stringValue]];
+    [SSKeychain setPassword:[smtpPassword stringValue] forService:kApplicationName account:[smtpUsername stringValue] error:&error];
+    if (error) {
+        NSLog(@"Error while storing e-mail password: %@", error);
+    } else {
+        NSLog(@"Reset password");
+    }
 
     // Synchronize with the defaults database
     [defaults synchronize];
@@ -511,13 +624,14 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     // and disable the button to prevent multiple clicks
     [installAutoPkgButton setTitle:@"Installing..."];
     [installAutoPkgButton setEnabled:NO];
+    [self startProgressWithMessage:@"Installing newest version of AutoPkg"];
 
     // Download and install AutoPkg on a background thread
     NSOperationQueue *queue = [[NSOperationQueue alloc] init];
     NSInvocationOperation *operation = [[NSInvocationOperation alloc]
-                                        initWithTarget:self
-                                        selector:@selector(downloadAndInstallAutoPkg)
-                                        object:nil];
+        initWithTarget:self
+              selector:@selector(downloadAndInstallAutoPkg)
+                object:nil];
     [queue addOperation:operation];
 }
 
@@ -537,7 +651,10 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         [alert setMessageText:@"Cannot find the AutoPkg Cache folder."];
         [alert setInformativeText:[NSString stringWithFormat:@"%@ could not find the AutoPkg Cache folder located in %@. Please verify that this folder exists.", kApplicationName, autoPkgCacheFolder]];
         [alert setAlertStyle:NSWarningAlertStyle];
-        [alert runModal];
+        [alert beginSheetModalForWindow:self.window
+                          modalDelegate:self
+                         didEndSelector:nil
+                            contextInfo:nil];
     }
 }
 
@@ -557,7 +674,10 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         [alert setMessageText:@"Cannot find the AutoPkg RecipeRepos folder."];
         [alert setInformativeText:[NSString stringWithFormat:@"%@ could not find the AutoPkg RecipeRepos folder located in %@. Please verify that this folder exists.", kApplicationName, autoPkgRecipeReposFolder]];
         [alert setAlertStyle:NSWarningAlertStyle];
-        [alert runModal];
+        [alert beginSheetModalForWindow:self.window
+                          modalDelegate:self
+                         didEndSelector:nil
+                            contextInfo:nil];
     }
 }
 
@@ -577,42 +697,90 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         [alert setMessageText:@"Cannot find the Munki Repository."];
         [alert setInformativeText:[NSString stringWithFormat:@"%@ could not find the Munki repository located in %@. Please verify that this folder exists.", kApplicationName, localMunkiRepoFolder]];
         [alert setAlertStyle:NSWarningAlertStyle];
-        [alert runModal];
+        [alert beginSheetModalForWindow:self.window
+                          modalDelegate:self
+                         didEndSelector:nil
+                            contextInfo:nil];
     }
 }
 
 - (IBAction)addAutoPkgRepoURL:(id)sender
 {
     // TODO: Input validation + success/failure notification
-    
+
     LGAutoPkgRunner *autoPkgRunner = [[LGAutoPkgRunner alloc] init];
     [autoPkgRunner addAutoPkgRecipeRepo:[repoURLToAdd stringValue]];
-    
+
     [repoURLToAdd setStringValue:@""];
-    
+
     [_popRepoTableViewHandler reload];
     [_appTableViewHandler reload];
 }
 
 - (IBAction)updateReposNow:(id)sender
 {
-    // TODO: Success/failure notification
-    NSLog(@"Updating AutoPkg recipe repos.");
     LGAutoPkgRunner *autoPkgRunner = [[LGAutoPkgRunner alloc] init];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(updateReposNowCompleteNotificationRecieved:)
+                                                 name:kUpdateReposCompleteNotification
+                                               object:autoPkgRunner];
+
+    // TODO: Success/failure notification
+    [self.updateRepoNowButton setEnabled:NO];
+    [self startProgressWithMessage:@"Updating autopkg repos"];
+
+    NSLog(@"Updating AutoPkg recipe repos.");
     [autoPkgRunner invokeAutoPkgRepoUpdateInBackgroundThread];
+}
+
+- (void)updateReposNowCompleteNotificationRecieved:(NSNotification *)notification
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:kUpdateReposCompleteNotification
+                                                  object:notification.object];
+    // stop progress panel
+    NSError *error = nil;
+    if ([notification.userInfo[kNotificationUserInfoError] isKindOfClass:[NSError class]]) {
+        error = notification.userInfo[kNotificationUserInfoError];
+    }
+    
+    [self stopProgress:error];
+    [self.updateRepoNowButton setEnabled:YES];
 }
 
 - (IBAction)checkAppsNow:(id)sender
 {
     LGAutoPkgRunner *autoPkgRunner = [[LGAutoPkgRunner alloc] init];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(autoPkgRunCompleteNotificationRecieved:)
+                                                 name:kRunAutoPkgCompleteNotification
+                                               object:autoPkgRunner];
+
+    [self.checkAppsNowButton setEnabled:NO];
+    [self startProgressWithMessage:@"Checking for new applications"];
+
     [autoPkgRunner invokeAutoPkgInBackgroundThread];
+}
+
+- (void)autoPkgRunCompleteNotificationRecieved:(NSNotification *)notification
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:kRunAutoPkgCompleteNotification
+                                                  object:notification.object];
+
+    NSError *error = nil;
+    if ([notification.userInfo[kNotificationUserInfoError] isKindOfClass:[NSError class]]) {
+        error = notification.userInfo[kNotificationUserInfoError];
+    }
+    [self stopProgress:error];
+    [self.checkAppsNowButton setEnabled:YES];
+
 }
 
 - (IBAction)chooseLocalMunkiRepo:(id)sender
 {
     LGAutoPkgRunner *autoPkgRunner = [[LGAutoPkgRunner alloc] init];
     NSOpenPanel *chooseDialog = [NSOpenPanel openPanel];
-
     // Disable the selection of files in the dialog
     [chooseDialog setCanChooseFiles:NO];
 
@@ -674,11 +842,13 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 - (void)controlTextDidEndEditing:(NSNotification *)notification
 {
     id object = [notification object];
-    
+
     if ([object isEqual:smtpServer]) {
         [defaults setObject:[smtpServer stringValue] forKey:kSMTPServer];
+        [self testSmtpServerPort:self];
     } else if ([object isEqual:smtpPort]) {
         [defaults setInteger:[smtpPort integerValue] forKey:kSMTPPort];
+        [self testSmtpServerPort:self];
     } else if ([object isEqual:smtpUsername]) {
         [defaults setObject:[smtpUsername stringValue] forKey:kSMTPUsername];
     } else if ([object isEqual:smtpFrom]) {
@@ -695,15 +865,21 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
             [self startAutoPkgRunTimer];
         }
     } else if ([object isEqual:smtpPassword]) {
-        [SSKeychain setPassword:[smtpPassword stringValue] forService:kApplicationName account:[smtpUsername stringValue]];
+        NSError *error;
+        [SSKeychain setPassword:[smtpPassword stringValue] forService:kApplicationName account:[smtpUsername stringValue] error:&error];
+        if (error) {
+            NSLog(@"Error while storing e-mail password: %@", error);
+        } else {
+            NSLog(@"Reset password");
+        }
     } else {
         NSLog(@"Uncaught controlTextDidEndEditing");
         return;
     }
-    
+
     // Synchronize with the defaults database
     [defaults synchronize];
-    
+
     // This makes the initial config screen not appear automatically on start.
     [defaults setBool:YES forKey:kHasCompletedInitialSetup];
 }
@@ -793,12 +969,70 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     [defaults synchronize];
 }
 
+- (void)updateProgressNotificationReceived:(NSNotification *)notification
+{
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        NSString *message = @"";
+        if ([notification.userInfo[kNotificationUserInfoMessage] isKindOfClass:[NSString class]]) {
+             message = notification.userInfo[kNotificationUserInfoMessage];
+        }
+        self.progressMessage.stringValue = message;
+    }];
+}
+
+- (void)startProgressNotificationReceived:(NSNotification *)notification
+{
+    NSString *messge = @"Starting...";
+    if ([notification.userInfo[kNotificationUserInfoMessage] isKindOfClass:[NSString class]]) {
+        messge = notification.userInfo[kNotificationUserInfoMessage];
+    }
+    [self startProgressWithMessage:messge];
+}
+
+- (void)stopProgressNotificationReceived:(NSNotification *)notification
+{
+    NSError *error = nil;
+    if ([notification.userInfo[kNotificationUserInfoError] isKindOfClass:[NSError class]]) {
+        error = notification.userInfo[kNotificationUserInfoError];
+    }
+    [self stopProgress:error];
+}
+
+- (void)startProgressWithMessage:(NSString *)message
+{
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [self.progressMessage setStringValue:message];
+        [self.progressIndicator setHidden:NO];
+        [self.progressIndicator setIndeterminate:YES];
+        [self.progressIndicator displayIfNeeded];
+        [self.progressIndicator startAnimation:nil];
+        [NSApp beginSheet:self.progressPanel modalForWindow:self.window modalDelegate:self didEndSelector:nil contextInfo:NULL];
+    }];
+}
+
+- (void)stopProgress:(NSError *)error
+{
+    // Stop the progress panel, and if and error was sent in
+    // do a sheet modal
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [self.progressPanel orderOut:self];
+        [NSApp endSheet:self.progressPanel returnCode:0];
+        [self.progressMessage setStringValue:@"Starting..."];
+        if (error) {
+            [[NSAlert alertWithError:error] beginSheetModalForWindow:self.window
+                                                       modalDelegate:self
+                                                      didEndSelector:nil
+                                                         contextInfo:nil];
+        }
+    }];
+}
+
+
 - (BOOL)windowShouldClose:(id)sender
 {
     [self save];
-    
+
     return YES;
 }
-
 
 @end
