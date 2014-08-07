@@ -43,7 +43,6 @@
                 <outlet property="testSmtpServerSpinner" destination="6ha-Zn-VKa" id="gnY-fl-miO"/>
                 <outlet property="testSmtpServerStatus" destination="VDb-hs-bB1" id="jIN-1C-wZW"/>
                 <outlet property="updateRepoNowButton" destination="X02-En-nic" id="yZU-6m-VPk"/>
-                <outlet property="warnBeforeQuittingButton" destination="U4k-FQ-NXc" id="hKJ-Cm-Ubg"/>
                 <outlet property="window" destination="F0z-JX-Cv5" id="gIp-Ho-8D9"/>
             </connections>
         </customObject>
@@ -799,14 +798,6 @@
                                                         <action selector="openLocalMunkiRepoFolder:" target="-2" id="mii-Zg-AKA"/>
                                                     </connections>
                                                 </button>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="U4k-FQ-NXc">
-                                                    <rect key="frame" x="257" y="184" width="216" height="18"/>
-                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                    <buttonCell key="cell" type="check" title="Warn Before Quitting AutoPkgr" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="lr1-cC-Qxj">
-                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                </button>
                                                 <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ihY-xc-qTz">
                                                     <rect key="frame" x="225" y="312" width="280" height="32"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -823,9 +814,7 @@
                                                 <constraint firstItem="z6I-Bv-EFk" firstAttribute="top" secondItem="EXk-0U-hHL" secondAttribute="top" constant="213" id="8Q4-zA-Tl2"/>
                                                 <constraint firstItem="5lK-cr-mp5" firstAttribute="leading" secondItem="EXk-0U-hHL" secondAttribute="leading" constant="231" id="AQ1-i8-fPX"/>
                                                 <constraint firstItem="TYE-36-bIi" firstAttribute="leading" secondItem="EXk-0U-hHL" secondAttribute="leading" constant="231" id="JSj-lW-fRV"/>
-                                                <constraint firstItem="U4k-FQ-NXc" firstAttribute="top" secondItem="EXk-0U-hHL" secondAttribute="top" constant="254" id="L2i-bI-cZn"/>
                                                 <constraint firstAttribute="trailing" secondItem="z6I-Bv-EFk" secondAttribute="trailing" constant="230" id="Qha-jJ-jCs"/>
-                                                <constraint firstAttribute="centerX" secondItem="U4k-FQ-NXc" secondAttribute="centerX" id="X7i-Sa-cGo"/>
                                                 <constraint firstAttribute="trailing" secondItem="5lK-cr-mp5" secondAttribute="trailing" constant="230" id="bvT-x5-MBu"/>
                                                 <constraint firstItem="ihY-xc-qTz" firstAttribute="top" secondItem="EXk-0U-hHL" secondAttribute="top" constant="114" id="cNo-d7-bgj"/>
                                                 <constraint firstItem="ihY-xc-qTz" firstAttribute="leading" secondItem="EXk-0U-hHL" secondAttribute="leading" constant="231" id="dGe-Fp-q3k"/>
