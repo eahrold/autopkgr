@@ -113,41 +113,32 @@
     LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
     [helper connectToHelper];
     [[helper.connection remoteObjectProxy] uninstall:^(NSError *error) {
-        if(error){
-            [[NSOperationQueue mainQueue]addOperationWithBlock:^{
-                [NSApp presentError:error];
-            }];
-        }else{
-            [self didEndWithUninstallRequest];
-        }
+        [[NSOperationQueue mainQueue]addOperationWithBlock:^{
+            if(error){
+                    [NSApp presentError:error];
+            } else {
+                NSError *error;
+                if(![AHLaunchCtl uninstallHelper:kAutoPkgrHelperToolName prompt:@"Authorize removal of the Helper tool.  " error:&error]){
+                    [NSApp presentError:error];
+                }else{
+                    // if uninstalling turn off schedule in defaults so it's not automatically recreated
+                    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:kCheckForNewVersionsOfAppsAutomaticallyEnabled];
+                    NSAlert *alert = [NSAlert alertWithMessageText:@"Removed AutoPkgr Associated files" defaultButton:@"Thanks for using AutoPkgr" alternateButton:nil otherButton:nil informativeTextWithFormat: @"including the helper tool, launchd schedule, and other launchd plist.  You can safely remove it from your Application Folder"];
+                    [alert runModal];
+                    [[NSApplication sharedApplication]terminate:self];
+                }
+            }
+        }];
     }];
-}
-
-- (void)didEndWithUninstallRequest
-{
-    NSError *error = [NSError errorWithDomain:kApplicationName code:0 userInfo:@{ NSLocalizedDescriptionKey : @"AutoPkgr's helper tool, launchd schedule, and other associated files have been removed.  You can safely remove it from your Application Folder" }];
-    [NSApp presentError:error
-            modalForWindow:nil
-                  delegate:nil
-        didPresentSelector:@selector(didEndWithTerminalError)
-               contextInfo:nil];
-}
-
-- (void)didEndWithTerminalError
-{
-    [[NSApplication sharedApplication] terminate:self];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
-    LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
-    [helper connectToHelper];
-    [[helper.connection remoteObjectProxy] quitHelper:^(BOOL success) {}];
-}
-
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
-{
-    return NSTerminateNow;
+    if (jobIsRunning(kAutoPkgrHelperToolName, kAHGlobalLaunchDaemon)) {
+        LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
+        [helper connectToHelper];
+        [[helper.connection remoteObjectProxy] quitHelper:^(BOOL success) {}];
+    }
 }
 
 @end

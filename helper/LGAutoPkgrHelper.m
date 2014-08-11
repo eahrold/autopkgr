@@ -96,13 +96,13 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
                          reply:(void (^)(NSError *error))reply;
 {
     NSError *error;
-    
+
     error = [LGAutoPkgrAuthorizer checkAuthorization:authData command:_cmd];
-    if(error != nil){
+    if (error != nil) {
         reply(error);
         return;
     }
-    
+
     NSTask *task = [NSTask new];
     task.launchPath = @"/usr/sbin/installer";
     task.arguments = @[ @"-pkg", path, @"-target", @"/" ];
@@ -117,7 +117,9 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
 - (void)uninstall:(void (^)(NSError *))reply
 {
     NSError *error;
-    [AHLaunchCtl uninstallHelper:kAutoPkgrHelperToolName error:&error];
+    [[AHLaunchCtl sharedControler] remove:kLGAutoPkgrLaunchDaemonPlist fromDomain:kAHGlobalLaunchDaemon error:&error];
+
+    [AHLaunchCtl removeFilesForHelperWithLabel:kAutoPkgrHelperToolName error:&error];
     reply(error);
 }
 

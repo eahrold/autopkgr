@@ -22,8 +22,68 @@
 
 #import <Foundation/Foundation.h>
 #import "AHLaunchJob.h"
+#import "AHServiceManagement.h"
 
-extern NSString *const kAHLaunchCtlHelperTool;
+typedef NS_ENUM(NSInteger, AHLaunchCtlErrorCodes) {
+    /** No Error */
+    kAHErrorSuccess,
+
+    /** Error encountered when job label that is not in dot syntax or has spaces */
+    kAHErrorJobLabelNotValid,
+
+    /** job requires - Label, and Program Arguments */
+    kAHErrorJobMissingRequiredKeys,
+
+    /** Error encountered when job is not Loaded */
+    kAHErrorJobNotLoaded,
+
+    /** Error encountered when job already exists */
+    kAHErrorJobAlreayExists,
+
+    /** Error Encountered when job already loaded */
+    kAHErrorJobAlreayLoaded,
+
+    /** Error Encountered when trying to load a job */
+    kAHErrorCouldNotLoadJob,
+
+    /** Error Encountered when trying to load a helper tool */
+    kAHErrorCouldNotLoadHelperTool,
+
+    /** Error Encountered when trying a helper tool could not be removed */
+    kAHErrorCouldNotUnloadHelperTool,
+
+    /** Error Encountered when trying a helper tool could not be removed */
+    kAHErrorHelperToolNotLoaded,
+
+    /** Error Encountered when files associated with helper tool could not be removed */
+    kAHErrorCouldNotRemoveHelperToolFiles,
+
+    /** Error Encountered when a job could not be unloaded */
+    kAHErrorCouldNotUnloadJob,
+
+    /** Error Encountered when a job could not be reloaded */
+    kAHErrorJobCouldNotReload,
+
+    /** Error Encountered when the launchd.plist file could not be located */
+    kAHErrorFileNotFound,
+
+    /** Error Encountered when  the launchd.plist file could not be written, insufficent priviledges */
+    kAHErrorCouldNotWriteFile,
+
+    /** Error Encountered when more than one job with the same label exist */
+    kAHErrorMultipleJobsMatching,
+
+    /** Error Encountered when user is not priviledged to install into AHLaunchDomain */
+    kAHErrorInsufficentPriviledges,
+
+    /** Error Encountered when a user is trying to unload another's launch job */
+    kAHErrorExecutingAsIncorrectUser,
+
+    /** Error Encountered when the program to be loaded is not executable */
+    kAHErrorProgramNotExecutable,
+};
+
+extern BOOL jobIsRunning(NSString *label, AHLaunchDomain domain);
 
 @interface AHLaunchCtl : NSObject
 
@@ -196,7 +256,7 @@ extern NSString *const kAHLaunchCtlHelperTool;
  *  installs a privileged helper tool with the specified label.
  *
  *  @param label  label of the Helper Tool
- *  @param prompt String to include for the authorization prompt
+ *  @param prompt message to prefix the authorization prompt
  *  @param error  populated should error occur
  *
  *  @return YES for success NO on failure;
@@ -210,10 +270,35 @@ extern NSString *const kAHLaunchCtlHelperTool;
  *  uninstalls HelperTool with specified label.
  *
  *  @param label  label of the Helper Tool
+ *  @param prompt message to prefix the authorization prompt
  *  @param reply A block object to be executed when the request operation finishes.  This block has no return value and takes one argument: NSError.
+ *  @return YES for success NO on failure;
+
  */
 + (BOOL)uninstallHelper:(NSString *)label
+                 prompt:(NSString *)prompt
                   error:(NSError *__autoreleasing *)error;
+/**
+ *  uninstalls HelperTool with specified label.
+ *
+ *  @param label label of the Helper Tool
+ *  @param reply A block object to be executed when the request operation finishes.  This block has no return value and takes one argument: NSError.
+ *
+ *  @return YES for success NO on failure;
+ */
++ (BOOL)uninstallHelper:(NSString *)label
+                  error:(NSError *__autoreleasing *)error __attribute__((deprecated));
+
+/**
+ *  Cleans up files assoicated with the helper tool that SMJobBless leaves behind
+ *
+ *  @param label label of the Helper Tool
+ *  @param reply A block object to be executed when the request operation finishes.  This block has no return value and takes one argument: NSError.
+ *
+ *  @return YES for success NO on failure;
+ */
++ (BOOL)removeFilesForHelperWithLabel:(NSString *)label
+                                error:(NSError *__autoreleasing *)error;
 
 #pragma mark - Utility
 + (BOOL)version:(NSString *)versionA isGreaterThanVersion:(NSString *)versionB;
