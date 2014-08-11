@@ -688,6 +688,12 @@
                         <action selector="terminate:" target="-2" id="t6s-yZ-lSS"/>
                     </connections>
                 </menuItem>
+                <menuItem title="Uninstall..." alternate="YES" id="WL8-Zi-vaf">
+                    <modifierMask key="keyEquivalentModifierMask" control="YES"/>
+                    <connections>
+                        <action selector="uninstallHelper:" target="Voe-Tx-rLC" id="1gI-Zx-48m"/>
+                    </connections>
+                </menuItem>
             </items>
         </menu>
     </objects>

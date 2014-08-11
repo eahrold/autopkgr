@@ -21,7 +21,9 @@
 
 #import "LGAppDelegate.h"
 #import "LGConstants.h"
+#import "LGAutoPkgrHelperConnection.h"
 #import "LGConfigurationWindowController.h"
+#import "AHLaunchCTL.h"
 
 @implementation LGAppDelegate
 
@@ -32,9 +34,28 @@
     // Setup the status item
     [self setupStatusItem];
 
-    if (![defaults boolForKey:kHasCompletedInitialSetup]) {
+    // Check if we're authorized to install helper tool,
+    // if not just quit
+    NSError *error;
+    if (![AHLaunchCtl installHelper:kAutoPkgrHelperToolName prompt:@"To schedule" error:&error]) {
+        if (error) {
+            NSLog(@"%@", error.localizedDescription);
+            [NSApp presentError:[NSError errorWithDomain:kApplicationName code:-1 userInfo:@{ NSLocalizedDescriptionKey : @"The associated helper tool could not be installed, we must now quit" }]];
+            [[NSApplication sharedApplication] terminate:self];
+        }
+    }
+
+    // Show the configuration window if we haven't
+    // completed the initial setup
+    if ([defaults objectForKey:kHasCompletedInitialSetup]) {
+
+        BOOL hasCompletedInitialSetup = [[defaults objectForKey:kHasCompletedInitialSetup] boolValue];
+
+        if (!hasCompletedInitialSetup) {
+            [self showConfigurationWindow:nil];
+        }
+    } else {
         [self showConfigurationWindow:nil];
-        [defaults setObject:@YES forKey:kHasCompletedInitialSetup];
     }
 
     // Start the AutoPkg run timer if the user enabled it
@@ -87,24 +108,45 @@
     [self->configurationWindowController.window makeKeyAndOrderFront:nil];
 }
 
+- (IBAction)uninstallHelper:(id)sender
+{
+    LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
+    [helper connectToHelper];
+    [[helper.connection remoteObjectProxy] uninstall:^(NSError *error) {
+        if(error){
+            [[NSOperationQueue mainQueue]addOperationWithBlock:^{
+                [NSApp presentError:error];
+            }];
+        }else{
+            [self didEndWithUninstallRequest];
+        }
+    }];
+}
+
+- (void)didEndWithUninstallRequest
+{
+    NSError *error = [NSError errorWithDomain:kApplicationName code:0 userInfo:@{ NSLocalizedDescriptionKey : @"AutoPkgr's helper tool, launchd schedule, and other associated files have been removed.  You can safely remove it from your Application Folder" }];
+    [NSApp presentError:error
+            modalForWindow:nil
+                  delegate:nil
+        didPresentSelector:@selector(didEndWithTerminalError)
+               contextInfo:nil];
+}
+
+- (void)didEndWithTerminalError
+{
+    [[NSApplication sharedApplication] terminate:self];
+}
+
+- (void)applicationWillTerminate:(NSNotification *)notification
+{
+    LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
+    [helper connectToHelper];
+    [[helper.connection remoteObjectProxy] quitHelper:^(BOOL success) {}];
+}
+
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-
-    if ([defaults boolForKey:kWarnBeforeQuittingEnabled]) {
-        NSAlert *alert = [[NSAlert alloc] init];
-        [alert addButtonWithTitle:@"Quit"];
-        [alert addButtonWithTitle:@"Cancel"];
-        [alert setMessageText:[NSString stringWithFormat:@"Are you sure you want to quit %@?", kApplicationName]];
-        [alert setInformativeText:[NSString stringWithFormat:@"%@ will not be able to run AutoPkg in the background or send email notifications until you relaunch the application.", kApplicationName]];
-        [alert setAlertStyle:NSWarningAlertStyle];
-
-        if ([alert runModal] == NSAlertSecondButtonReturn) {
-            NSLog(@"User cancelled quit.");
-            return NSTerminateCancel;
-        }
-    }
-
     return NSTerminateNow;
 }
 
