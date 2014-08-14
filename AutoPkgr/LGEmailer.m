@@ -27,17 +27,17 @@
 
 - (void)sendEmailNotification:(NSString *)subject message:(NSString *)message
 {
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    LGDefaults *defaults = [[LGDefaults alloc] init];
 
     BOOL TLS = [[defaults objectForKey:kSMTPTLSEnabled] boolValue];
 
     MCOSMTPSession *smtpSession = [[MCOSMTPSession alloc] init];
-    smtpSession.hostname = [defaults objectForKey:kSMTPServer];
-    smtpSession.port = (int)[defaults integerForKey:kSMTPPort];
-    smtpSession.username = [defaults objectForKey:kSMTPUsername];
+    smtpSession.hostname = defaults.SMTPServer;
+    smtpSession.port = (int)defaults.SMTPPort;
+    smtpSession.username = defaults.SMTPUsername;
 
     if (TLS) {
-        NSLog(@"SSL/TLS is enabled for %@.", [defaults objectForKey:kSMTPServer]);
+        NSLog(@"SSL/TLS is enabled for %@.", defaults.SMTPServer);
         // If the SMTP port is 465, use MCOConnectionTypeTLS.
         // Otherwise use MCOConnectionTypeStartTLS.
         if (smtpSession.port == 465) {
@@ -46,21 +46,20 @@
             smtpSession.connectionType = MCOConnectionTypeStartTLS;
         }
     } else {
-        NSLog(@"SSL/TLS is _not_ enabled for %@.", [defaults objectForKey:kSMTPServer]);
+        NSLog(@"SSL/TLS is _not_ enabled for %@.", defaults.SMTPServer);
         smtpSession.connectionType = MCOConnectionTypeClear;
     }
 
     // Retrieve the SMTP password from the default
     // keychain if it exists
     NSError *error = nil;
-    NSString *smtpUsernameString = [defaults objectForKey:kSMTPUsername];
 
-    if (smtpUsernameString) {
-        NSString *password = [AHKeychain getPasswordForService:kApplicationName account:smtpUsernameString keychain:kAHKeychainSystemKeychain error:&error];
+    if (defaults.SMTPUsername) {
+        NSString *password = [AHKeychain getPasswordForService:kApplicationName account:defaults.SMTPUsername keychain:kAHKeychainSystemKeychain error:&error];
 
         // Only set the SMTP session password if the username exists
-        if (smtpUsernameString != nil && ![smtpUsernameString isEqual:@""]) {
-            NSLog(@"Retrieved password from keychain for account %@.", smtpUsernameString);
+        if (defaults.SMTPUsername && ![defaults.SMTPUsername isEqual:@""]) {
+            NSLog(@"Retrieved password from keychain for account %@.", defaults.SMTPUsername);
             smtpSession.password = password;
         }
     }
@@ -68,11 +67,10 @@
     MCOMessageBuilder *builder = [[MCOMessageBuilder alloc] init];
 
     [[builder header] setFrom:[MCOAddress addressWithDisplayName:@"AutoPkgr Notification"
-                                                         mailbox:[[NSUserDefaults standardUserDefaults]
-                                                                     objectForKey:kSMTPFrom]]];
+                                                         mailbox:defaults.SMTPFrom]];
 
     NSMutableArray *to = [[NSMutableArray alloc] init];
-    for (NSString *toAddress in [[NSUserDefaults standardUserDefaults] objectForKey:kSMTPTo]) {
+    for (NSString *toAddress in defaults.SMTPTo) {
         if (![toAddress isEqual:@""]) {
             MCOAddress *newAddress = [MCOAddress addressWithMailbox:toAddress];
             [to addObject:newAddress];
@@ -88,19 +86,19 @@
 
     [sendOperation start:^(NSError *error) {
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-        NSMutableDictionary *d = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:subject, message, nil]
-                                                      forKeys:[NSArray arrayWithObjects:kEmailSentNotificationSubject, kEmailSentNotificationMessage, nil]];
+        NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:@{kEmailSentNotificationSubject:subject,
+                                                                                        kEmailSentNotificationMessage:message}];
         
         if (error) {
             NSLog(@"%@ Error sending email:%@", smtpSession.username, error);
-            [d setObject:error forKey:kEmailSentNotificationError];
+            [userInfo setObject:error forKey:kEmailSentNotificationError];
         } else {
             NSLog(@"%@ Successfully sent email!", smtpSession.username);
         }
         
         [center postNotificationName:kEmailSentNotification
                               object:self
-                            userInfo:[NSDictionary dictionaryWithDictionary:d]];
+                            userInfo:[NSDictionary dictionaryWithDictionary:userInfo]];
         // since this is in a operation block, set as complete so cli invocation
         // can watch and exit out of run loop
         self.complete = YES;

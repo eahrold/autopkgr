@@ -24,7 +24,13 @@
 #import "LGApplications.h"
 #import "LGTestPort.h"
 
+<<<<<<< HEAD
+@interface LGConfigurationWindowController : NSWindowController <NSTextDelegate, NSTokenFieldDelegate, NSWindowDelegate> {
+    NSUserDefaults *defaults;
+}
+=======
 @interface LGConfigurationWindowController : NSWindowController <NSTextDelegate, NSTokenFieldDelegate, NSWindowDelegate>
+>>>>>>> defaults-class
 
 // Text/token fields
 @property (weak) IBOutlet NSTokenField *smtpTo;

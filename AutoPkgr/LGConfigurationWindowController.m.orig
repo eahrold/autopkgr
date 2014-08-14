@@ -235,6 +235,12 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     if ([defaults checkForRepoUpdatesAutomaticallyEnabled]) {
         [checkForRepoUpdatesAutomaticallyButton setState:[defaults checkForRepoUpdatesAutomaticallyEnabled]];
     }
+<<<<<<< HEAD
+=======
+    if ([defaults warnBeforeQuittingEnabled]) {
+        [warnBeforeQuittingButton setState:[defaults warnBeforeQuittingEnabled]];
+    }
+>>>>>>> defaults-class
 
     // Read the SMTP password from the keychain and populate in
     // NSSecureTextField if it exists
@@ -285,17 +291,21 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 
     // Enable tools buttons if directories exist
     BOOL isDir;
+    NSString *autoPkgRecipeOverridesFolder = [hostInfo getAutoPkgRecipeOverridesDir];
+    NSString *autoPkgCacheFolder = [hostInfo getAutoPkgCacheDir];
+    NSString *autoPkgRecipeReposFolder = [hostInfo getAutoPkgRecipeReposDir];
+    NSString *localMunkiRepoFolder = [hostInfo getMunkiRepoDir];
 
-    if ([[NSFileManager defaultManager] fileExistsAtPath:defaults.autoPkgRecipeOverridesDir isDirectory:&isDir] && isDir) {
+    if ([[NSFileManager defaultManager] fileExistsAtPath:autoPkgRecipeOverridesFolder isDirectory:&isDir] && isDir) {
         [autoPkgRecipeOverridesFolderButton setEnabled:YES];
     }
-    if ([[NSFileManager defaultManager] fileExistsAtPath:defaults.autoPkgCacheDir isDirectory:&isDir] && isDir) {
+    if ([[NSFileManager defaultManager] fileExistsAtPath:autoPkgCacheFolder isDirectory:&isDir] && isDir) {
         [autoPkgCacheFolderButton setEnabled:YES];
     }
-    if ([[NSFileManager defaultManager] fileExistsAtPath:defaults.autoPkgRecipeRepoDir isDirectory:&isDir] && isDir) {
+    if ([[NSFileManager defaultManager] fileExistsAtPath:autoPkgRecipeReposFolder isDirectory:&isDir] && isDir) {
         [autoPkgRecipeReposFolderButton setEnabled:YES];
     }
-    if ([[NSFileManager defaultManager] fileExistsAtPath:defaults.munkiRepo isDirectory:&isDir] && isDir) {
+    if ([[NSFileManager defaultManager] fileExistsAtPath:localMunkiRepoFolder isDirectory:&isDir] && isDir) {
         [localMunkiRepoFolderButton setEnabled:YES];
     }
 
@@ -448,8 +458,21 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     defaults.SMTPTLSEnabled = [smtpTLSEnabledButton state];
     NSLog(@"%@ TLS.", defaults.SMTPTLSEnabled ? @"Enabling" : @"Disabling");
 
+<<<<<<< HEAD
+    if ([smtpAuthenticationEnabledButton state] == NSOnState) {
+        NSLog(@"Enabling SMTP authentication.");
+        [defaults setBool:YES forKey:kSMTPAuthenticationEnabled];
+    } else {
+        NSLog(@"Disabling SMTP authentication.");
+        [defaults setBool:NO forKey:kSMTPAuthenticationEnabled];
+    }
+=======
+    defaults.warnBeforeQuittingEnabled = [warnBeforeQuittingButton state];
+    NSLog(@"%@ warning before quitting.", defaults.warnBeforeQuittingEnabled ? @"Enabling" : @"Disabling");
+
     defaults.SMTPAuthenticationEnabled = [smtpAuthenticationEnabledButton state];
     NSLog(@"%@ SMTP authentication.", defaults.SMTPAuthenticationEnabled ? @"Enabling" : @"Disabling");
+>>>>>>> defaults-class
 
     defaults.sendEmailNotificationsWhenNewVersionsAreFoundEnabled = [sendEmailNotificationsWhenNewVersionsAreFoundButton state];
     NSLog(@"%@  email notifications.", defaults.sendEmailNotificationsWhenNewVersionsAreFoundEnabled ? @"Enabling" : @"Disabling");
@@ -584,7 +607,8 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 - (IBAction)openAutoPkgCacheFolder:(id)sender
 {
     BOOL isDir;
-    NSString *autoPkgCacheFolder = defaults.autoPkgCacheDir;
+    LGHostInfo *hostInfo = [[LGHostInfo alloc] init];
+    NSString *autoPkgCacheFolder = [hostInfo getAutoPkgCacheDir];
 
     if ([[NSFileManager defaultManager] fileExistsAtPath:autoPkgCacheFolder isDirectory:&isDir] && isDir) {
         NSURL *autoPkgCacheFolderURL = [NSURL fileURLWithPath:autoPkgCacheFolder];
@@ -606,7 +630,8 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 - (IBAction)openAutoPkgRecipeReposFolder:(id)sender
 {
     BOOL isDir;
-    NSString *autoPkgRecipeReposFolder = defaults.autoPkgRecipeRepoDir;
+    LGHostInfo *hostInfo = [[LGHostInfo alloc] init];
+    NSString *autoPkgRecipeReposFolder = [hostInfo getAutoPkgRecipeReposDir];
 
     if ([[NSFileManager defaultManager] fileExistsAtPath:autoPkgRecipeReposFolder isDirectory:&isDir] && isDir) {
         NSURL *autoPkgRecipeReposFolderURL = [NSURL fileURLWithPath:autoPkgRecipeReposFolder];
@@ -646,27 +671,10 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     }
 }
 
-- (IBAction)openAutoPkgRecipeOverridesFolder:(id)sender
-{
-    BOOL isDir;
-    NSString *autoPkgRecipeOverridesFolder = defaults.autoPkgRecipeOverridesDir;
-
-    if ([[NSFileManager defaultManager] fileExistsAtPath:autoPkgRecipeOverridesFolder isDirectory:&isDir] && isDir) {
-        NSURL *autoPkgRecipeOverridesFolderURL = [NSURL fileURLWithPath:autoPkgRecipeOverridesFolder];
-        [[NSWorkspace sharedWorkspace] openURL:autoPkgRecipeOverridesFolderURL];
-    } else {
-        NSLog(@"%@ does not exist.", autoPkgRecipeOverridesFolder);
-        NSAlert *alert = [[NSAlert alloc] init];
-        [alert addButtonWithTitle:@"OK"];
-        [alert setMessageText:@"Cannot find the AutoPkg RecipeOverrides folder."];
-        [alert setInformativeText:[NSString stringWithFormat:@"%@ could not find the AutoPkg RecipeOverrides folder located in %@. Please verify that this folder exists.", kApplicationName, autoPkgRecipeOverridesFolder]];
-        [alert setAlertStyle:NSWarningAlertStyle];
-        [alert runModal];
-    }
-}
-
 - (IBAction)addAutoPkgRepoURL:(id)sender
 {
+    // TODO: Input validation + success/failure notification
+
     LGAutoPkgRunner *autoPkgRunner = [[LGAutoPkgRunner alloc] init];
     [autoPkgRunner addAutoPkgRecipeRepo:[repoURLToAdd stringValue]];
 
@@ -684,6 +692,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
                                                  name:kUpdateReposCompleteNotification
                                                object:autoPkgRunner];
 
+    // TODO: Success/failure notification
     [self.updateRepoNowButton setEnabled:NO];
     [self startProgressWithMessage:@"Updating AutoPkg recipe repos."];
 
@@ -838,6 +847,26 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     }];
 }
 
+- (IBAction)openAutoPkgRecipeOverridesFolder:(id)sender
+{
+    BOOL isDir;
+    LGHostInfo *hostInfo = [[LGHostInfo alloc] init];
+    NSString *autoPkgRecipeOverridesFolder = [hostInfo getAutoPkgRecipeOverridesDir];
+
+    if ([[NSFileManager defaultManager] fileExistsAtPath:autoPkgRecipeOverridesFolder isDirectory:&isDir] && isDir) {
+        NSURL *autoPkgRecipeOverridesFolderURL = [NSURL fileURLWithPath:autoPkgRecipeOverridesFolder];
+        [[NSWorkspace sharedWorkspace] openURL:autoPkgRecipeOverridesFolderURL];
+    } else {
+        NSLog(@"%@ does not exist.", autoPkgRecipeOverridesFolder);
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert addButtonWithTitle:@"OK"];
+        [alert setMessageText:@"Cannot find the AutoPkg RecipeOverrides folder."];
+        [alert setInformativeText:[NSString stringWithFormat:@"%@ could not find the AutoPkg RecipeOverrides folder located in %@. Please verify that this folder exists.", kApplicationName, autoPkgRecipeOverridesFolder]];
+        [alert setAlertStyle:NSWarningAlertStyle];
+        [alert runModal];
+    }
+}
+
 - (void)controlTextDidChange:(NSNotification *)notification
 {
     id object = notification.object;
@@ -883,9 +912,14 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         defaults.SMTPTo = [smtpTo objectValue];
     } else if ([object isEqual:autoPkgRunInterval]) {
         if ([autoPkgRunInterval integerValue] != 0) {
+<<<<<<< HEAD
             [defaults setInteger:[autoPkgRunInterval integerValue] forKey:kAutoPkgRunInterval];
             // if the time has changed, force reload of schedule
             //            [self startAutoPkgRunTimer:YES force:NO];
+=======
+            defaults.autoPkgRunInterval = [autoPkgRunInterval integerValue];
+            [self startAutoPkgRunTimer];
+>>>>>>> defaults-class
         }
     } else if ([object isEqual:smtpPassword]) {
         [self updateKeychainPassword:self];
@@ -924,6 +958,16 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     [defaults synchronize];
 }
 
+<<<<<<< HEAD
+=======
+- (void)changeWarnBeforeQuittingButtonState
+{
+    defaults.warnBeforeQuittingEnabled = [warnBeforeQuittingButton state];
+    NSLog(@"%@ warning before quitting.", defaults.warnBeforeQuittingEnabled ? @"Enabling" : @"Disabling");
+    [defaults synchronize];
+}
+
+>>>>>>> defaults-class
 - (void)changeSmtpAuthenticationButtonState
 {
     defaults.SMTPAuthenticationEnabled = [smtpAuthenticationEnabledButton state];
@@ -940,9 +984,20 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 
 - (void)changeCheckForNewVersionsOfAppsAutomaticallyButtonState
 {
+<<<<<<< HEAD
+    if ([checkForNewVersionsOfAppsAutomaticallyButton state] == NSOnState) {
+        NSLog(@"Enabling checking for new apps automatically.");
+        [defaults setBool:YES forKey:kCheckForNewVersionsOfAppsAutomaticallyEnabled];
+    } else {
+        NSLog(@"Disabling checking for new apps automatically.");
+        [defaults setBool:NO forKey:kCheckForNewVersionsOfAppsAutomaticallyEnabled];
+    }
+    [defaults synchronize];
+    [self startAutoPkgRunTimer:checkForNewVersionsOfAppsAutomaticallyButton.state force:NO];
+=======
     defaults.checkForNewVersionsOfAppsAutomaticallyEnabled = [checkForNewVersionsOfAppsAutomaticallyButton state];
-    [self startAutoPkgRunTimer:[checkForNewVersionsOfAppsAutomaticallyButton state] force:NO];
     NSLog(@"%@ checking for new apps automatically.", defaults.checkForNewVersionsOfAppsAutomaticallyEnabled ? @"Enabling" : @"Disabling");
+>>>>>>> defaults-class
 }
 
 - (void)changeCheckForRepoUpdatesAutomaticallyButtonState
@@ -1019,6 +1074,8 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     }];
 }
 
+<<<<<<< HEAD
+=======
 - (void)didEndWithPreferenceRepairRequest:(NSAlert *)alert returnCode:(NSInteger)returnCode
 {
     if (returnCode == NSAlertSecondButtonReturn) {
@@ -1040,6 +1097,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     }
 }
 
+>>>>>>> defaults-class
 - (BOOL)windowShouldClose:(id)sender
 {
     [self save];
