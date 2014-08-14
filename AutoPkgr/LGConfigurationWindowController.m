@@ -124,6 +124,8 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
+    NSLog(@"%@ %@ %@", keyPath, object, change);
+
     if (context == XXAuthenticationEnabledContext) {
         if ([keyPath isEqualToString:@"cell.state"]) {
             if ([[change objectForKey:@"new"] integerValue] == 1) {
@@ -175,9 +177,9 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 {
     [super windowDidLoad];
 
-	// Hide the configuration window
-	[self.window orderOut:nil];
-	
+    // Hide the configuration window
+    [self.window orderOut:nil];
+
     // Populate the preference values from the user defaults if they exist
 
     if ([defaults objectForKey:kAutoPkgRunInterval]) {
@@ -331,7 +333,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     // Handle Spinner
     [sendTestEmailSpinner stopAnimation:self]; // stop animation
     [sendTestEmailSpinner setHidden:YES]; // hide spinner
-    
+
     NSError *e = [[notification userInfo] objectForKey:kEmailSentNotificationError]; // pull the error out of the userInfo dictionary
     if (e) {
         NSLog(@"Unable to send test email. Error: %@", e);
@@ -346,8 +348,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 
 - (void)testSmtpServerPort:(id)sender
 {
-    if (![[smtpServer stringValue] isEqualToString:@""] && [smtpPort integerValue
-                                                            ] > 0 ) {
+    if (![[smtpServer stringValue] isEqualToString:@""] && [smtpPort integerValue] > 0) {
 
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
@@ -398,6 +399,10 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     // we send the autoPkgr Executable to the helper, so it can add that
     // to the list of trusted applications in the keychain item's ACL
     NSString *autoPkgrExecutable = [NSProcessInfo processInfo].arguments[0];
+
+    // Create the external form authorization data for the helper
+    NSData *authorization = [LGAutoPkgrAuthorizer authorizeHelper];
+    assert(authorization != nil);
 
     LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
     [helper connectToHelper];
@@ -476,14 +481,8 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         [defaults setBool:NO forKey:kCheckForRepoUpdatesAutomaticallyEnabled];
     }
 
-    // Store the password used for SMTP authentication in the system keychain
-    [self updateKeychainPassword:self];
-
     // Synchronize with the defaults database
     [defaults synchronize];
-
-    // Start the AutoPkg run timer if the user enabled it
-    [self startAutoPkgRunTimer];
 }
 
 - (BOOL)autoPkgUpdateAvailable
@@ -510,25 +509,11 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     return NO;
 }
 
-- (void)startAutoPkgRunTimer
+- (void)startAutoPkgRunTimer:(BOOL)start force:(BOOL)force
 {
     LGAutoPkgRunner *autoPkgRunner = [[LGAutoPkgRunner alloc] init];
-    [autoPkgRunner startAutoPkgRunTimer];
-}
-
-- (void)runCommandAsRoot:(NSString *)command
-{
-    // Super dirty hack, but way easier than
-    // using Authorization Services
-    NSDictionary *error = [[NSDictionary alloc] init];
-    NSString *script = [NSString stringWithFormat:@"do shell script \"sh -c '%@'\" with administrator privileges", command];
-    NSLog(@"AppleScript commands: %@", script);
-    NSAppleScript *appleScript = [[NSAppleScript alloc] initWithSource:script];
-    if ([appleScript executeAndReturnError:&error]) {
-        NSLog(@"Authorization successful!");
-    } else {
-        NSLog(@"Authorization failed! Error: %@.", error);
-    }
+    [autoPkgRunner startAutoPkgSchedule:start
+                               isForced:force];
 }
 
 /*
@@ -579,11 +564,10 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     NSData *autoPkg = [[NSData alloc] initWithContentsOfURL:[NSURL URLWithString:downloadURL]];
     [autoPkg writeToFile:autoPkgPkg atomically:YES];
 
-    
     // Create the external form authorization data for the helper
     NSData *authorization = [LGAutoPkgrAuthorizer authorizeHelper];
     assert(authorization != nil);
-    
+
     // When connecting to the helper tool, get back on the main thread
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
@@ -729,7 +713,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     if ([notification.userInfo[kNotificationUserInfoError] isKindOfClass:[NSError class]]) {
         error = notification.userInfo[kNotificationUserInfoError];
     }
-    
+
     [self stopProgress:error];
     [self.updateRepoNowButton setEnabled:YES];
 }
@@ -760,7 +744,6 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     }
     [self stopProgress:error];
     [self.checkAppsNowButton setEnabled:YES];
-
 }
 
 - (IBAction)chooseLocalMunkiRepo:(id)sender
@@ -825,6 +808,19 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     }
 }
 
+- (void)controlTextDidChange:(NSNotification *)notification
+{
+    id object = notification.object;
+    NSLog(@"Eval %@", object);
+    if ([object isEqual:autoPkgRunInterval]) {
+        if ([autoPkgRunInterval integerValue] != 0) {
+            [defaults setInteger:[autoPkgRunInterval integerValue] forKey:kAutoPkgRunInterval];
+            // if the time has changed, force reload of schedule
+            [self startAutoPkgRunTimer:YES force:YES];
+        }
+    }
+}
+
 - (void)controlTextDidEndEditing:(NSNotification *)notification
 {
     id object = [notification object];
@@ -848,7 +844,8 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     } else if ([object isEqual:autoPkgRunInterval]) {
         if ([autoPkgRunInterval integerValue] != 0) {
             [defaults setInteger:[autoPkgRunInterval integerValue] forKey:kAutoPkgRunInterval];
-            [self startAutoPkgRunTimer];
+            // if the time has changed, force reload of schedule
+            //            [self startAutoPkgRunTimer:YES force:NO];
         }
     } else if ([object isEqual:smtpPassword]) {
         [self updateKeychainPassword:self];
@@ -921,7 +918,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         [defaults setBool:NO forKey:kCheckForNewVersionsOfAppsAutomaticallyEnabled];
     }
     [defaults synchronize];
-    [self startAutoPkgRunTimer];
+    [self startAutoPkgRunTimer:checkForNewVersionsOfAppsAutomaticallyButton.state force:NO];
 }
 
 - (void)changeCheckForRepoUpdatesAutomaticallyButtonState
@@ -994,11 +991,9 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     }];
 }
 
-
 - (BOOL)windowShouldClose:(id)sender
 {
     [self save];
-
     return YES;
 }
 

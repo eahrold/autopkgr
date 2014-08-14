@@ -43,6 +43,23 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     }
 }
 
+#pragma mark - AutoPkgr Protocol
+- (void)scheduleRun:(NSInteger)interval
+               user:(NSString *)user
+            program:(NSString *)program
+      authorization:(NSData *)authData
+              reply:(void (^)(NSError *error))reply
+{
+
+    NSError *error = [LGAutoPkgrAuthorizer checkAuthorization:authData
+                                                      command:_cmd];
+    if (error != nil) {
+        return reply(error);
+    }
+
+    [self scheduleRun:interval user:user program:program reply:reply];
+}
+
 - (void)scheduleRun:(NSInteger)interval
                user:(NSString *)user
             program:(NSString *)program
@@ -60,11 +77,32 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     reply(error);
 }
 
+- (void)removeScheduleWithAuthorization:(NSData *)authData reply:(void (^)(NSError *))reply
+{
+    NSError *error = [LGAutoPkgrAuthorizer checkAuthorization:authData
+                                                      command:_cmd];
+    if (error != nil) {
+        return reply(error);
+    }
+    [self removeScheduleWithReply:reply];
+}
+
 - (void)removeScheduleWithReply:(void (^)(NSError *))reply
 {
     NSError *error;
     [[AHLaunchCtl sharedControler] remove:kLGAutoPkgrLaunchDaemonPlist fromDomain:kAHGlobalLaunchDaemon error:&error];
     reply(error);
+}
+
+#pragma mark - Update Password
+- (void)addPassword:(NSString *)password forUser:(NSString *)user andAutoPkgr:(NSString *)autoPkgrLaunchPath authorization:(NSData *)authData reply:(void (^)(NSError *))reply
+{
+    NSError *error = [LGAutoPkgrAuthorizer checkAuthorization:authData
+                                                      command:_cmd];
+    if (error != nil) {
+        return reply(error);
+    }
+    return [self addPassword:password forUser:user andAutoPkgr:autoPkgrLaunchPath reply:reply];
 }
 
 - (void)addPassword:(NSString *)password forUser:(NSString *)user andAutoPkgr:(NSString *)autoPkgrLaunchPath reply:(void (^)(NSError *))reply
@@ -79,6 +117,34 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     item.trustedApplications = @[ autoPkgrLaunchPath ];
     [keychain saveItem:item error:&error];
 
+    reply(error);
+}
+
+- (void)removePassword:(NSString *)password
+               forUser:(NSString *)user
+         authorization:(NSData *)authData
+                 reply:(void (^)(NSError *))reply
+{
+    NSError *error = [LGAutoPkgrAuthorizer checkAuthorization:authData
+                                                      command:_cmd];
+    if (error != nil) {
+        return reply(error);
+    }
+    return [self removePassword:password forUser:user reply:reply];
+}
+
+- (void)removePassword:(NSString *)password
+               forUser:(NSString *)user
+                 reply:(void (^)(NSError *))reply
+{
+    NSError *error;
+    AHKeychain *keychain = [AHKeychain systemKeychain];
+    AHKeychainItem *item = [[AHKeychainItem alloc] init];
+    item.label = kApplicationName;
+    item.service = kApplicationName;
+    item.account = user;
+
+    [keychain deleteItem:item error:&error];
     reply(error);
 }
 
@@ -114,6 +180,14 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     reply(error);
 }
 
+- (void)uninstallWithAuthorization:(NSData *)authData reply:(void (^)(NSError *))reply
+{
+    NSError *error;
+    if (error != nil) {
+        return reply(error);
+    }
+    return [self uninstall:reply];
+}
 - (void)uninstall:(void (^)(NSError *))reply
 {
     NSError *error;
@@ -123,6 +197,7 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     reply(error);
 }
 
+#pragma mark - Error Handling
 - (BOOL)errorFromTask:(NSTask *)task error:(NSError *__autoreleasing *)error
 {
     if (error && task.terminationStatus != 0) {

@@ -24,6 +24,7 @@
 #import "LGConstants.h"
 #import "LGAutoPkgrHelperConnection.h"
 #import "LGAutoPkgrProtocol.h"
+#import "AHLaunchCTL.h"
 
 @implementation LGAutoPkgRunner
 
@@ -105,10 +106,10 @@
 
 - (void)addAutoPkgRecipeRepo:(NSString *)repoURL
 {
-    NSString *addString = [NSString stringWithFormat:@"Adding %@",repoURL];
+    NSString *addString = [NSString stringWithFormat:@"Adding %@", repoURL];
     [[NSNotificationCenter defaultCenter] postNotificationName:kProgressStartNotification
                                                         object:nil
-                                                      userInfo:@{kNotificationUserInfoMessage:addString}];
+                                                      userInfo:@{ kNotificationUserInfoMessage : addString }];
     // Set up task, pipe, and file handle
     NSTask *autoPkgRepoAddTask = [[NSTask alloc] init];
     NSPipe *autoPkgRepoAddPipe = [NSPipe pipe];
@@ -143,14 +144,13 @@
     // Launch the task
     [autoPkgRepoAddTask launch];
     [autoPkgRepoAddTask waitUntilExit];
-    
 }
 
 - (void)removeAutoPkgRecipeRepo:(NSString *)repoURL
 {
     [[NSNotificationCenter defaultCenter] postNotificationName:kProgressStartNotification
                                                         object:nil
-                                                      userInfo:@{kNotificationUserInfoMessage:@"Removing Repo"}];
+                                                      userInfo:@{ kNotificationUserInfoMessage : @"Removing Repo" }];
 
     // Set up task and pipe
     NSTask *autoPkgRepoRemoveTask = [[NSTask alloc] init];
@@ -186,7 +186,6 @@
     // Launch the task
     [autoPkgRepoRemoveTask launch];
     [autoPkgRepoRemoveTask waitUntilExit];
-
 }
 
 - (void)updateAutoPkgRecipeRepos
@@ -272,7 +271,7 @@
                                                             object:nil
                                                           userInfo:@{kNotificationUserInfoMessage: string}];
     };
-    
+
     // Launch the task
     [autoPkgRunTask launch];
 
@@ -282,7 +281,7 @@
         NSData *autoPkgRunReportPlistData = [fileHandle readDataToEndOfFile];
         // Init our string with data from the fileHandle
         NSString *autoPkgRunReportPlistString = [[NSString alloc] initWithData:autoPkgRunReportPlistData encoding:NSUTF8StringEncoding];
-        if (![autoPkgRunReportPlistString isEqualToString:@""]){
+        if (![autoPkgRunReportPlistString isEqualToString:@""]) {
             // Convert string back to data for plist serialization
             NSData *plistData = [autoPkgRunReportPlistString dataUsingEncoding:NSUTF8StringEncoding];
             // Initialize our error object
@@ -390,40 +389,44 @@
     [self runAutoPkgWithRecipeListAndSendEmailNotificationIfConfigured:recipeListFilePath];
 }
 
-- (void)startAutoPkgRunTimer
+- (void)startAutoPkgSchedule:(BOOL)start isForced:(BOOL)forced;
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    BOOL scheduleIsRunning = jobIsRunning(kLGAutoPkgrLaunchDaemonPlist, kAHGlobalLaunchDaemon);
+
+    // Create the external form authorization data for the helper
+    NSData *authorization = [LGAutoPkgrAuthorizer authorizeHelper];
+    assert(authorization != nil);
+
     LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
     [helper connectToHelper];
 
-    if ([defaults objectForKey:kCheckForNewVersionsOfAppsAutomaticallyEnabled]) {
-        BOOL checkForNewVersionsOfAppsAutomaticallyEnabled = [[defaults objectForKey:kCheckForNewVersionsOfAppsAutomaticallyEnabled] boolValue];
+    if (start && (!scheduleIsRunning || forced)) {
+        if ([defaults integerForKey:kAutoPkgRunInterval]) {
+            double i = [defaults integerForKey:kAutoPkgRunInterval];
+            if (i != 0) {
+                NSInteger timer = i * 60 * 60; // Convert hours to seconds for our time interval
+                NSString *program = [[NSProcessInfo processInfo] arguments].firstObject;
 
-        if (checkForNewVersionsOfAppsAutomaticallyEnabled) {
-            if ([defaults integerForKey:kAutoPkgRunInterval]) {
-                double i = [defaults integerForKey:kAutoPkgRunInterval];
-                if (i != 0) {
-                    NSInteger timer = i * 60 * 60; // Convert hours to seconds for our time interval
-                    NSString *program = [[NSProcessInfo processInfo] arguments].firstObject;
-
-                    [[helper.connection remoteObjectProxy] scheduleRun:timer user:NSUserName() program:program reply:^(NSError *error) {
-                        if(error){
+                [[helper.connection remoteObjectProxy] scheduleRun:timer user:NSUserName() program:program authorization:authorization reply:^(NSError *error) {
+                    if(error){
+                        [[NSOperationQueue mainQueue]addOperationWithBlock:^{
                             [NSApp presentError:error];
-                        }
-                    }];
-                } else {
-                    NSLog(@"i is 0 because that's what the user entered or what they entered wasn't a digit.");
-                }
+                        }];
+                    }
+                }];
             } else {
-                NSLog(@"The user enabled automatic checking for app updates but they specified no interval.");
+                NSLog(@"i is 0 because that's what the user entered or what they entered wasn't a digit.");
             }
         } else {
-            [[helper.connection remoteObjectProxy] removeScheduleWithReply:^(NSError *error) {
-                if(error){
-                    NSLog(@"%@",error);
-                }
-            }];
+            NSLog(@"The user enabled automatic checking for app updates but they specified no interval.");
         }
+    } else if (scheduleIsRunning) {
+        [[helper.connection remoteObjectProxy] removeScheduleWithAuthorization:authorization reply:^(NSError *error) {
+            if(error){
+                NSLog(@"%@",error);
+            }
+        }];
     }
 }
 

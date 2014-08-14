@@ -11,22 +11,57 @@
 #import "LGAutoPkgrAuthorizer.h"
 
 @protocol HelperAgent <NSObject>
+#pragma mark - Schedule
+#pragma mark-- Add
+- (void)scheduleRun:(NSInteger)interval
+               user:(NSString *)user
+            program:(NSString *)program
+      authorization:(NSData *)authData
+              reply:(void (^)(NSError *error))reply;
+
 - (void)scheduleRun:(NSInteger)interval
                user:(NSString *)user
             program:(NSString *)program
               reply:(void (^)(NSError *error))reply;
+#pragma mark-- Remove
+- (void)removeScheduleWithAuthorization:(NSData *)authData
+                                  reply:(void (^)(NSError *error))reply;
 
 - (void)removeScheduleWithReply:(void (^)(NSError *error))reply;
 
+#pragma mark - Install Package
 - (void)installPackageFromPath:(NSString *)path
                  authorization:(NSData *)authData
                          reply:(void (^)(NSError *error))reply;
+
+#pragma mark - Keycahin Password
+#pragma mark-- Add
+- (void)addPassword:(NSString *)password
+            forUser:(NSString *)user
+        andAutoPkgr:(NSString *)autoPkgrLaunchPath
+      authorization:(NSData *)authData
+              reply:(void (^)(NSError *error))reply;
 
 - (void)addPassword:(NSString *)password
             forUser:(NSString *)user
         andAutoPkgr:(NSString *)autoPkgrLaunchPath
               reply:(void (^)(NSError *error))reply;
 
+#pragma mark-- Remove
+- (void)removePassword:(NSString *)password
+               forUser:(NSString *)user
+         authorization:(NSData *)authData
+                 reply:(void (^)(NSError *error))reply;
+
+- (void)removePassword:(NSString *)password
+               forUser:(NSString *)user
+                 reply:(void (^)(NSError *error))reply;
+
+#pragma mark - Life Cycle
 - (void)quitHelper:(void (^)(BOOL success))reply;
+
+- (void)uninstallWithAuthorization:(NSData *)authData
+                             reply:(void (^)(NSError *))reply;
+
 - (void)uninstall:(void (^)(NSError *))reply;
 @end

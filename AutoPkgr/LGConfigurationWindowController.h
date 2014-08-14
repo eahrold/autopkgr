@@ -24,8 +24,7 @@
 #import "LGApplications.h"
 #import "LGTestPort.h"
 
-@interface LGConfigurationWindowController : NSWindowController <NSTextDelegate, NSTokenFieldDelegate, NSWindowDelegate>
-{
+@interface LGConfigurationWindowController : NSWindowController <NSTextDelegate, NSTokenFieldDelegate, NSWindowDelegate> {
     NSUserDefaults *defaults;
 }
 
@@ -77,7 +76,6 @@
 @property (weak) IBOutlet NSProgressIndicator *progressIndicator;
 @property (weak) IBOutlet NSTextField *progressMessage;
 
-
 // Objects
 @property (strong) IBOutlet LGPopularRepositories *popRepoTableViewHandler;
 @property (strong) IBOutlet LGApplications *appTableViewHandler;
@@ -95,7 +93,6 @@
 - (IBAction)chooseLocalMunkiRepo:(id)sender;
 - (IBAction)openAutoPkgRecipeOverridesFolder:(id)sender;
 
-- (void)runCommandAsRoot:(NSString *)command;
 - (void)downloadAndInstallAutoPkg;
 
 @end

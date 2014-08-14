@@ -3,25 +3,65 @@
 
 @implementation LGAutoPkgrAuthorizer
 
-static NSString * kCommandKeyAuthRightName    = @"authRightName";
-static NSString * kCommandKeyAuthRightDefault = @"authRightDefault";
-static NSString * kCommandKeyAuthRightDesc    = @"authRightDescription";
+static NSString *kCommandKeyAuthRightName = @"authRightName";
+static NSString *kCommandKeyAuthRightDefault = @"authRightDefault";
+static NSString *kCommandKeyAuthRightDesc = @"authRightDescription";
 
 + (NSDictionary *)commandInfo
 {
     static dispatch_once_t dOnceToken;
-    static NSDictionary   *dCommandInfo;
-    
+    static NSDictionary *dCommandInfo;
+
     dispatch_once(&dOnceToken, ^{
         dCommandInfo = @{
             NSStringFromSelector(@selector(installPackageFromPath:authorization:reply:)) : @{
                 kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.pkg.install",
                 kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin, 
                 kCommandKeyAuthRightDesc    : NSLocalizedString(
-                    @"MunkiMenu is trying to uninstall the helper tool and it's components.",
-                    @"prompt shown when user is required to authorize to uninstall"
+                    @"AutoPkgr is trying to install a .pkg.",
+                    @"prompt shown when user is required to authorize to insatll a package"
                 )
             },
+            NSStringFromSelector(@selector(addPassword:forUser:andAutoPkgr:authorization:reply:)) : @{
+                    kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.update.keychain.password",
+                    kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
+                    kCommandKeyAuthRightDesc    : NSLocalizedString(
+                                                                    @"AutoPkgr wants to update the keychain password.",
+                                                                    @"prompt shown when user is required to authorize to update password"
+                                                                    )
+                    },
+            NSStringFromSelector(@selector(removePassword:forUser:authorization:reply:)) : @{
+                    kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.remove.keychain.password",
+                    kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
+                    kCommandKeyAuthRightDesc    : NSLocalizedString(
+                                                                    @"AutoPkgr is trying to remove the keychain item",
+                                                                    @""
+                                                                    )
+                    },
+            NSStringFromSelector(@selector(scheduleRun:user:program:authorization:reply:)) : @{
+                    kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.add.scheduled.run",
+                    kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
+                    kCommandKeyAuthRightDesc    : NSLocalizedString(
+                                                                    @"AutoPkgr is trying to schedule autopkg runs",
+                                                                    @""
+                                                                    )
+                    },
+            NSStringFromSelector(@selector(removeScheduleWithAuthorization:reply:)) : @{
+                    kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.remove.schedule.run",
+                    kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
+                    kCommandKeyAuthRightDesc    : NSLocalizedString(
+                                                                    @"AutoPkgr is trying to remove the autopkg run schedule",
+                                                                    @""
+                                                                    )
+                    },
+            NSStringFromSelector(@selector(uninstallWithAuthorization:reply:)) : @{
+                    kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.uninstall.helper.items",
+                    kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
+                    kCommandKeyAuthRightDesc    : NSLocalizedString(
+                                                                    @"AutoPkgr is trying to remove the helper tool files",
+                                                                    @""
+                                                                    )
+                    },
         };
     });
     return dCommandInfo;
@@ -32,11 +72,11 @@ static NSString * kCommandKeyAuthRightDesc    = @"authRightDescription";
     return [self commandInfo][NSStringFromSelector(command)][kCommandKeyAuthRightName];
 }
 
-+ (void)enumerateRightsUsingBlock:(void (^)(NSString * authRightName, id authRightDefault, NSString * authRightDesc))block
++ (void)enumerateRightsUsingBlock:(void (^)(NSString *authRightName, id authRightDefault, NSString *authRightDesc))block
 {
     [self.commandInfo enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        #pragma unused(key)
-        #pragma unused(stop)
+#pragma unused(key)
+#pragma unused(stop)
         NSDictionary *commandDict;
         NSString     *authRightName;
         id           authRightDefault;
@@ -62,7 +102,7 @@ static NSString * kCommandKeyAuthRightDesc    = @"authRightDescription";
 + (void)setupAuthorizationRights:(AuthorizationRef)authRef
 {
     assert(authRef != NULL);
-    [[self class] enumerateRightsUsingBlock:^(NSString * authRightName, id authRightDefault, NSString * authRightDesc) {
+    [[self class] enumerateRightsUsingBlock:^(NSString *authRightName, id authRightDefault, NSString *authRightDesc) {
         OSStatus    blockErr;
         blockErr = AuthorizationRightGet([authRightName UTF8String], NULL);
         if (blockErr == errAuthorizationDenied) {
@@ -84,60 +124,59 @@ static NSString * kCommandKeyAuthRightDesc    = @"authRightDescription";
 + (NSError *)checkAuthorization:(NSData *)authData command:(SEL)command
 {
 #pragma unused(authData)
-    NSError *                   error;
-    OSStatus                    err;
-    OSStatus                    junk;
-    AuthorizationRef            authRef;
-    
+    NSError *error;
+    OSStatus err;
+    OSStatus junk;
+    AuthorizationRef authRef;
+
     assert(command != nil);
-    
+
     authRef = NULL;
-    
+
     error = nil;
-    if ( (authData == nil) || ([authData length] != sizeof(AuthorizationExternalForm)) ) {
+    if ((authData == nil) || ([authData length] != sizeof(AuthorizationExternalForm))) {
         error = [NSError errorWithDomain:NSOSStatusErrorDomain code:paramErr userInfo:nil];
     }
-    
+
     if (error == nil) {
         err = AuthorizationCreateFromExternalForm([authData bytes], &authRef);
-                
+
         if (err == errAuthorizationSuccess) {
-            AuthorizationItem   oneRight = { NULL, 0, NULL, 0 };
-            AuthorizationRights rights   = { 1, &oneRight };
-            
+            AuthorizationItem oneRight = { NULL, 0, NULL, 0 };
+            AuthorizationRights rights = { 1, &oneRight };
+
             oneRight.name = [[[self class] authorizationRightForCommand:command] UTF8String];
             assert(oneRight.name != NULL);
-            
+
             err = AuthorizationCopyRights(
-                                          authRef,
-                                          &rights,
-                                          NULL,
-                                          kAuthorizationFlagExtendRights |
-                                          kAuthorizationFlagInteractionAllowed,
-                                          NULL
-                                          );
+                authRef,
+                &rights,
+                NULL,
+                kAuthorizationFlagExtendRights | kAuthorizationFlagInteractionAllowed,
+                NULL);
         }
         if (err != errAuthorizationSuccess) {
             error = [NSError errorWithDomain:kApplicationName
                                         code:-1
-                                    userInfo:@{NSLocalizedDescriptionKey:@"You are not authorized to perform this action"}];
+                                    userInfo:@{ NSLocalizedDescriptionKey : @"You are not authorized to perform this action" }];
         }
     }
-    
+
     if (authRef != NULL) {
         junk = AuthorizationFree(authRef, 0);
         assert(junk == errAuthorizationSuccess);
     }
-    
+
     return error;
 }
 
-+(NSData*)authorizeHelper{
-    OSStatus                    err;
-    AuthorizationExternalForm   extForm;
-    AuthorizationRef            authRef;
-    NSData                     *authorization;
-    
++ (NSData *)authorizeHelper
+{
+    OSStatus err;
+    AuthorizationExternalForm extForm;
+    AuthorizationRef authRef;
+    NSData *authorization;
+
     err = AuthorizationCreate(NULL, NULL, 0, &authRef);
     if (err == errAuthorizationSuccess) {
         err = AuthorizationMakeExternalForm(authRef, &extForm);
@@ -146,12 +185,11 @@ static NSString * kCommandKeyAuthRightDesc    = @"authRightDescription";
         authorization = [[NSData alloc] initWithBytes:&extForm length:sizeof(extForm)];
     }
     assert(err == errAuthorizationSuccess);
-    
+
     if (authRef) {
         [[self class] setupAuthorizationRights:authRef];
     }
     return authorization;
 }
-
 
 @end

@@ -23,7 +23,7 @@
 #import "LGEmailer.h"
 
 @interface LGAutoPkgRunner : NSObject
-@property (strong,nonatomic) LGEmailer *emailer;
+@property (strong, nonatomic) LGEmailer *emailer;
 
 - (NSArray *)getLocalAutoPkgRecipes;
 - (NSArray *)getLocalAutoPkgRecipeRepos;
@@ -35,7 +35,8 @@
 - (void)invokeAutoPkgInBackgroundThread;
 - (void)invokeAutoPkgRepoUpdateInBackgroundThread;
 - (void)runAutoPkgWithRecipeList;
-- (void)startAutoPkgRunTimer;
+//- (void)startAutoPkgRunTimer;
+- (void)startAutoPkgSchedule:(BOOL)start isForced:(BOOL)forced;
 - (void)setLocalMunkiRepoForAutoPkg:(NSString *)localMunkiRepo;
 
 @end

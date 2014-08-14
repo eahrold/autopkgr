@@ -58,21 +58,12 @@
         [self showConfigurationWindow:nil];
     }
 
-    // Start the AutoPkg run timer if the user enabled it
-    [self startAutoPkgRunTimer];
-
     // Update AutoPkg recipe repos when the application launches
     // if the user has enabled automatic repo updates
     if ([defaults boolForKey:kCheckForRepoUpdatesAutomaticallyEnabled]) {
         NSLog(@"Updating AutoPkg recipe repos.");
         [self updateAutoPkgRecipeReposInBackgroundAtAppLaunch];
     }
-}
-
-- (void)startAutoPkgRunTimer
-{
-    LGAutoPkgRunner *autoPkgRunner = [[LGAutoPkgRunner alloc] init];
-    [autoPkgRunner startAutoPkgRunTimer];
 }
 
 - (void)updateAutoPkgRecipeReposInBackgroundAtAppLaunch
