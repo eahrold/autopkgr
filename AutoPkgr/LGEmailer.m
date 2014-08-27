@@ -20,6 +20,7 @@
 //
 
 #import "LGEmailer.h"
+#import "LGAutoPkgr.h"
 #import "LGHostInfo.h"
 #import "AHKeychain.h"
 
@@ -29,7 +30,7 @@
 {
     LGDefaults *defaults = [[LGDefaults alloc] init];
 
-    BOOL TLS = [[defaults objectForKey:kSMTPTLSEnabled] boolValue];
+    BOOL TLS = [[defaults objectForKey:kLGSMTPTLSEnabled] boolValue];
 
     MCOSMTPSession *smtpSession = [[MCOSMTPSession alloc] init];
     smtpSession.hostname = defaults.SMTPServer;
@@ -55,7 +56,7 @@
     NSError *error = nil;
 
     if (defaults.SMTPUsername) {
-        NSString *password = [AHKeychain getPasswordForService:kApplicationName account:defaults.SMTPUsername keychain:kAHKeychainSystemKeychain error:&error];
+        NSString *password = [AHKeychain getPasswordForService:kLGApplicationName account:defaults.SMTPUsername keychain:kAHKeychainSystemKeychain error:&error];
 
         // Only set the SMTP session password if the username exists
         if (defaults.SMTPUsername && ![defaults.SMTPUsername isEqual:@""]) {
@@ -86,17 +87,17 @@
 
     [sendOperation start:^(NSError *error) {
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-        NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:@{kEmailSentNotificationSubject:subject,
-                                                                                        kEmailSentNotificationMessage:message}];
+        NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:@{kLGNotificationUserInfoSubject:subject,
+                                                                                        kLGNotificationUserInfoMessage:message}];
         
         if (error) {
             NSLog(@"%@ Error sending email:%@", smtpSession.username, error);
-            [userInfo setObject:error forKey:kEmailSentNotificationError];
+            [userInfo setObject:error forKey:kLGNotificationUserInfoError];
         } else {
             NSLog(@"%@ Successfully sent email!", smtpSession.username);
         }
         
-        [center postNotificationName:kEmailSentNotification
+        [center postNotificationName:kLGNotificationEmailSent
                               object:self
                             userInfo:[NSDictionary dictionaryWithDictionary:userInfo]];
         // since this is in a operation block, set as complete so cli invocation

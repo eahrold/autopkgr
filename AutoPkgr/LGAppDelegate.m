@@ -20,10 +20,9 @@
 //
 
 #import "LGAppDelegate.h"
-#import "LGConstants.h"
-#import "LGAutoPkgrHelperConnection.h"
-#import "LGDefaults.h"
+#import "LGAutoPkgr.h"
 #import "LGConfigurationWindowController.h"
+#import "LGAutoPkgrHelperConnection.h"
 #import "AHLaunchCTL.h"
 
 @implementation LGAppDelegate
@@ -38,26 +37,19 @@
     // Check if we're authorized to install helper tool,
     // if not just quit
     NSError *error;
-    if (![AHLaunchCtl installHelper:kAutoPkgrHelperToolName prompt:@"To schedule" error:&error]) {
+    if (![AHLaunchCtl installHelper:kLGAutoPkgrHelperToolName prompt:@"To schedule" error:&error]) {
         if (error) {
             NSLog(@"%@", error.localizedDescription);
-            [NSApp presentError:[NSError errorWithDomain:kApplicationName code:-1 userInfo:@{ NSLocalizedDescriptionKey : @"The associated helper tool could not be installed, we must now quit" }]];
+            [NSApp presentError:[NSError errorWithDomain:kLGApplicationName code:-1 userInfo:@{ NSLocalizedDescriptionKey : @"The associated helper tool could not be installed, we must now quit" }]];
             [[NSApplication sharedApplication] terminate:self];
         }
     }
 
     // Show the configuration window if we haven't
     // completed the initial setup
-    if ([defaults objectForKey:kHasCompletedInitialSetup]) {
-
-        BOOL hasCompletedInitialSetup = [[defaults objectForKey:kHasCompletedInitialSetup] boolValue];
-
-        if (!hasCompletedInitialSetup) {
-            [self showConfigurationWindow:nil];
-        }
-    } else {
+    if (!defaults.hasCompletedInitialSetup) {
         [self showConfigurationWindow:nil];
-        defaults.HasCompletedInitialSetup = YES;
+        defaults.hasCompletedInitialSetup = YES;
     }
 
     // Update AutoPkg recipe repos when the application launches
@@ -112,7 +104,7 @@
                     [NSApp presentError:error];
             } else {
                 NSError *error;
-                if(![AHLaunchCtl uninstallHelper:kAutoPkgrHelperToolName prompt:@"Authorize removal of the Helper tool.  " error:&error]){
+                if(![AHLaunchCtl uninstallHelper:kLGAutoPkgrHelperToolName prompt:@"Authorize removal of the Helper tool.  " error:&error]){
                     [NSApp presentError:error];
                 }else{
                     // if uninstalling turn off schedule in defaults so it's not automatically recreated
@@ -128,7 +120,7 @@
 
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
-    if (jobIsRunning(kAutoPkgrHelperToolName, kAHGlobalLaunchDaemon)) {
+    if (jobIsRunning(kLGAutoPkgrHelperToolName, kAHGlobalLaunchDaemon)) {
         LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
         [helper connectToHelper];
         [[helper.connection remoteObjectProxy] quitHelper:^(BOOL success) {}];

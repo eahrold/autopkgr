@@ -29,7 +29,7 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
 {
     self = [super init];
     if (self) {
-        self->_listener = [[NSXPCListener alloc] initWithMachServiceName:kAutoPkgrHelperToolName];
+        self->_listener = [[NSXPCListener alloc] initWithMachServiceName:kLGAutoPkgrHelperToolName];
         self->_listener.delegate = self;
     }
     return self;
@@ -110,8 +110,8 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     NSError *error;
     AHKeychain *keychain = [AHKeychain systemKeychain];
     AHKeychainItem *item = [[AHKeychainItem alloc] init];
-    item.label = kApplicationName;
-    item.service = kApplicationName;
+    item.label = kLGApplicationName;
+    item.service = kLGApplicationName;
     item.account = user;
     item.password = password;
     item.trustedApplications = @[ autoPkgrLaunchPath ];
@@ -140,8 +140,8 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     NSError *error;
     AHKeychain *keychain = [AHKeychain systemKeychain];
     AHKeychainItem *item = [[AHKeychainItem alloc] init];
-    item.label = kApplicationName;
-    item.service = kApplicationName;
+    item.label = kLGApplicationName;
+    item.service = kLGApplicationName;
     item.account = user;
 
     [keychain deleteItem:item error:&error];
@@ -193,7 +193,7 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     NSError *error;
     [[AHLaunchCtl sharedControler] remove:kLGAutoPkgrLaunchDaemonPlist fromDomain:kAHGlobalLaunchDaemon error:&error];
 
-    [AHLaunchCtl removeFilesForHelperWithLabel:kAutoPkgrHelperToolName error:&error];
+    [AHLaunchCtl removeFilesForHelperWithLabel:kLGAutoPkgrHelperToolName error:&error];
     reply(error);
 }
 

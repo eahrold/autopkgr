@@ -20,7 +20,9 @@
 //
 
 #import "LGAutoPkgRunner.h"
+#import "LGAutoPkgr.h"
 #import "LGApplications.h"
+#import "LGEmailer.h"
 #import "LGConstants.h"
 #import "LGAutoPkgrHelperConnection.h"
 #import "LGAutoPkgrProtocol.h"
@@ -107,9 +109,9 @@
 - (void)addAutoPkgRecipeRepo:(NSString *)repoURL
 {
     NSString *addString = [NSString stringWithFormat:@"Adding %@", repoURL];
-    [[NSNotificationCenter defaultCenter] postNotificationName:kProgressStartNotification
+    [[NSNotificationCenter defaultCenter] postNotificationName:kLGNotificationProgressStart
                                                         object:nil
-                                                      userInfo:@{ kNotificationUserInfoMessage : addString }];
+                                                      userInfo:@{ kLGNotificationUserInfoMessage : addString }];
     // Set up task, pipe, and file handle
     NSTask *autoPkgRepoAddTask = [[NSTask alloc] init];
     NSPipe *autoPkgRepoAddPipe = [NSPipe pipe];
@@ -128,9 +130,9 @@
         NSError *error;
         NSDictionary *userInfo;
         if (![LGError errorWithTaskError:aTask verb:kLGAutoPkgrRepoAdd error:&error]) {
-            userInfo = @{kNotificationUserInfoError:error};
+            userInfo = @{kLGNotificationUserInfoError:error};
         }
-        [[NSNotificationCenter defaultCenter]postNotificationName:kProgressStopNotification
+        [[NSNotificationCenter defaultCenter]postNotificationName:kLGNotificationProgressStop
                                                            object:self
                                                          userInfo:userInfo];
     };
@@ -142,9 +144,9 @@
 
 - (void)removeAutoPkgRecipeRepo:(NSString *)repoURL
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kProgressStartNotification
+    [[NSNotificationCenter defaultCenter] postNotificationName:kLGNotificationProgressStart
                                                         object:nil
-                                                      userInfo:@{ kNotificationUserInfoMessage : @"Removing Repo" }];
+                                                      userInfo:@{ kLGNotificationUserInfoMessage : @"Removing Repo" }];
 
     // Set up task and pipe
     NSTask *autoPkgRepoRemoveTask = [[NSTask alloc] init];
@@ -164,9 +166,9 @@
         NSError *error;
         NSDictionary *userInfo;
         if (![LGError errorWithTaskError:aTask verb:kLGAutoPkgrRepoDelete error:&error]) {
-            userInfo = @{kNotificationUserInfoError:error};
+            userInfo = @{kLGNotificationUserInfoError:error};
         }
-        [[NSNotificationCenter defaultCenter]postNotificationName:kProgressStopNotification
+        [[NSNotificationCenter defaultCenter]postNotificationName:kLGNotificationProgressStop
                                                            object:self
                                                          userInfo:userInfo];
     };
@@ -195,10 +197,10 @@
         NSDictionary *userInfo;
         NSError *error;
         if (![LGError errorWithTaskError:aTask verb:kLGAutoPkgrRepoUpdate error:&error]) {
-            userInfo = @{kNotificationUserInfoError:error};
+            userInfo = @{kLGNotificationUserInfoError:error};
         }
 
-        [[NSNotificationCenter defaultCenter]postNotificationName:kUpdateReposCompleteNotification
+        [[NSNotificationCenter defaultCenter]postNotificationName:kLGNotificationUpdateReposComplete
                                                            object:self
                                                          userInfo:userInfo];
     };
@@ -222,11 +224,14 @@
         NSDictionary *userInfo = nil;
         NSError *error;
         if (![LGError errorWithTaskError:aTask verb:kLGAutoPkgrRun error:&error]) {
-            userInfo = @{kNotificationUserInfoError:error};
+            userInfo = @{kLGNotificationUserInfoError:error};
         }
-        [[NSNotificationCenter defaultCenter]postNotificationName:kRunAutoPkgCompleteNotification
+        [[NSNotificationCenter defaultCenter]postNotificationName:kLGNotificationRunAutoPkgComplete
                                                            object:self
                                                          userInfo:userInfo];
+        
+        // nil the readability handler so the file handle is properly cleaned up
+        [aTask.standardOutput fileHandleForReading].readabilityHandler = nil;
     };
 
     // Configure the task
@@ -237,9 +242,9 @@
 
     [autoPkgRunTask.standardOutput fileHandleForReading].readabilityHandler = ^(NSFileHandle *handle) {
         NSString *string = [[NSString alloc ] initWithData:[handle availableData] encoding:NSASCIIStringEncoding];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kProgressMessageUpdateNotification
+        [[NSNotificationCenter defaultCenter] postNotificationName:kLGNotificationProgressMessageUpdate
                                                             object:nil
-                                                          userInfo:@{kNotificationUserInfoMessage: string}];
+                                                          userInfo:@{kLGNotificationUserInfoMessage: string}];
     };
 
     // Launch the task
@@ -318,7 +323,7 @@
     }
 
     // Create the subject string
-    NSString *subject = [NSString stringWithFormat:@"[%@] The Following Software Is Now Available for Testing (%@)", kApplicationName, [apps componentsJoinedByString:@", "]];
+    NSString *subject = [NSString stringWithFormat:@"[%@] The Following Software Is Now Available for Testing (%@)", kLGApplicationName, [apps componentsJoinedByString:@", "]];
 
     // Create the message string
     NSMutableString *newDownloadsString = [NSMutableString string];

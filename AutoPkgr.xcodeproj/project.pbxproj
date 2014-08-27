@@ -226,6 +226,7 @@
 		6A0BABE8196E560000A136BB /* LGPopularRepositories.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGPopularRepositories.m; sourceTree = "<group>"; };
 		8B6A3198195B7AC1007A7A16 /* linde-logo@400px.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "linde-logo@400px.png"; sourceTree = "<group>"; };
 		8BB217F519709A2C00EF8B93 /* AutoPkgrIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AutoPkgrIcon.png; sourceTree = "<group>"; };
+		BE34DF2B19AA21E200DC2FAF /* LGAutoPkgr.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LGAutoPkgr.h; sourceTree = "<group>"; };
 		BE237A211993A365007204AA /* LGAutoPkgrAuthorizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LGAutoPkgrAuthorizer.h; path = ../AutoPkgr/LGAutoPkgrAuthorizer.h; sourceTree = "<group>"; };
 		BE237A221993A365007204AA /* LGAutoPkgrAuthorizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LGAutoPkgrAuthorizer.m; path = ../AutoPkgr/LGAutoPkgrAuthorizer.m; sourceTree = "<group>"; };
 		BE8080BE199431AD00AE396C /* Resign_CodeSign_RunScript.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = Resign_CodeSign_RunScript.py; sourceTree = "<group>"; };
@@ -358,6 +359,7 @@
 			children = (
 				1AC86D36195E0972006FDD2B /* Models */,
 				1A0A869D195CE5DB00A49434 /* mailcore2.xcodeproj */,
+				BE34DF2B19AA21E200DC2FAF /* LGAutoPkgr.h */,
 				BEB00C7B19873D7A00B6206E /* AHLaunchCtl.xcodeproj */,
 				1AC69562195B59EE00D2BD81 /* LGAppDelegate.h */,
 				1AC69563195B59EE00D2BD81 /* LGAppDelegate.m */,

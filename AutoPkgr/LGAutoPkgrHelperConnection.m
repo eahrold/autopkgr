@@ -16,7 +16,7 @@
 -(void)connectToHelper{
     assert([NSThread isMainThread]);
     if (self.connection == nil) {
-        self.connection = [[NSXPCConnection alloc] initWithMachServiceName:kAutoPkgrHelperToolName
+        self.connection = [[NSXPCConnection alloc] initWithMachServiceName:kLGAutoPkgrHelperToolName
                                                                    options:NSXPCConnectionPrivileged];
         
         self.connection.remoteObjectInterface = [NSXPCInterface

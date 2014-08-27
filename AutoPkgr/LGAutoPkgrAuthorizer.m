@@ -156,7 +156,7 @@ static NSString *kCommandKeyAuthRightDesc = @"authRightDescription";
                 NULL);
         }
         if (err != errAuthorizationSuccess) {
-            error = [NSError errorWithDomain:kApplicationName
+            error = [NSError errorWithDomain:kLGApplicationName
                                         code:-1
                                     userInfo:@{ NSLocalizedDescriptionKey : @"You are not authorized to perform this action" }];
         }
