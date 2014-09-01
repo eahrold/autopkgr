@@ -30,7 +30,7 @@
 {
     LGDefaults *defaults = [[LGDefaults alloc] init];
 
-    BOOL TLS = [[defaults objectForKey:kLGSMTPTLSEnabled] boolValue];
+    BOOL TLS = [defaults SMTPTLSEnabled];
 
     MCOSMTPSession *smtpSession = [[MCOSMTPSession alloc] init];
     smtpSession.hostname = defaults.SMTPServer;
@@ -68,10 +68,10 @@
     MCOMessageBuilder *builder = [[MCOMessageBuilder alloc] init];
 
     [[builder header] setFrom:[MCOAddress addressWithDisplayName:@"AutoPkgr Notification"
-                                                         mailbox:defaults.SMTPFrom]];
+                                                         mailbox:[defaults SMTPFrom]]];
 
     NSMutableArray *to = [[NSMutableArray alloc] init];
-    for (NSString *toAddress in defaults.SMTPTo) {
+    for (NSString *toAddress in [defaults SMTPTo]) {
         if (![toAddress isEqual:@""]) {
             MCOAddress *newAddress = [MCOAddress addressWithMailbox:toAddress];
             [to addObject:newAddress];
