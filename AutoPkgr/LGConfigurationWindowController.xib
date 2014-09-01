@@ -27,6 +27,7 @@
                 <outlet property="openAutoPkgRecipeReposFolderButton" destination="5lK-cr-mp5" id="Xje-0l-4jA"/>
                 <outlet property="openLocalMunkiRepoFolderButton" destination="z6I-Bv-EFk" id="Skd-AB-axz"/>
                 <outlet property="popRepoTableViewHandler" destination="mvj-kT-UYD" id="JIm-Zi-DtB"/>
+                <outlet property="progressDetailsMessage" destination="CbP-4q-UJS" id="YNN-yH-gaW"/>
                 <outlet property="progressIndicator" destination="qol-Go-AJd" id="L2u-sJ-XVZ"/>
                 <outlet property="progressMessage" destination="u7l-Fz-3uc" id="bfC-89-DgO"/>
                 <outlet property="progressPanel" destination="043-gL-HLj" id="EfU-ER-kYK"/>
@@ -1115,6 +1116,15 @@
                             <constraint firstAttribute="width" constant="394" id="cZY-Ee-aQe"/>
                         </constraints>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Adding..." id="oW2-L7-9c7">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CbP-4q-UJS">
+                        <rect key="frame" x="18" y="26" width="574" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" id="bf0-Rh-8dc">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
