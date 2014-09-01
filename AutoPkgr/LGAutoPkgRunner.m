@@ -439,48 +439,6 @@
     [weakSelf runAutoPkgWithRecipeListAndSendEmailNotificationIfConfigured:recipeListFilePath];
 }
 
-- (void)startAutoPkgSchedule:(BOOL)start isForced:(BOOL)forced;
-{
-    LGDefaults *defaults = [[LGDefaults alloc] init];
-
-    BOOL scheduleIsRunning = jobIsRunning(kLGAutoPkgrLaunchDaemonPlist, kAHGlobalLaunchDaemon);
-
-    // Create the external form authorization data for the helper
-    NSData *authorization = [LGAutoPkgrAuthorizer authorizeHelper];
-    assert(authorization != nil);
-
-    LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
-    [helper connectToHelper];
-
-    if (start && (!scheduleIsRunning || forced)) {
-        if (defaults.autoPkgRunInterval) {
-            double i = defaults.autoPkgRunInterval;
-            if (i != 0) {
-                NSInteger timer = i * 60 * 60; // Convert hours to seconds for our time interval
-                NSString *program = [[NSProcessInfo processInfo] arguments].firstObject;
-
-                [[helper.connection remoteObjectProxy] scheduleRun:timer user:NSUserName() program:program authorization:authorization reply:^(NSError *error) {
-                    if(error){
-                        [[NSOperationQueue mainQueue]addOperationWithBlock:^{
-                            [NSApp presentError:error];
-                        }];
-                    }
-                }];
-            } else {
-                NSLog(@"i is 0 because that's what the user entered or what they entered wasn't a digit.");
-            }
-        } else {
-            NSLog(@"The user enabled automatic checking for app updates but they specified no interval.");
-        }
-    } else if (scheduleIsRunning) {
-        [[helper.connection remoteObjectProxy] removeScheduleWithAuthorization:authorization reply:^(NSError *error) {
-            if(error){
-                NSLog(@"%@",error);
-            }
-        }];
-    }
-}
-
 - (void)setLocalMunkiRepoForAutoPkg:(NSString *)localMunkiRepo
 {
     CFStringRef key = (CFSTR("MUNKI_REPO"));

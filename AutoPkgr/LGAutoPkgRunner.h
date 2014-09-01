@@ -35,7 +35,6 @@
 - (void)invokeAutoPkgInBackgroundThread;
 - (void)invokeAutoPkgRepoUpdateInBackgroundThread;
 - (void)runAutoPkgWithRecipeList;
-- (void)startAutoPkgSchedule:(BOOL)start isForced:(BOOL)forced;
 - (void)setLocalMunkiRepoForAutoPkg:(NSString *)localMunkiRepo;
 
 @end

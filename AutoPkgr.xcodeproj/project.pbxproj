@@ -39,9 +39,11 @@
 		8BB217F619709A2C00EF8B93 /* AutoPkgrIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 8BB217F519709A2C00EF8B93 /* AutoPkgrIcon.png */; };
 		BE237A231993A365007204AA /* LGAutoPkgrAuthorizer.m in Sources */ = {isa = PBXBuildFile; fileRef = BE237A221993A365007204AA /* LGAutoPkgrAuthorizer.m */; };
 		BE237A241993A365007204AA /* LGAutoPkgrAuthorizer.m in Sources */ = {isa = PBXBuildFile; fileRef = BE237A221993A365007204AA /* LGAutoPkgrAuthorizer.m */; };
+		BE87994B1995BA410082472B /* LGDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = BE87994A1995BA410082472B /* LGDefaults.m */; };
 		BE8ECB1C1986F53E00A99390 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE8ECB1B1986F53E00A99390 /* Foundation.framework */; };
 		BE8ECB1F1986F53E00A99390 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = BE8ECB1E1986F53E00A99390 /* main.m */; };
 		BE8ECB2D1986F64000A99390 /* LGAutoPkgrHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = BE8ECB2C1986F64000A99390 /* LGAutoPkgrHelper.m */; };
+		BEA072CC19B416D200516B64 /* LGAutoPkgScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = BEA072CB19B416D200516B64 /* LGAutoPkgScheduler.m */; };
 		BEB00C711987012D00B6206E /* com.lindegroup.AutoPkgr.helper in CopyFiles */ = {isa = PBXBuildFile; fileRef = BE8ECB1A1986F53E00A99390 /* com.lindegroup.AutoPkgr.helper */; };
 		BEB00C8C19873E2100B6206E /* libAHLaunchCtl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BEB00C8719873D7A00B6206E /* libAHLaunchCtl.a */; };
 		BEB00C8D19873E2900B6206E /* libAHLaunchCtl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BEB00C8719873D7A00B6206E /* libAHLaunchCtl.a */; };
@@ -57,7 +59,6 @@
 		BEFAB9B91991760A0037BEC4 /* AHKeychainItem.m in Sources */ = {isa = PBXBuildFile; fileRef = BEFAB9B61991760A0037BEC4 /* AHKeychainItem.m */; };
 		BEFAB9BA1991760A0037BEC4 /* AHKeychainItem.m in Sources */ = {isa = PBXBuildFile; fileRef = BEFAB9B61991760A0037BEC4 /* AHKeychainItem.m */; };
 		BEFC931D1995F0710074C938 /* LGError.m in Sources */ = {isa = PBXBuildFile; fileRef = BEFC931C1995F0710074C938 /* LGError.m */; };
-		BE87994B1995BA410082472B /* LGDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = BE87994A1995BA410082472B /* LGDefaults.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -226,10 +227,12 @@
 		6A0BABE8196E560000A136BB /* LGPopularRepositories.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGPopularRepositories.m; sourceTree = "<group>"; };
 		8B6A3198195B7AC1007A7A16 /* linde-logo@400px.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "linde-logo@400px.png"; sourceTree = "<group>"; };
 		8BB217F519709A2C00EF8B93 /* AutoPkgrIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AutoPkgrIcon.png; sourceTree = "<group>"; };
-		BE34DF2B19AA21E200DC2FAF /* LGAutoPkgr.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LGAutoPkgr.h; sourceTree = "<group>"; };
 		BE237A211993A365007204AA /* LGAutoPkgrAuthorizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LGAutoPkgrAuthorizer.h; path = ../AutoPkgr/LGAutoPkgrAuthorizer.h; sourceTree = "<group>"; };
 		BE237A221993A365007204AA /* LGAutoPkgrAuthorizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LGAutoPkgrAuthorizer.m; path = ../AutoPkgr/LGAutoPkgrAuthorizer.m; sourceTree = "<group>"; };
+		BE34DF2B19AA21E200DC2FAF /* LGAutoPkgr.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LGAutoPkgr.h; sourceTree = "<group>"; };
 		BE8080BE199431AD00AE396C /* Resign_CodeSign_RunScript.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = Resign_CodeSign_RunScript.py; sourceTree = "<group>"; };
+		BE8799491995BA410082472B /* LGDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGDefaults.h; sourceTree = "<group>"; };
+		BE87994A1995BA410082472B /* LGDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGDefaults.m; sourceTree = "<group>"; };
 		BE8ECB1A1986F53E00A99390 /* com.lindegroup.AutoPkgr.helper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = com.lindegroup.AutoPkgr.helper; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE8ECB1B1986F53E00A99390 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		BE8ECB1E1986F53E00A99390 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -240,6 +243,8 @@
 		BE8ECB311986FF7200A99390 /* helper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "helper-Info.plist"; sourceTree = "<group>"; };
 		BE8ECB321986FF7200A99390 /* helper-Launchd.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "helper-Launchd.plist"; sourceTree = "<group>"; };
 		BE8ECB331987000900A99390 /* HelperTool_CodeSign_RunScript.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = HelperTool_CodeSign_RunScript.py; sourceTree = "<group>"; };
+		BEA072CA19B416D200516B64 /* LGAutoPkgScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LGAutoPkgScheduler.h; path = ../../autopkgr_copy/AutoPkgr/LGAutoPkgScheduler.h; sourceTree = "<group>"; };
+		BEA072CB19B416D200516B64 /* LGAutoPkgScheduler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LGAutoPkgScheduler.m; path = ../../autopkgr_copy/AutoPkgr/LGAutoPkgScheduler.m; sourceTree = "<group>"; };
 		BEB00C7B19873D7A00B6206E /* AHLaunchCtl.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AHLaunchCtl.xcodeproj; path = AHLaunchCtl/AHLaunchCtl.xcodeproj; sourceTree = SOURCE_ROOT; };
 		BEB00C9019873E4700B6206E /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		BEB00C9319873E8100B6206E /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
@@ -253,8 +258,6 @@
 		BEFAB9B61991760A0037BEC4 /* AHKeychainItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AHKeychainItem.m; sourceTree = "<group>"; };
 		BEFC931B1995F0710074C938 /* LGError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGError.h; sourceTree = "<group>"; };
 		BEFC931C1995F0710074C938 /* LGError.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGError.m; sourceTree = "<group>"; };
-		BE8799491995BA410082472B /* LGDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGDefaults.h; sourceTree = "<group>"; };
-		BE87994A1995BA410082472B /* LGDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGDefaults.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -369,6 +372,8 @@
 				1AC98409195CE7D60071CAB3 /* LGConstants.m */,
 				1AAAA5CA196C82DB00623804 /* LGAutoPkgRunner.h */,
 				1AAAA5CB196C82DB00623804 /* LGAutoPkgRunner.m */,
+				BEA072CA19B416D200516B64 /* LGAutoPkgScheduler.h */,
+				BEA072CB19B416D200516B64 /* LGAutoPkgScheduler.m */,
 				1AC9841C195CEC350071CAB3 /* LGConfigurationWindowController.h */,
 				1AC9841D195CEC350071CAB3 /* LGConfigurationWindowController.m */,
 				1A979FDE1960BCCC00EE9881 /* LGUnzipper.h */,
@@ -733,6 +738,7 @@
 				1AC98416195CE99E0071CAB3 /* SSKeychain.m in Sources */,
 				1A979FE01960BCCC00EE9881 /* LGUnzipper.m in Sources */,
 				6A0BABE9196E560000A136BB /* LGPopularRepositories.m in Sources */,
+				BEA072CC19B416D200516B64 /* LGAutoPkgScheduler.m in Sources */,
 				1AAAA5CC196C82DB00623804 /* LGAutoPkgRunner.m in Sources */,
 				BEB00CA5198754CC00B6206E /* LGAutoPkgrHelperConnection.m in Sources */,
 				BEFAB9B91991760A0037BEC4 /* AHKeychainItem.m in Sources */,

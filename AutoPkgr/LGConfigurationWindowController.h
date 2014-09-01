@@ -101,6 +101,8 @@
 - (IBAction)updateReposNow:(id)sender;
 - (IBAction)checkAppsNow:(id)sender;
 
+- (IBAction)editTimeInterval:(id)sender;
+
 - (void)downloadAndInstallAutoPkg;
 
 @end

@@ -25,6 +25,7 @@
 #import "LGEmailer.h"
 #import "LGHostInfo.h"
 #import "LGAutoPkgRunner.h"
+#import "LGAutoPkgScheduler.h"
 #import "LGAutoPkgrProtocol.h"
 #import "LGAutoPkgrHelperConnection.h"
 #import "LGGitHubJSONLoader.h"
@@ -33,6 +34,7 @@
 
 @interface LGConfigurationWindowController () {
     LGDefaults *defaults;
+    NSInteger initialScheduleTimer;
 }
 
 @end
@@ -90,6 +92,8 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     if (self) {
         // Initialization code here.
         defaults = [LGDefaults new];
+        initialScheduleTimer = defaults.autoPkgRunInterval;
+        
         NSNotificationCenter *ndc = [NSNotificationCenter defaultCenter];
         [ndc addObserver:self selector:@selector(startProgressNotificationReceived:) name:kLGNotificationProgressStart object:nil];
         [ndc addObserver:self selector:@selector(stopProgressNotificationReceived:) name:kLGNotificationProgressStop object:nil];
@@ -109,12 +113,13 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
                                                           forKeyPath:@"cell.state"
                                                              options:(NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld)
                                                              context:XXEmailNotificationsEnabledContext];
-
+    
     [checkForNewVersionsOfAppsAutomaticallyButton addObserver:self
                                                    forKeyPath:@"cell.state"
                                                       options:(NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld)
                                                       context:XXCheckForNewAppsAutomaticallyEnabledContext];
-
+    
+    
     // Set up buttons to save their defaults
     [smtpTLSEnabledButton setTarget:self];
     [smtpTLSEnabledButton setAction:@selector(changeTLSButtonState)];
@@ -484,11 +489,36 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     return NO;
 }
 
+- (IBAction) editTimeInterval:(id)sender{
+    if (initialScheduleTimer != [autoPkgRunInterval integerValue]) {
+        defaults.autoPkgRunInterval = [autoPkgRunInterval integerValue];
+        LGAutoPkgScheduler *autoPkgSchedule = [[LGAutoPkgScheduler alloc] init];
+        [autoPkgSchedule startAutoPkgSchedule:YES isForced:YES reply:^(NSError *error) {
+            if(error){
+                // reset the values
+                defaults.autoPkgRunInterval = initialScheduleTimer;
+                [autoPkgRunInterval setStringValue:[NSString stringWithFormat:@"%ld",initialScheduleTimer]];
+            }else{
+                initialScheduleTimer = [autoPkgRunInterval integerValue];
+            }
+        }];
+    }
+   
+
+}
+
 - (void)startAutoPkgRunTimer:(BOOL)start force:(BOOL)force
 {
-    LGAutoPkgRunner *autoPkgRunner = [[LGAutoPkgRunner alloc] init];
-    [autoPkgRunner startAutoPkgSchedule:start
-                               isForced:force];
+    LGAutoPkgScheduler *autoPkgSchedule = [[LGAutoPkgScheduler alloc] init];
+    [autoPkgSchedule startAutoPkgSchedule:start isForced:force reply:^(NSError *error) {
+        if(error){
+            DLog(@"Schedule Error%@",error.localizedDescription);
+            // On error reset the check-box (if the text )
+            if (![autoPkgRunInterval isEnabled]) {
+                checkForNewVersionsOfAppsAutomaticallyButton.state = !checkForNewVersionsOfAppsAutomaticallyButton.state;
+            }
+        }
+    }];
 }
 
 /*
@@ -917,11 +947,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         // array of strings if the field contains a series of strings
         defaults.SMTPTo = [smtpTo objectValue];
     } else if ([object isEqual:autoPkgRunInterval]) {
-        if ([autoPkgRunInterval integerValue] != 0) {
-            [defaults setInteger:[autoPkgRunInterval integerValue] forKey:kLGAutoPkgRunInterval];
-            // if the time has changed, force reload of schedule
-            //            [self startAutoPkgRunTimer:YES force:NO];
-        }
+        // pass
     } else if ([object isEqual:smtpPassword]) {
         [self updateKeychainPassword:self];
     } else {

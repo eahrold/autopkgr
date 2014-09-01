@@ -490,6 +490,7 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
+                                                                    <action selector="editTimeInterval:" target="-2" id="dmW-fc-Mpc"/>
                                                                     <outlet property="delegate" destination="-2" id="lxX-Di-pxh"/>
                                                                 </connections>
                                                             </textField>
