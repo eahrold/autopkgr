@@ -135,8 +135,6 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-    NSLog(@"%@ %@ %@", keyPath, object, change);
-
     if (context == XXAuthenticationEnabledContext) {
         if ([keyPath isEqualToString:@"cell.state"]) {
             if ([[change objectForKey:@"new"] integerValue] == 1) {
@@ -236,9 +234,9 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     [smtpAuthenticationEnabledButton setState:[defaults SMTPAuthenticationEnabled]];
 
     [sendEmailNotificationsWhenNewVersionsAreFoundButton setState:[defaults sendEmailNotificationsWhenNewVersionsAreFoundEnabled]];
-    [checkForNewVersionsOfAppsAutomaticallyButton setState:[defaults checkForNewVersionsOfAppsAutomaticallyEnabled]];
+    [checkForNewVersionsOfAppsAutomaticallyButton setState:[LGAutoPkgScheduler scheduleIsRunning]];
 
-    [checkForRepoUpdatesAutomaticallyButton setState:[defaults checkForRepoUpdatesAutomaticallyEnabled]];
+    [checkForRepoUpdatesAutomaticallyButton setState:defaults.checkForRepoUpdatesAutomaticallyEnabled];
     
     // Read the SMTP password from the keychain and populate in
     // NSSecureTextField if it exists
@@ -458,7 +456,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     defaults.sendEmailNotificationsWhenNewVersionsAreFoundEnabled = [sendEmailNotificationsWhenNewVersionsAreFoundButton state];
     NSLog(@"%@  email notifications.", defaults.sendEmailNotificationsWhenNewVersionsAreFoundEnabled ? @"Enabling" : @"Disabling");
 
-    defaults.checkForNewVersionsOfAppsAutomaticallyEnabled = [checkForNewVersionsOfAppsAutomaticallyButton state];
+    defaults.checkForNewVersionsOfAppsAutomaticallyEnabled = [LGAutoPkgScheduler scheduleIsRunning];
     NSLog(@"%@ checking for new apps automatically.", defaults.checkForNewVersionsOfAppsAutomaticallyEnabled ? @"Enabling" : @"Disabling");
 
     // Synchronize with the defaults database
@@ -1001,8 +999,9 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 
 - (void)changeCheckForNewVersionsOfAppsAutomaticallyButtonState
 {
-    defaults.checkForNewVersionsOfAppsAutomaticallyEnabled = [checkForNewVersionsOfAppsAutomaticallyButton state];
-    [self startAutoPkgRunTimer:[checkForNewVersionsOfAppsAutomaticallyButton state] force:NO];
+    BOOL state = [checkForNewVersionsOfAppsAutomaticallyButton state];
+    defaults.checkForNewVersionsOfAppsAutomaticallyEnabled = state ;
+    [self startAutoPkgRunTimer:state force:NO];
     NSLog(@"%@ checking for new apps automatically.", defaults.checkForNewVersionsOfAppsAutomaticallyEnabled ? @"Enabling" : @"Disabling");
 }
 

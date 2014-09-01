@@ -8,7 +8,7 @@
 
 #import "LGAutoPkgrHelper.h"
 #import "LGAutoPkgrProtocol.h"
-#import "LGConstants.h"
+#import "LGAutoPkgr.h"
 #import "AHLaunchCtl.h"
 #import "AHKeychain.h"
 
@@ -44,42 +44,42 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
 }
 
 #pragma mark - AutoPkgr Protocol
-- (void)scheduleRun:(NSInteger)interval
-               user:(NSString *)user
-            program:(NSString *)program
-      authorization:(NSData *)authData
-              reply:(void (^)(NSError *error))reply
+- (void)scheduleRun:(NSInteger)timer
+               user:(NSString*)user
+            program:(NSString*)program
+      authorization:(NSData*)authData
+              reply:(void (^)(NSError* error))reply
 {
-
-    NSError *error = [LGAutoPkgrAuthorizer checkAuthorization:authData
+    
+    NSError* error = [LGAutoPkgrAuthorizer checkAuthorization:authData
                                                       command:_cmd];
     if (error != nil) {
         return reply(error);
     }
-
-    [self scheduleRun:interval user:user program:program reply:reply];
+    
+    [self scheduleRun:timer user:user program:program reply:reply];
 }
 
-- (void)scheduleRun:(NSInteger)interval
-               user:(NSString *)user
-            program:(NSString *)program
-              reply:(void (^)(NSError *))reply
+- (void)scheduleRun:(NSInteger)timer
+               user:(NSString*)user
+            program:(NSString*)program
+              reply:(void (^)(NSError*))reply
 {
-    NSError *error;
-    AHLaunchJob *job = [AHLaunchJob new];
+    NSError* error;
+    AHLaunchJob* job = [AHLaunchJob new];
     job.Program = program;
     job.Label = kLGAutoPkgrLaunchDaemonPlist;
     job.ProgramArguments = @[ program, @"-runInBackground", @"YES", @"-asUser", user ];
-    job.StartInterval = interval;
+    job.StartInterval = timer;
     job.SessionCreate = YES;
-
+    
     [[AHLaunchCtl sharedControler] add:job toDomain:kAHGlobalLaunchDaemon error:&error];
     reply(error);
 }
 
-- (void)removeScheduleWithAuthorization:(NSData *)authData reply:(void (^)(NSError *))reply
+- (void)removeScheduleWithAuthorization:(NSData*)authData reply:(void (^)(NSError*))reply
 {
-    NSError *error = [LGAutoPkgrAuthorizer checkAuthorization:authData
+    NSError* error = [LGAutoPkgrAuthorizer checkAuthorization:authData
                                                       command:_cmd];
     if (error != nil) {
         return reply(error);
@@ -87,17 +87,17 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     [self removeScheduleWithReply:reply];
 }
 
-- (void)removeScheduleWithReply:(void (^)(NSError *))reply
+- (void)removeScheduleWithReply:(void (^)(NSError*))reply
 {
-    NSError *error;
+    NSError* error;
     [[AHLaunchCtl sharedControler] remove:kLGAutoPkgrLaunchDaemonPlist fromDomain:kAHGlobalLaunchDaemon error:&error];
     reply(error);
 }
 
 #pragma mark - Update Password
-- (void)addPassword:(NSString *)password forUser:(NSString *)user andAutoPkgr:(NSString *)autoPkgrLaunchPath authorization:(NSData *)authData reply:(void (^)(NSError *))reply
+- (void)addPassword:(NSString*)password forUser:(NSString*)user andAutoPkgr:(NSString*)autoPkgrLaunchPath authorization:(NSData*)authData reply:(void (^)(NSError*))reply
 {
-    NSError *error = [LGAutoPkgrAuthorizer checkAuthorization:authData
+    NSError* error = [LGAutoPkgrAuthorizer checkAuthorization:authData
                                                       command:_cmd];
     if (error != nil) {
         return reply(error);
@@ -105,27 +105,27 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     return [self addPassword:password forUser:user andAutoPkgr:autoPkgrLaunchPath reply:reply];
 }
 
-- (void)addPassword:(NSString *)password forUser:(NSString *)user andAutoPkgr:(NSString *)autoPkgrLaunchPath reply:(void (^)(NSError *))reply
+- (void)addPassword:(NSString*)password forUser:(NSString*)user andAutoPkgr:(NSString*)autoPkgrLaunchPath reply:(void (^)(NSError*))reply
 {
-    NSError *error;
-    AHKeychain *keychain = [AHKeychain systemKeychain];
-    AHKeychainItem *item = [[AHKeychainItem alloc] init];
+    NSError* error;
+    AHKeychain* keychain = [AHKeychain systemKeychain];
+    AHKeychainItem* item = [[AHKeychainItem alloc] init];
     item.label = kLGApplicationName;
     item.service = kLGApplicationName;
     item.account = user;
     item.password = password;
     item.trustedApplications = @[ autoPkgrLaunchPath ];
     [keychain saveItem:item error:&error];
-
+    
     reply(error);
 }
 
-- (void)removePassword:(NSString *)password
-               forUser:(NSString *)user
-         authorization:(NSData *)authData
-                 reply:(void (^)(NSError *))reply
+- (void)removePassword:(NSString*)password
+               forUser:(NSString*)user
+         authorization:(NSData*)authData
+                 reply:(void (^)(NSError*))reply
 {
-    NSError *error = [LGAutoPkgrAuthorizer checkAuthorization:authData
+    NSError* error = [LGAutoPkgrAuthorizer checkAuthorization:authData
                                                       command:_cmd];
     if (error != nil) {
         return reply(error);
@@ -133,17 +133,17 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     return [self removePassword:password forUser:user reply:reply];
 }
 
-- (void)removePassword:(NSString *)password
-               forUser:(NSString *)user
-                 reply:(void (^)(NSError *))reply
+- (void)removePassword:(NSString*)password
+               forUser:(NSString*)user
+                 reply:(void (^)(NSError*))reply
 {
-    NSError *error;
-    AHKeychain *keychain = [AHKeychain systemKeychain];
-    AHKeychainItem *item = [[AHKeychainItem alloc] init];
+    NSError* error;
+    AHKeychain* keychain = [AHKeychain systemKeychain];
+    AHKeychainItem* item = [[AHKeychainItem alloc] init];
     item.label = kLGApplicationName;
     item.service = kLGApplicationName;
     item.account = user;
-
+    
     [keychain deleteItem:item error:&error];
     reply(error);
 }
@@ -157,73 +157,64 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     reply(YES);
 }
 
-- (void)installPackageFromPath:(NSString *)path
-                 authorization:(NSData *)authData
-                         reply:(void (^)(NSError *error))reply;
+- (void)installPackageFromPath:(NSString*)path
+                 authorization:(NSData*)authData
+                         reply:(void (^)(NSError* error))reply;
 {
-    NSError *error;
-
+    NSError* error;
+    
     error = [LGAutoPkgrAuthorizer checkAuthorization:authData command:_cmd];
     if (error != nil) {
         reply(error);
         return;
     }
-
-    NSTask *task = [NSTask new];
+    
+    NSTask* task = [NSTask new];
     task.launchPath = @"/usr/sbin/installer";
     task.arguments = @[ @"-pkg", path, @"-target", @"/" ];
     task.standardError = [NSPipe pipe];
-
+    
     [task launch];
     [task waitUntilExit];
-    [self errorFromTask:task error:&error];
+    [LGError errorWithTaskError:task
+                           verb:kLGAutoPkgrInstallAutoPkg
+                          error:&error];
     reply(error);
 }
 
-- (void)uninstallWithAuthorization:(NSData *)authData reply:(void (^)(NSError *))reply
+- (void)uninstallWithAuthorization:(NSData*)authData reply:(void (^)(NSError*))reply
 {
-    NSError *error;
+    NSError* error;
     if (error != nil) {
         return reply(error);
     }
     return [self uninstall:reply];
 }
-- (void)uninstall:(void (^)(NSError *))reply
+- (void)uninstall:(void (^)(NSError*))reply
 {
-    NSError *error;
-    [[AHLaunchCtl sharedControler] remove:kLGAutoPkgrLaunchDaemonPlist fromDomain:kAHGlobalLaunchDaemon error:&error];
-
+    NSError* error;
+    if([AHLaunchCtl runningJobWithLabel:kLGAutoPkgrLaunchDaemonPlist
+                               inDomain:kAHGlobalLaunchDaemon]) {
+        [[AHLaunchCtl sharedControler] remove:kLGAutoPkgrLaunchDaemonPlist
+                                   fromDomain:kAHGlobalLaunchDaemon
+                                        error:&error];
+    }
+    
     [AHLaunchCtl removeFilesForHelperWithLabel:kLGAutoPkgrHelperToolName error:&error];
     reply(error);
-}
-
-#pragma mark - Error Handling
-- (BOOL)errorFromTask:(NSTask *)task error:(NSError *__autoreleasing *)error
-{
-    if (error && task.terminationStatus != 0) {
-        NSString *errMsg;
-        if ([task.standardError isKindOfClass:[NSPipe class]]) {
-            NSData *data = [[task.standardError fileHandleForReading] readDataToEndOfFile];
-            errMsg = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
-        } else {
-            errMsg = [NSString stringWithFormat:@"There was a problem executing %@", task.launchPath];
-        }
-
-        *error = [NSError errorWithDomain:[[NSBundle mainBundle] bundleIdentifier] code:task.terminationStatus userInfo:@{ NSLocalizedDescriptionKey : errMsg }];
-    }
-    return (task.terminationStatus == 0);
+    [AHLaunchCtl uninstallHelper:kLGAutoPkgrHelperToolName prompt:@"" error:nil];
 }
 
 //----------------------------------------
 // Set up the one method of NSXPClistener
 //----------------------------------------
-- (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection
+- (BOOL)listener:(NSXPCListener*)listener shouldAcceptNewConnection:(NSXPCConnection*)newConnection
 {
-
+    
     newConnection.exportedObject = self;
     newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(HelperAgent)];
     self.connection = newConnection;
-
+    
     [newConnection resume];
     return YES;
 }

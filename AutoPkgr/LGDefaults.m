@@ -22,7 +22,6 @@
 #import "LGDefaults.h"
 #import "LGConstants.h"
 #import "LGError.h"
-#import "AHLaunchCtl.h"
 
 @interface LGDefaults ()
 // Make these readwrite here so we can use these with methods
@@ -158,8 +157,7 @@
 //
 - (BOOL)checkForNewVersionsOfAppsAutomaticallyEnabled
 {
-    BOOL check = [AHLaunchCtl runningJobWithLabel:kLGAutoPkgrLaunchDaemonPlist inDomain:kAHGlobalLaunchDaemon] ? YES:NO;
-    return check;
+    return [self boolForKey:kLGCheckForNewVersionsOfAppsAutomaticallyEnabled];
 }
 //
 - (void)setCheckForNewVersionsOfAppsAutomaticallyEnabled:(BOOL)CheckForNewVersionsOfAppsAutomaticallyEnabled
