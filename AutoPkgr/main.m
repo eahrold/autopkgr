@@ -20,12 +20,13 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "LGAutoPkgRunner.h"
+#import "LGAutoPkgTask.h"
+#import "LGApplications.h"
+#import "LGEmailer.h"
+#import "LGAutoPkgr.h"
 #import <pwd.h>
 
 static NSString *const kRootUser = @"root";
-static NSString *const kAutoPkgPreferenceDomain = @"com.github.autopkg";
-static NSString *const kAutoPkgrPreferenceDomain = @"com.lindegroup.AutoPkgr";
 
 NSString *userHomeDir(NSString *user)
 {
@@ -59,13 +60,11 @@ NSString *autoPkgrFolder(NSString *user)
     return [applicationSupportFolder(user) stringByAppendingPathComponent:@"AutoPkgr"];
 }
 
-void migratePreferences(NSArray *preferences, NSString *fromUser, NSString *toUser)
+void migratePreferences(NSArray *preferences, NSString *fromUser)
 {
 
-    NSError *error;
     NSString *userPreferenceFolder = preferencesFolder(fromUser);
-    NSString *rootPreferenceFolder = preferencesFolder(toUser);
-
+    
     for (NSString *pref in preferences) {
 
         // Make sure the pref is a .plist
@@ -73,39 +72,14 @@ void migratePreferences(NSArray *preferences, NSString *fromUser, NSString *toUs
         if (![pref.lastPathComponent isEqualToString:@"plist"]) {
             ePref = [pref stringByAppendingPathExtension:@"plist"];
         }
-
-        NSFileManager *fm = [NSFileManager new];
-        if (![fm fileExistsAtPath:rootPreferenceFolder]) {
-            // Registering and synchronizing the defaults
-            // will create the ~/Library/Preference Folder.
-            [[NSUserDefaults standardUserDefaults] registerDefaults:@{}];
-            [[NSUserDefaults standardUserDefaults] synchronize];
-        }
-
-        NSString *rootPref = [rootPreferenceFolder stringByAppendingPathComponent:ePref];
-
-        if ([fm fileExistsAtPath:rootPref]) {
-            [fm removeItemAtPath:rootPref error:nil];
-        }
-
-        [fm copyItemAtPath:[userPreferenceFolder stringByAppendingPathComponent:ePref]
-                    toPath:rootPref
-                     error:&error];
-
-        if (error) {
-            NSLog(@"%@", error.localizedDescription);
-        }
+        
+        NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:[userPreferenceFolder stringByAppendingPathComponent:ePref]];
         
         // Now that the file is created, register it with cfprefsd
         NSLog(@"Registering Defaults: %@",pref);
-        NSUserDefaults *defaults;
-        
-        if(![pref isEqualToString:[[NSBundle mainBundle] bundleIdentifier]]){
-            defaults = [[NSUserDefaults alloc]initWithSuiteName:pref];
-        }else{
-            defaults = [NSUserDefaults standardUserDefaults];
-        }
-        
+        NSUserDefaults *defaults = [NSUserDefaults new];
+
+        [defaults setPersistentDomain:dict forName:pref];
         if(![defaults synchronize]){
             NSLog(@"There was a problem synchronizing the pref");
         }
@@ -186,11 +160,18 @@ BOOL setupRootContext(NSString *user)
     NSLog(@"Setting up root context");
     // Copy the Preferences for AutoPkg and AutoPkgr
     // So NSUserDefaults has the correct values when run as root
-    migratePreferences(@[ kAutoPkgrPreferenceDomain, kAutoPkgPreferenceDomain ], user, kRootUser);
+    migratePreferences(@[ kLGAutoPkgPreferenceDomain, kLGAutoPkgrPreferenceDomain ], user);
 
     // Create symlink for AutoPkg and AutoPkgr
-    backupAndLink(autoPkgFolder(user), autoPkgFolder(kRootUser));
-    backupAndLink(autoPkgrFolder(user), autoPkgrFolder(kRootUser));
+    NSLog(@"Linking AutoPkg folders");
+    if (!backupAndLink(autoPkgFolder(user), autoPkgFolder(kRootUser))){
+        NSLog(@"Problem creating link for autopkgr");
+    };
+    
+    NSLog(@"Linking AutoPkgr folders");
+    if (!backupAndLink(autoPkgrFolder(user), autoPkgrFolder(kRootUser))) {
+        NSLog(@"Problem creating link for autopkgr");
+    };
 
     return YES;
 }
@@ -213,8 +194,9 @@ void cleanUpRootContext(NSString *user)
     setFolderOwnerRecursively(user, autoPkgFolder(user));
     
     // Fix AutoPkg's CACHE_DIR Directory as well
-    NSUserDefaults *apd = [[NSUserDefaults alloc]initWithSuiteName:kAutoPkgPreferenceDomain];
-    NSString *cacheDir = [apd objectForKey:@"CACHE_DIR"];
+    LGDefaults *defaults = [[LGDefaults alloc] init];
+    NSString *cacheDir = defaults.autoPkgCacheDir;
+    
     if ( cacheDir ) {
         // Don't assume the user this is running as is the same
         // as the cache dir's owner, in the case of a shared env
@@ -238,13 +220,20 @@ int main(int argc, const char *argv[])
             NSLog(@"this must be run as root");
             return 1;
         }
-
+        
+        __block LGEmailer *emailer = [[LGEmailer alloc] init];
         setupRootContext(user);
-        LGAutoPkgRunner *autoPkgRunner = [[LGAutoPkgRunner alloc] init];
-        [autoPkgRunner runAutoPkgWithRecipeList];
-        while (autoPkgRunner.emailer && !autoPkgRunner.emailer.complete) {
+        LGAutoPkgTask *task = [[LGAutoPkgTask alloc] init];
+        [task runRecipeList:[LGApplications recipeList] progress:^(NSString *message, double progress) {
+                                                                NSLog(@"%@",message);
+                                                         } reply:^(NSDictionary *report, NSError *error) {
+                                                                [emailer sendEmailForReport:report error:error];
+                                                         }];
+        
+        while (!emailer.complete) {
             [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
         }
+        
         cleanUpRootContext(user);
     } else {
         return NSApplicationMain(argc, argv);

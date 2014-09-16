@@ -24,10 +24,8 @@
 @interface LGDefaults : NSUserDefaults
 
 #pragma mark - Singletons
-+ (LGDefaults *)autoPkgDefaults;
++ (LGDefaults *)standardUserDefaults;
 
-#pragma mark - init
-- (instancetype)initForAutoPkg;
 
 #pragma mark - Settings
 @property (copy, nonatomic) NSString *SMTPServer;
@@ -52,6 +50,9 @@
 @property (copy, nonatomic) NSString *autoPkgRecipeRepoDir;
 @property (copy, nonatomic, readonly) NSArray *autoPkgRecipeSearchDirs;
 @property (copy, nonatomic, readonly) NSDictionary *autoPkgRecipeRepos;
+
+#pragma mark - Utility Settings
+@property (nonatomic) BOOL debug;
 
 #pragma Class Methods
 + (BOOL)fixRelativePathsInAutoPkgDefaults:(NSError **)error neededFixing:(NSInteger *)neededFixing;

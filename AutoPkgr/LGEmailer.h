@@ -31,6 +31,7 @@
 @property (nonatomic) BOOL complete;
 
 - (void)sendEmailNotification:(NSString *)subject message:(NSString *)message;
+- (void)sendEmailForReport:(NSDictionary *)report error:(NSError *)error;
 - (void)sendTestEmail;
 
 @end

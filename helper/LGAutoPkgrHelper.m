@@ -176,9 +176,10 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     
     [task launch];
     [task waitUntilExit];
-    [LGError errorWithTaskError:task
-                           verb:kLGAutoPkgrInstallAutoPkg
-                          error:&error];
+    
+    if (task.terminationStatus != kLGErrorSuccess) {
+        error = [LGError errorWithCode:kLGErrorRunningInstaller];
+    };
     reply(error);
 }
 

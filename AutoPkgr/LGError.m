@@ -21,72 +21,117 @@
 
 #import "LGError.h"
 #import "LGConstants.h"
+#import <syslog.h>
 
 // Debug Logging Method
 void DLog(NSString *format, ...)
 {
-#if DEBUG
-    if (format) {
-        va_list args;
-        va_start(args, format);
-        NSString *str = [[NSString alloc] initWithFormat:format arguments:args];
-        va_end(args);
-        NSLog(@"%@", str);
+    if([[NSUserDefaults standardUserDefaults] boolForKey:@"debug"]){
+        if (format) {
+            va_list args;
+            va_start(args, format);
+            NSLogv([@"[DEBUG] "stringByAppendingString:format], args);
+            va_end(args);
+        }
     }
-#endif
 }
 
-static NSString *errorMsgFromCode(LGErrorCodes code)
+
+static NSDictionary *userInfoFromCode(LGErrorCodes code)
 {
-    NSString *msg;
+    NSString *localizedBaseString;
+    NSString *message;
+    NSString *suggestion;
     switch (code) {
-    case kLGErrorSendingEmail:
-        msg = @"Error sending e-mail";
-        break;
-    case kLGErrorTestingPort:
-        msg = @"Error verifying server and port";
-        break;
-    case kLGErrorReparingAutoPkgPrefs:
-        msg = @"We were unable to resolve some issues with the autopkg preferences.";
-    default:
-        break;
+        case kLGErrorSuccess:
+            localizedBaseString = @"kLGErrorSuccess";
+            break;
+        case kLGErrorSendingEmail:
+            localizedBaseString = @"kLGErrorSendingEmail";
+            break;
+        case kLGErrorTestingPort:
+            localizedBaseString = @"kLGErrorTestingPort";
+            break;
+        case kLGErrorReparingAutoPkgPrefs:
+            localizedBaseString = @"kLGErrorReparingAutoPkgPrefs";
+            break;
+        case kLGErrorMultipleRunsOfAutopkg:
+            localizedBaseString = @"kLGErrorMultipleRunsOfAutopkg";
+            break;
+        case kLGErrorInstallGit:
+            localizedBaseString = @"kLGErrorInstallGit";
+            break;
+        case kLGErrorInstallAutoPkg:
+            localizedBaseString = @"kLGErrorInstallAutoPkg";
+            break;
+        case kLGErrorInstallAutoPkgr:
+            localizedBaseString = @"kLGErrorInstallAutoPkgr";
+            break;
+        case kLGErrorRunningInstaller:
+            localizedBaseString = @"kLGErrorRunningInstaller";
+            break;
+        default:
+            localizedBaseString = @"kLGErrorUnknown";
+            break;
     }
-    return msg;
+    
+    // Setup the localized descripton
+    message = NSLocalizedString([localizedBaseString stringByAppendingString:@"Description"],
+                                @"NSLocalizedDescriptionKey");
+    
+    // Setup the localized recovery suggestion
+    suggestion = NSLocalizedString([localizedBaseString stringByAppendingString:@"Suggestion"],
+                                   @"NSLocalizedRecoverySuggestionErrorKey");
+
+    
+    return @{NSLocalizedDescriptionKey:message,
+              NSLocalizedRecoverySuggestionErrorKey:suggestion,};
 }
 
-static NSString *errorMessageFromAutoPkgVerb(LGAutoPkgrVerb verb)
+static NSString *errorMessageFromAutoPkgVerb(LGAutoPkgVerb verb)
 {
-    NSString *msg;
+    NSString *localizedBaseString;
+    NSString *message;
+    
     switch (verb) {
-    case kLGUnknown:
-        msg = @"AutoPkgr encountered an error";
-        break;
-    case kLGAutoPkgrRun:
-        msg = @"Error running recipes";
-        break;
-    case kLGAutoPkgrRepoUpdate:
-        msg = @"Error updating repos";
-        break;
-    case kLGAutoPkgrRepoAdd:
-        msg = @"Error adding selected repo";
-        break;
-    case kLGAutoPkgrRepoDelete:
-        msg = @"Error removing selected repo";
-        break;
-    case kLGAutoPkgrMakeOverride:
-        msg = @"Error creating overrides file";
-        break;
-    case kLGAutoPkgrInstallAutoPkg:
-        msg = @"Error installing git";
-        break;
-    case kLGAutoPkgrInstallGit:
-        msg = @"Error installing/updating AutoPkg";
-        break;
-    default:
-        msg = @"AutoPkgr encountered an error";
-        break;
+        case kLGAutoPkgUndefinedVerb:
+            localizedBaseString = @"kLGAutoPkgUndefinedVerb";
+            break;
+        case kLGAutoPkgRun:
+            localizedBaseString = @"kLGAutoPkgRun";
+            break;
+        case kLGAutoPkgRecipeList:
+            localizedBaseString = @"kLGAutoPkgRecipeList";
+            break;
+        case kLGAutoPkgMakeOverride:
+            localizedBaseString = @"kLGAutoPkgMakeOverride";
+            break;
+        case kLGAutoPkgSearch:
+            localizedBaseString = @"kLGAutoPkgSearch";
+            break;
+        case kLGAutoPkgRepoAdd:
+            localizedBaseString = @"kLGAutoPkgRepoAdd";
+            break;
+        case kLGAutoPkgRepoDelete:
+            localizedBaseString = @"kLGAutoPkgRepoDelete";
+            break;
+        case kLGAutoPkgRepoUpdate:
+            localizedBaseString = @"kLGAutoPkgRepoUpdate";
+            break;
+        case kLGAutoPkgRepoList:
+            localizedBaseString = @"kLGAutoPkgRepoList";
+            break;
+        case kLGAutoPkgVersion:
+            localizedBaseString = @"kLGAutoPkgVersion";
+            break;
+        default:
+            localizedBaseString = @"kLGAutoPkgUndefinedVerb";
+            break;
     }
-    return msg;
+    
+    message = NSLocalizedString([localizedBaseString stringByAppendingString:@"Description"],
+                                @"NSLocalizedDescriptionKey");
+    return message;
 }
 
 @implementation LGError
@@ -96,20 +141,17 @@ static NSString *errorMessageFromAutoPkgVerb(LGAutoPkgrVerb verb)
     NSError *error;
     [[self class] errorWithCode:code error:&error];
     [NSApp presentError:error
-            modalForWindow:NULL
-                  delegate:sender
-        didPresentSelector:selector
-               contextInfo:NULL];
+         modalForWindow:NULL
+               delegate:sender
+     didPresentSelector:selector
+            contextInfo:NULL];
 }
 #endif
 
 + (BOOL)errorWithCode:(LGErrorCodes)code error:(NSError *__autoreleasing *)error
 {
     NSError *err = [self errorWithCode:code];
-    if (error)
-        *error = err;
-    else
-        DLog(@"Error: %@", err.localizedDescription);
+    if (error)*error = err;
     return (code == kLGErrorSuccess);
 }
 
@@ -117,16 +159,16 @@ static NSString *errorMessageFromAutoPkgVerb(LGAutoPkgrVerb verb)
 {
     NSError *error;
     if (code != kLGErrorSuccess) {
-        NSString *errorMsg = errorMsgFromCode(code);
+        NSDictionary *userInfo = userInfoFromCode(code);
         error = [NSError errorWithDomain:kLGApplicationName
                                     code:code
-                                userInfo:@{ NSLocalizedDescriptionKey : errorMsg }];
-        DLog(@"Error [%d] %@ \n %@", code, errorMsg);
+                                userInfo:userInfo];
+        DLog(@"Error [%ld]: %@ \n %@", code, userInfo[NSLocalizedDescriptionKey],userInfo[NSLocalizedRecoverySuggestionErrorKey]);
     }
     return error;
 }
 
-+ (BOOL)errorWithTaskError:(NSTask *)task verb:(LGAutoPkgrVerb)verb error:(NSError **)error
++ (BOOL)errorWithTaskError:(NSTask *)task verb:(LGAutoPkgVerb)verb error:(NSError **)error
 {
     NSError *taskError = [self errorWithTaskError:task verb:verb];
     if (error && taskError) {
@@ -136,44 +178,51 @@ static NSString *errorMessageFromAutoPkgVerb(LGAutoPkgrVerb verb)
     return taskError ? taskError.code == kLGErrorSuccess : YES;
 }
 
-+ (NSError *)errorWithTaskError:(NSTask *)task verb:(LGAutoPkgrVerb)verb
++ (NSError *)errorWithTaskError:(NSTask *)task verb:(LGAutoPkgVerb)verb
 {
     // if task is running
     if ([task isRunning]) {
         return nil;
     }
-
+    
+    if (task.terminationReason == NSTaskTerminationReasonUncaughtSignal) {
+        DLog(@"AutoPkg run canceled by user.");
+        return nil;
+    }
+    
     NSError *error;
     NSString *errorMsg = errorMessageFromAutoPkgVerb(verb);
     NSString *errorDetails;
     NSInteger taskError;
+    
+    if([task.standardError isKindOfClass:[NSPipe class]]){
+        NSData *errData = [[task.standardError fileHandleForReading] readDataToEndOfFile];
+        if(errData){
+            errorDetails = [[NSString alloc] initWithData:errData encoding:NSASCIIStringEncoding];
+        }
+    }
 
-    NSData *errData = [[task.standardError fileHandleForReading] readDataToEndOfFile];
-
-    errorDetails = [[NSString alloc] initWithData:errData encoding:NSASCIIStringEncoding];
-    taskError = task.terminationStatus;
-    DLog(@"%ld : %@", task.terminationStatus, errorDetails);
-
-    // AutoPkg's rc on a failed repo-update / delete is 0, so check the stderr for "ERROR" string
-    if (verb == kLGAutoPkgrRepoUpdate || verb == kLGAutoPkgrRepoDelete) {
-        if ([errorDetails rangeOfString:@"ERROR"].location != NSNotFound) {
+    taskError = task.terminationStatus;    
+    // AutoPkg's rc on a failed repo-update / add / delete is 0, so check the stderr for "ERROR" string
+    if (verb == kLGAutoPkgRepoUpdate || verb == kLGAutoPkgRepoDelete || verb == kLGAutoPkgRepoAdd) {
+        if (errorDetails && ![errorDetails isEqualToString:@""]) {
             taskError = kLGErrorAutoPkgConfig;
         }
     }
     // autopkg run exits 255 if no recipe speciifed
-    else if (verb == kLGAutoPkgrRun && task.terminationStatus == kLGErrorAutoPkgNoRecipes) {
+    else if (verb == kLGAutoPkgRun && task.terminationStatus == kLGErrorAutoPkgNoRecipes) {
         errorDetails = @"No recipes specified.";
     }
-
+    
     // Otherwise we can just use the termination status
     if (taskError != 0) {
         error = [NSError errorWithDomain:kLGApplicationName
                                     code:taskError
                                 userInfo:@{ NSLocalizedDescriptionKey : errorMsg,
                                             NSLocalizedRecoverySuggestionErrorKey : errorDetails ? errorDetails : @"" }];
-
+        
         // If Debugging is enabled, log the error message
-        DLog(@"Error [%d ] %@ \n %@", taskError, errorMsg, errorDetails);
+        DLog(@"Error [%ld] %@ \n %@", (long)taskError, errorMsg, errorDetails);
     }
     return error;
 }

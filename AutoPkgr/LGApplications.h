@@ -20,16 +20,15 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "LGAutoPkgRunner.h"
+#import "LGAutoPkgTask.h"
 
 @interface LGApplications : NSObject <NSApplicationDelegate, NSTableViewDataSource, NSTableViewDelegate> {
-    
+
     IBOutlet NSTableView *applicationTableView;
-    
+
     NSArray *apps;
     NSArray *activeApps;
     NSArray *searchedApps;
-    LGAutoPkgRunner *pkgRunner;
     __weak NSSearchField *_appSearch;
 }
 
@@ -38,4 +37,7 @@
 - (NSString *)getAppSupportDirectory;
 
 @property (weak) IBOutlet NSSearchField *appSearch;
+
++ (NSString *)recipeList;
+
 @end

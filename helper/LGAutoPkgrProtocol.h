@@ -23,6 +23,7 @@
                user:(NSString *)user
             program:(NSString *)program
               reply:(void (^)(NSError *error))reply;
+
 #pragma mark-- Remove
 - (void)removeScheduleWithAuthorization:(NSData *)authData
                                   reply:(void (^)(NSError *error))reply;

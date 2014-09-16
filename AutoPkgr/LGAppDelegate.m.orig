@@ -20,13 +20,12 @@
 //
 
 #import "LGAppDelegate.h"
-#import "LGConstants.h"
-<<<<<<< HEAD
-#import "LGAutoPkgrHelperConnection.h"
-=======
-#import "LGDefaults.h"
->>>>>>> defaults-class
+#import "LGAutoPkgr.h"
+#import "LGAutoPkgTask.h"
+#import "LGEmailer.h"
+#import "LGAutoPkgSchedule.h"
 #import "LGConfigurationWindowController.h"
+#import "LGAutoPkgrHelperConnection.h"
 #import "AHLaunchCTL.h"
 
 @implementation LGAppDelegate
@@ -35,6 +34,10 @@
 {
     LGDefaults *defaults = [LGDefaults new];
 
+    // set self as the delegate for the time so the menu item is updated
+    // during timed runs.
+    [[LGAutoPkgSchedule sharedTimer] setProgressDelegate:self];
+
     // Setup the status item
     [self setupStatusItem];
 
@@ -42,44 +45,51 @@
     // Check if we're authorized to install helper tool,
     // if not just quit
     NSError *error;
-    if (![AHLaunchCtl installHelper:kAutoPkgrHelperToolName prompt:@"To schedule" error:&error]) {
+    if (![AHLaunchCtl installHelper:kLGAutoPkgrHelperToolName prompt:@"To schedule" error:&error]) {
         if (error) {
             NSLog(@"%@", error.localizedDescription);
-            [NSApp presentError:[NSError errorWithDomain:kApplicationName code:-1 userInfo:@{ NSLocalizedDescriptionKey : @"The associated helper tool could not be installed, we must now quit" }]];
+            [NSApp presentError:[NSError errorWithDomain:kLGApplicationName code:-1 userInfo:@{ NSLocalizedDescriptionKey : @"The associated helper tool could not be installed, we must now quit" }]];
             [[NSApplication sharedApplication] terminate:self];
         }
-=======
-    if (!defaults.hasCompletedInitialSetup) {
-        [self showConfigurationWindow:nil];
-        defaults.HasCompletedInitialSetup = YES;
->>>>>>> defaults-class
     }
 
     // Show the configuration window if we haven't
     // completed the initial setup
-    if ([defaults objectForKey:kHasCompletedInitialSetup]) {
-
-        BOOL hasCompletedInitialSetup = [[defaults objectForKey:kHasCompletedInitialSetup] boolValue];
-
-        if (!hasCompletedInitialSetup) {
-            [self showConfigurationWindow:nil];
-        }
-    } else {
+    if (!defaults.hasCompletedInitialSetup) {
         [self showConfigurationWindow:nil];
+        defaults.hasCompletedInitialSetup = YES;
     }
 
     // Update AutoPkg recipe repos when the application launches
     // if the user has enabled automatic repo updates
-    if (defaults.checkForNewVersionsOfAppsAutomaticallyEnabled) {
+    if (defaults.checkForRepoUpdatesAutomaticallyEnabled) {
         NSLog(@"Updating AutoPkg recipe repos.");
         [self updateAutoPkgRecipeReposInBackgroundAtAppLaunch];
     }
 }
 
+=======
+    // Show the configuration window
+    [self showConfigurationWindow:nil];
+    defaults.HasCompletedInitialSetup = YES;
+
+    // Start the AutoPkg run timer if the user enabled it
+    [self startAutoPkgRunTimer];
+
+}
+
+- (void)startAutoPkgRunTimer
+{
+    [[LGAutoPkgSchedule sharedTimer] configure];
+}
+
+
+>>>>>>> 1.0.4-rc
 - (void)updateAutoPkgRecipeReposInBackgroundAtAppLaunch
 {
-    LGAutoPkgRunner *autoPkgRunner = [[LGAutoPkgRunner alloc] init];
-    [autoPkgRunner invokeAutoPkgRepoUpdateInBackgroundThread];
+   [LGAutoPkgTask repoUpdate:^(NSError *error) {
+       NSLog(@"%@", error ? error.localizedDescription:@"AutoPkg recipe repos updated.");
+   }];
 }
 
 - (void)setupStatusItem
@@ -95,9 +105,19 @@
 
 - (void)checkNowFromMenu:(id)sender
 {
-    LGAutoPkgRunner *autoPkgRunner = [[LGAutoPkgRunner alloc] init];
-    [autoPkgRunner invokeAutoPkgInBackgroundThread];
+    [self startProgressWithMessage:@"Starting..."];
+    NSString *recipeList = [LGApplications recipeList];
+    [LGAutoPkgTask runRecipeList:recipeList
+                        progress:^(NSString *message, double taskProgress) {
+                            [self updateProgress:message progress:taskProgress];
+                        }
+                           reply:^(NSDictionary *report,NSError *error) {
+                               [self stopProgress:error];
+                               LGEmailer *emailer = [LGEmailer new];
+                               [emailer sendEmailForReport:report error:error];
+                        }];
 }
+
 
 - (void)showConfigurationWindow:(id)sender
 {
@@ -111,8 +131,8 @@
 
 - (IBAction)uninstallHelper:(id)sender
 {
-<<<<<<< HEAD
     LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
+    LGDefaults *defaults = [[LGDefaults alloc]init];
     [helper connectToHelper];
     [[helper.connection remoteObjectProxy] uninstall:^(NSError *error) {
         [[NSOperationQueue mainQueue]addOperationWithBlock:^{
@@ -120,11 +140,11 @@
                     [NSApp presentError:error];
             } else {
                 NSError *error;
-                if(![AHLaunchCtl uninstallHelper:kAutoPkgrHelperToolName prompt:@"Authorize removal of the Helper tool.  " error:&error]){
+                if(![AHLaunchCtl uninstallHelper:kLGAutoPkgrHelperToolName prompt:@"Authorize removal of the Helper tool.  " error:&error]){
                     [NSApp presentError:error];
                 }else{
                     // if uninstalling turn off schedule in defaults so it's not automatically recreated
-                    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:kCheckForNewVersionsOfAppsAutomaticallyEnabled];
+                    defaults.checkForNewVersionsOfAppsAutomaticallyEnabled = NO;
                     NSAlert *alert = [NSAlert alertWithMessageText:@"Removed AutoPkgr Associated files" defaultButton:@"Thanks for using AutoPkgr" alternateButton:nil otherButton:nil informativeTextWithFormat: @"including the helper tool, launchd schedule, and other launchd plist.  You can safely remove it from your Application Folder"];
                     [alert runModal];
                     [[NSApplication sharedApplication]terminate:self];
@@ -136,27 +156,36 @@
 
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
-    if (jobIsRunning(kAutoPkgrHelperToolName, kAHGlobalLaunchDaemon)) {
+    if (jobIsRunning(kLGAutoPkgrHelperToolName, kAHGlobalLaunchDaemon)) {
         LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
         [helper connectToHelper];
         [[helper.connection remoteObjectProxy] quitHelper:^(BOOL success) {}];
-=======
-    LGDefaults *defaults = [LGDefaults new];
-
-    if (defaults.warnBeforeQuittingEnabled) {
-        NSAlert *alert = [[NSAlert alloc] init];
-        [alert addButtonWithTitle:@"Quit"];
-        [alert addButtonWithTitle:@"Cancel"];
-        [alert setMessageText:[NSString stringWithFormat:@"Are you sure you want to quit %@?", kApplicationName]];
-        [alert setInformativeText:[NSString stringWithFormat:@"%@ will not be able to run AutoPkg in the background or send email notifications until you relaunch the application.", kApplicationName]];
-        [alert setAlertStyle:NSWarningAlertStyle];
-
-        if ([alert runModal] == NSAlertSecondButtonReturn) {
-            NSLog(@"User cancelled quit.");
-            return NSTerminateCancel;
-        }
->>>>>>> defaults-class
     }
+}
+
+# pragma mark - Progress Protocol
+-(void)startProgressWithMessage:(NSString *)message{
+    __block NSMenuItem *item = [self.statusMenu itemAtIndex:0];
+    [item setAction:nil];
+    [item setTitle:message];
+}
+
+-(void)stopProgress:(NSError *)error{
+    __block NSMenuItem *item = [self.statusMenu itemAtIndex:0];
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [item setTitle:@"Check Now"];
+        [item setAction:@selector(checkNowFromMenu:)];
+    }];
+}
+
+-(void)updateProgress:(NSString *)message progress:(double)progress{
+    __block NSMenuItem *item = [self.statusMenu itemAtIndex:0];
+    if (message.length < 50) {
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [item setTitle:message];
+        }];
+    }
+    NSLog(@"%@",message);
 }
 
 @end

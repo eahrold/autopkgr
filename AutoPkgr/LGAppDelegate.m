@@ -21,6 +21,9 @@
 
 #import "LGAppDelegate.h"
 #import "LGAutoPkgr.h"
+#import "LGAutoPkgTask.h"
+#import "LGEmailer.h"
+#import "LGAutoPkgSchedule.h"
 #import "LGConfigurationWindowController.h"
 #import "LGAutoPkgrHelperConnection.h"
 #import "AHLaunchCTL.h"
@@ -45,13 +48,6 @@
         }
     }
 
-    // Show the configuration window if we haven't
-    // completed the initial setup
-    if (!defaults.hasCompletedInitialSetup) {
-        [self showConfigurationWindow:nil];
-        defaults.hasCompletedInitialSetup = YES;
-    }
-
     // Update AutoPkg recipe repos when the application launches
     // if the user has enabled automatic repo updates
     if (defaults.checkForRepoUpdatesAutomaticallyEnabled) {
@@ -62,8 +58,9 @@
 
 - (void)updateAutoPkgRecipeReposInBackgroundAtAppLaunch
 {
-    LGAutoPkgRunner *autoPkgRunner = [[LGAutoPkgRunner alloc] init];
-    [autoPkgRunner invokeAutoPkgRepoUpdateInBackgroundThread];
+   [LGAutoPkgTask repoUpdate:^(NSError *error) {
+       NSLog(@"%@", error ? error.localizedDescription:@"AutoPkg recipe repos updated.");
+   }];
 }
 
 - (void)setupStatusItem
@@ -79,9 +76,19 @@
 
 - (void)checkNowFromMenu:(id)sender
 {
-    LGAutoPkgRunner *autoPkgRunner = [[LGAutoPkgRunner alloc] init];
-    [autoPkgRunner invokeAutoPkgInBackgroundThread];
+    [self startProgressWithMessage:@"Starting..."];
+    NSString *recipeList = [LGApplications recipeList];
+    [LGAutoPkgTask runRecipeList:recipeList
+                        progress:^(NSString *message, double taskProgress) {
+                            [self updateProgress:message progress:taskProgress];
+                        }
+                           reply:^(NSDictionary *report,NSError *error) {
+                               [self stopProgress:error];
+                               LGEmailer *emailer = [LGEmailer new];
+                               [emailer sendEmailForReport:report error:error];
+                        }];
 }
+
 
 - (void)showConfigurationWindow:(id)sender
 {
@@ -125,6 +132,31 @@
         [helper connectToHelper];
         [[helper.connection remoteObjectProxy] quitHelper:^(BOOL success) {}];
     }
+}
+
+# pragma mark - Progress Protocol
+-(void)startProgressWithMessage:(NSString *)message{
+    __block NSMenuItem *item = [self.statusMenu itemAtIndex:0];
+    [item setAction:nil];
+    [item setTitle:message];
+}
+
+-(void)stopProgress:(NSError *)error{
+    __block NSMenuItem *item = [self.statusMenu itemAtIndex:0];
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [item setTitle:@"Check Now"];
+        [item setAction:@selector(checkNowFromMenu:)];
+    }];
+}
+
+-(void)updateProgress:(NSString *)message progress:(double)progress{
+    __block NSMenuItem *item = [self.statusMenu itemAtIndex:0];
+    if (message.length < 50) {
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [item setTitle:message];
+        }];
+    }
+    NSLog(@"%@",message);
 }
 
 @end

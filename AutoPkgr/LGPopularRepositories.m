@@ -27,10 +27,9 @@
 - (id)init
 {
     self = [super init];
-    
+
     awake = NO;
-    
-    pkgRunner = [[LGAutoPkgRunner alloc] init];
+
     jsonLoader = [[LGGitHubJSONLoader alloc] init];
 
     recipeRepos = [jsonLoader getAutoPkgRecipeRepos];
@@ -65,33 +64,44 @@
                                                  @"https://github.com/autopkg/jazzace-recipes.git",
                                                  nil];
     }
-    
+
     [self assembleRepos];
-    
+
     return self;
+}
+
+- (void)repoEditDidEndWithError:(NSError *)error withTableView:(NSTableView *)tableView{
+    [[NSOperationQueue mainQueue]addOperationWithBlock:^{
+        [self getAndParseLocalAutoPkgRecipeRepos];
+        [_appObject reload];
+        [tableView reloadData];
+        [_progressDelegate stopProgress:error];
+    }];
 }
 
 - (void)reload
 {
-    [self assembleRepos];
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [self assembleRepos];
+    }];
 }
 
 - (void)assembleRepos
 {
-    activeRepos = [self getAndParseLocalAutoPkgRecipeRepos];
-    
+    [self getAndParseLocalAutoPkgRecipeRepos];
+
     NSMutableArray *workingPopularRepos = [NSMutableArray arrayWithArray:popularRepos];
 
     NSError *error = NULL;
     NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"https?://(.+)" options:0 error:&error];
-    
+
     for (NSString *repo in activeRepos) {
         NSTextCheckingResult *result = [regex firstMatchInString:repo options:0 range:NSMakeRange(0,[repo length])];
         if ([result numberOfRanges] == 2) {
             NSString *workingString = [repo substringWithRange:[result rangeAtIndex:1]];
-            
+
             NSUInteger searchResult = [self string:workingString inArray:workingPopularRepos];
-            
+
             if (searchResult == NSNotFound) {
                 [workingPopularRepos addObject:[repo substringWithRange:[result rangeAtIndex:0]]];
             } else {
@@ -100,7 +110,7 @@
             }
         }
     }
-    
+
     popularRepos = [NSArray arrayWithArray:workingPopularRepos];
     [self executeRepoSearch:nil];
 }
@@ -118,22 +128,22 @@
     return match;
 }
 
-- (NSArray *)getAndParseLocalAutoPkgRecipeRepos // Strips out the local path of the cloned git repository and returns an array with only the URLs
+- (void)getAndParseLocalAutoPkgRecipeRepos // Strips out the local path of the cloned git repository and returns an array with only the URLs
 {
-    NSArray *repos = [pkgRunner getLocalAutoPkgRecipeRepos];
-    NSMutableArray *strippedRepos = [[NSMutableArray alloc] init];
- 
-    NSError *error = NULL;
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"\\((https?://.+)\\)" options:0 error:&error];
-    
-    for (NSString *repo in repos) {
-        NSTextCheckingResult *result = [regex firstMatchInString:repo options:0 range:NSMakeRange(0,[repo length])];
-        if ([result numberOfRanges] == 2) {
-            [strippedRepos addObject:[repo substringWithRange:[result rangeAtIndex:1]]];
+    [LGAutoPkgTask repoList:^(NSArray *repos, NSError *error) {
+        NSMutableArray *strippedRepos = [[NSMutableArray alloc] init];
+        
+        NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"\\((https?://.+)\\)" options:0 error:&error];
+        
+        for (NSString *repo in repos) {
+            NSTextCheckingResult *result = [regex firstMatchInString:repo options:0 range:NSMakeRange(0,[repo length])];
+            if ([result numberOfRanges] == 2) {
+                [strippedRepos addObject:[repo substringWithRange:[result rangeAtIndex:1]]];
+            }
         }
-    }
-    
-    return [NSArray arrayWithArray:strippedRepos];
+        
+        activeRepos =  [NSArray arrayWithArray:strippedRepos];
+    }];
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
@@ -145,11 +155,11 @@
 {
     if ([[tableColumn identifier] isEqualToString:@"repoCheckbox"]) {
         NSString *repo = [searchedRepos objectAtIndex:row];
-        
+
         NSError *error = NULL;
         NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"https?://(.+)" options:0 error:&error];
         NSTextCheckingResult *result = [regex firstMatchInString:repo options:0 range:NSMakeRange(0, [repo length])];
-        
+
         if ([result numberOfRanges] == 2) {
             if ([self string:[repo substringWithRange:[result rangeAtIndex:1]] inArray:activeRepos] == NSNotFound) {
                 return @NO;
@@ -162,20 +172,28 @@
     } else if ([[tableColumn identifier] isEqualToString:@"repoURL"]) {
         return [searchedRepos objectAtIndex:row];
     }
-    
+
     return nil;
 }
 
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
     if([[tableColumn identifier] isEqualToString:@"repoCheckbox"]) {
-        if ([object isEqual:@YES]) {
-            [pkgRunner addAutoPkgRecipeRepo:[searchedRepos objectAtIndex:row]];
+        NSString *repo = [searchedRepos objectAtIndex:row];
+        BOOL add = [object isEqual:@YES];
+        NSString *message = [NSString stringWithFormat:@"%@ %@",add ? @"Adding":@"Removing",repo];
+        NSLog(@"%@",message);
+        [_progressDelegate startProgressWithMessage:message];
+        if (add) {
+            [LGAutoPkgTask repoAdd:repo reply:^(NSError *error) {
+                [self repoEditDidEndWithError:error withTableView:tableView];
+            }];
         } else {
-            [pkgRunner removeAutoPkgRecipeRepo:[searchedRepos objectAtIndex:row]];
+            [LGAutoPkgTask repoRemove:repo reply:^(NSError *error) {
+                [self repoEditDidEndWithError:error withTableView:tableView];
+            }];
         }
-        activeRepos = [self getAndParseLocalAutoPkgRecipeRepos];
-        [_appObject reload];
+        
     }
 }
 
@@ -187,24 +205,24 @@
     }
 
     [popularRepositoriesTableView beginUpdates];
-    [popularRepositoriesTableView removeRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0,searchedRepos.count)] withAnimation:NSTableViewAnimationEffectNone];
-    
+    [popularRepositoriesTableView removeRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, searchedRepos.count)] withAnimation:NSTableViewAnimationEffectNone];
+
     if ([[_repoSearch stringValue] isEqualToString:@""]) {
         searchedRepos = popularRepos;
     } else {
         NSMutableArray *workingSearchArray = [[NSMutableArray alloc] init];
-        
+
         for (NSString *string in popularRepos) {
             NSRange range = [string rangeOfString:[_repoSearch stringValue] options:NSCaseInsensitiveSearch];
-            if ( !NSEqualRanges(range, NSMakeRange(NSNotFound, 0))) {
+            if (!NSEqualRanges(range, NSMakeRange(NSNotFound, 0))) {
                 [workingSearchArray addObject:string];
             }
         }
-        
+
         searchedRepos = [NSArray arrayWithArray:workingSearchArray];
     }
-    
-    [popularRepositoriesTableView insertRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0,searchedRepos.count)] withAnimation:NSTableViewAnimationEffectNone];
+
+    [popularRepositoriesTableView insertRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, searchedRepos.count)] withAnimation:NSTableViewAnimationEffectNone];
     [popularRepositoriesTableView endUpdates];
 }
 

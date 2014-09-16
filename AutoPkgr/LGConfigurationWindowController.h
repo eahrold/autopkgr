@@ -57,6 +57,7 @@
 @property (weak) IBOutlet NSButton *installGitButton;
 @property (weak) IBOutlet NSButton *installAutoPkgButton;
 @property (weak) IBOutlet NSButton *checkAppsNowButton;
+@property (weak) IBOutlet NSButton *cancelAutoPkgRunButton;
 @property (weak) IBOutlet NSButton *updateRepoNowButton;
 
 // Labels
@@ -79,6 +80,9 @@
 @property (weak) IBOutlet NSTextField *progressMessage;
 @property (weak) IBOutlet NSTextField *progressDetailsMessage;
 
+// Progress delegate (object used to send updates to status menu item)
+@property (weak) id<LGProgressDelegate>menuProgressDelegate;
+
 // Objects
 @property (strong) IBOutlet LGPopularRepositories *popRepoTableViewHandler;
 @property (strong) IBOutlet LGApplications *appTableViewHandler;
@@ -100,6 +104,7 @@
 - (IBAction)addAutoPkgRepoURL:(id)sender;
 - (IBAction)updateReposNow:(id)sender;
 - (IBAction)checkAppsNow:(id)sender;
+- (IBAction)cancelAutoPkgRun:(id)sender;
 
 - (IBAction)editTimeInterval:(id)sender;
 
