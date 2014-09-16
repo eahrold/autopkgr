@@ -34,9 +34,16 @@
     
     if (start && (!scheduleIsRunning || forced)) {
         
+        // Convert seconds to hours for our time interval
+        NSTimeInterval runInterval = defaults.autoPkgRunInterval * 60 * 60;
         NSString *program = [[NSProcessInfo processInfo] arguments].firstObject;
-        
-        [[helper.connection remoteObjectProxy] scheduleRun:defaults.autoPkgRunInterval user:NSUserName() program:program authorization:authorization reply:^(NSError *error) {
+
+        [[helper.connection remoteObjectProxy] scheduleRun:runInterval user:NSUserName() program:program authorization:authorization reply:^(NSError *error) {
+            NSDate *date = [NSDate dateWithTimeIntervalSinceNow:runInterval];
+            NSDateFormatter *fomatter = [NSDateFormatter new];
+            [fomatter setDateStyle:NSDateFormatterMediumStyle];
+            [fomatter setTimeStyle:NSDateFormatterMediumStyle];
+            NSLog(@"Next scheduled AutoPkg run will occur at %@",[fomatter stringFromDate:date]);
             reply(error);
         }];
     } else if (scheduleIsRunning) {
