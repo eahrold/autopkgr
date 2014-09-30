@@ -1,8 +1,8 @@
 //
-//  LGPopularRepositories.h
+//  LGApplications.h
 //  AutoPkgr
 //
-//  Created by Josh Senick on 7/9/14.
+//  Created by Josh Senick on 7/10/14.
 //
 //  Copyright 2014 The Linde Group, Inc.
 //
@@ -21,28 +21,22 @@
 
 #import <Foundation/Foundation.h>
 #import "LGAutoPkgTask.h"
-#import "LGGitHubJSONLoader.h"
-#import "LGRecipes.h"
-#import "LGProgressDelegate.h"
 
-@interface LGPopularRepositories : NSObject <NSApplicationDelegate, NSTableViewDelegate, NSTableViewDataSource> {
+@interface LGRecipes : NSObject <NSApplicationDelegate, NSTableViewDataSource, NSTableViewDelegate> {
 
-    IBOutlet NSTableView *popularRepositoriesTableView;
-    __weak NSSearchField *_repoSearch;
-    __weak LGRecipes *_appObject;
+    IBOutlet NSTableView *recipeTableView;
 
-    NSArray *_recipeRepos;
-    NSArray *_popularRepos;
-    NSArray *_activeRepos;
-    NSArray *_searchedRepos;
-    LGGitHubJSONLoader *_jsonLoader;
-    BOOL awake;
+    NSArray *_recipes;
+    NSArray *_activeRecipes;
+    NSArray *_searchedRecipes;
 }
 
 - (void)reload;
+- (void)writeRecipeList;
+- (NSString *)getAppSupportDirectory;
 
-@property (weak) IBOutlet NSSearchField *repoSearch;
-@property (weak) IBOutlet LGRecipes *appObject;
-@property (weak) id<LGProgressDelegate>progressDelegate;
+@property (weak) IBOutlet NSSearchField *recipeSearchField;
+
++ (NSString *)recipeList;
 
 @end

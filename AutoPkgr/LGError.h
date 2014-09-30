@@ -21,7 +21,7 @@
 
 #import <Foundation/Foundation.h>
 
-void DLog(NSString *format, ...) NS_FORMAT_FUNCTION(1,2);
+void DLog(NSString *format, ...) NS_FORMAT_FUNCTION(1, 2);
 
 #pragma mark - AutoPkgr specific Error codes
 typedef NS_ENUM(NSInteger, LGErrorCodes) {
@@ -41,8 +41,12 @@ typedef NS_ENUM(NSInteger, LGErrorCodes) {
     kLGErrorInstallAutoPkg,
     /** Error installing/updating AutoPkgr */
     kLGErrorInstallAutoPkgr,
-    /** Error installing/updating AutoPkgr */
-    kLGErrorRunningInstaller,
+    /** Error serializing xml object */
+    kLGErrorJSSXMLSerializerError,
+    /** Error Schedule timer incorrect */
+    kLGErrorIncorrectScheduleTimerInterval,
+    /** Error creating authorization*/
+    kLGErrorAuthChallenge,
 };
 
 #pragma mark - AutoPkg specific Error codes
@@ -122,5 +126,9 @@ typedef NS_ENUM(NSInteger, LGAutoPkgVerb) {
  *  @discussion If the returned object will be nil if the task has not complete;
  */
 + (NSError *)errorWithTaskError:(NSTask *)task verb:(LGAutoPkgVerb)verb;
+
+#pragma mark - NSURLConnection response Error
++ (BOOL)errorWithResponse:(NSHTTPURLResponse *)response error:(NSError **)error;
++ (NSError *)errorWithResponse:(NSHTTPURLResponse *)response ;
 
 @end

@@ -21,6 +21,7 @@
 
 #import "LGGitHubJSONLoader.h"
 #import "LGConstants.h"
+#import "LGAutoPkgr.h"
 
 @implementation LGGitHubJSONLoader
 
@@ -67,15 +68,18 @@
     return nil;
 }
 
-- (NSDictionary *)getLatestAutoPkgReleaseDictionary
+- (NSArray *)getReleaseArray:(NSString *)githubURL
 {
     // Get the JSON data
-    NSArray *releasesArray = [self getArrayFromJSONData:[self getJSONFromURL:[NSURL URLWithString:kLGAutoPkgReleasesJSONURL]]];
+    NSData *data = [self getJSONFromURL:[NSURL URLWithString:githubURL]];
+    return [self getArrayFromJSONData:data];
+}
 
+- (NSDictionary *)getLatestReleaseDictionary:(NSString *)githubURL
+{
     // GitHub returns the latest release from the API at index 0
-    NSDictionary *latestVersionDict = [releasesArray objectAtIndex:0];
-
-    return latestVersionDict;
+    NSArray *releases = [self getReleaseArray:githubURL];
+    return releases.count ? releases[0] : nil;
 }
 
 - (NSArray *)getAutoPkgRecipeRepos
@@ -124,7 +128,7 @@
 - (NSString *)getLatestAutoPkgReleaseVersionNumber
 {
     // Get an NSDictionary of the latest release JSON
-    NSDictionary *latestVersionDict = [self getLatestAutoPkgReleaseDictionary];
+    NSDictionary *latestVersionDict = [self getLatestReleaseDictionary:kLGAutoPkgReleasesJSONURL];
 
     // AutoPkg version numbers are prepended with "v"
     // Let's remove that from our version string
@@ -134,15 +138,16 @@
     return latestVersionNumber;
 }
 
-- (NSString *)getLatestAutoPkgDownloadURL
+- (NSString *)latestReleaseDownload:(NSString *)githubURL
 {
+    LGGitHubJSONLoader *loader = [[LGGitHubJSONLoader alloc] init];
+    
     // Get an NSDictionary of the latest release JSON
-    NSDictionary *latestVersionDict = [self getLatestAutoPkgReleaseDictionary];
-
-    // Get the AutoPkg PKG download URL
-    NSString *browserDownloadURL = [[[latestVersionDict objectForKey:@"assets"] objectAtIndex:0] objectForKey:@"browser_download_url"];
-
+    NSDictionary *latestVersionDict = [loader getLatestReleaseDictionary:githubURL];
+    
+    // Get the PKG / DMG download URL
+    NSString *browserDownloadURL = [[[latestVersionDict objectForKey:@"assets"] firstObject] objectForKey:@"browser_download_url"];
+    
     return browserDownloadURL;
 }
-
 @end

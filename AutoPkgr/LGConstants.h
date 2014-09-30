@@ -34,6 +34,9 @@ extern NSString *const kLGAutoPkgUpdateAvailableLabel;
 
 #pragma mark - Static URLs
 extern NSString *const kLGAutoPkgReleasesJSONURL;
+extern NSString *const kLGGitMAVReleasesJSONURL;
+extern NSString *const kLGGitMLReleasesJSONURL;
+extern NSString *const kLGJSSAddonJSONURL;
 extern NSString *const kLGAutoPkgDownloadURL;
 extern NSString *const kLGAutoPkgRepositoriesJSONURL;
 

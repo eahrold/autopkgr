@@ -23,12 +23,14 @@
 
 @interface LGHostInfo : NSObject
 
-- (NSString *)getUserName;
-- (NSString *)getHostName;
-- (NSString *)getUserAtHostName;
-- (NSString *)getAutoPkgVersion;
-- (BOOL)gitInstalled;
-- (BOOL)autoPkgInstalled;
-
++ (NSString *)getUserName;
++ (NSString *)getHostName;
++ (NSString *)getUserAtHostName;
++ (NSString *)getAutoPkgVersion;
++ (BOOL)gitInstalled;
++ (BOOL)autoPkgInstalled;
++ (BOOL)autoPkgUpdateAvailable;
++ (BOOL)jssAddonInstalled;
+    
 + (NSArray *)knownGitPaths;
 @end

@@ -21,7 +21,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "LGAutoPkgTask.h"
-#import "LGApplications.h"
+#import "LGRecipes.h"
 #import "LGEmailer.h"
 #import "LGAutoPkgr.h"
 #import <pwd.h>
@@ -224,7 +224,7 @@ int main(int argc, const char *argv[])
         __block LGEmailer *emailer = [[LGEmailer alloc] init];
         setupRootContext(user);
         LGAutoPkgTask *task = [[LGAutoPkgTask alloc] init];
-        [task runRecipeList:[LGApplications recipeList] progress:^(NSString *message, double progress) {
+        [task runRecipeList:[LGRecipes recipeList] progress:^(NSString *message, double progress) {
                                                                 NSLog(@"%@",message);
                                                          } reply:^(NSDictionary *report, NSError *error) {
                                                                 [emailer sendEmailForReport:report error:error];

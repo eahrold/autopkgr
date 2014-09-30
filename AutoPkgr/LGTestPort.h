@@ -8,12 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-@interface LGTestPort : NSObject <NSStreamDelegate>{
-    NSInputStream *read;
-    NSOutputStream *write;
-    NSTimer *streamTimeoutTimer;
-}
+@interface LGTestPort : NSObject <NSStreamDelegate>
 
 - (void)testHost:(NSHost *)host withPort:(NSInteger)port;
+- (void)testServerURL:(NSString *)url reply:(void (^)(BOOL reachable))reply;
 
 @end

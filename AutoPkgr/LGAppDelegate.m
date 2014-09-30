@@ -26,17 +26,24 @@
 #import "LGAutoPkgSchedule.h"
 #import "LGConfigurationWindowController.h"
 #import "LGAutoPkgrHelperConnection.h"
-#import "AHLaunchCTL.h"
+#import <AHLaunchCtl/AHLaunchCtl.h>
 
-@implementation LGAppDelegate
+@implementation LGAppDelegate {
+    @private
+    LGConfigurationWindowController *configurationWindowController;
+}
+
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
+    NSLog(@"Welcome to AutoPkgr!");
+    DLog(@"Verbose logging is active. To deactivate, option-click the AutoPkgr menu icon and uncheck Verbose Logs.");
+    
     LGDefaults *defaults = [LGDefaults new];
 
     // Setup the status item
     [self setupStatusItem];
-
+    
     // Check if we're authorized to install helper tool,
     // if not just quit
     NSError *error;
@@ -54,35 +61,41 @@
         NSLog(@"Updating AutoPkg recipe repos.");
         [self updateAutoPkgRecipeReposInBackgroundAtAppLaunch];
     }
+    
+    [self showConfigurationWindow:self];
 }
 
 - (void)updateAutoPkgRecipeReposInBackgroundAtAppLaunch
 {
-   [LGAutoPkgTask repoUpdate:^(NSError *error) {
-       NSLog(@"%@", error ? error.localizedDescription:@"AutoPkg recipe repos updated.");
+    NSLog(@"Updating AutoPkg repos...");
+    [LGAutoPkgTask repoUpdate:^(NSError *error) {
+       NSLog(@"%@", error ? error.localizedDescription:@"AutoPkg repos updated.");
    }];
 }
 
 - (void)setupStatusItem
 {
     // Setup the systemStatusBar
+    DLog(@"Starting AutoPkgr menu bar icon...");
     self.statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
     [self.statusItem setMenu:self.statusMenu];
     [self.statusItem setImage:[NSImage imageNamed:@"autopkgr.png"]];
     [self.statusItem setAlternateImage:[NSImage imageNamed:@"autopkgr_alt.png"]];
     [self.statusItem setHighlightMode:YES];
     self.statusItem.menu = self.statusMenu;
+    DLog(@"AutoPkgr menu bar icon started.");
 }
 
 - (void)checkNowFromMenu:(id)sender
 {
+    DLog(@"Received 'Check Now' menulet command.");
     [self startProgressWithMessage:@"Starting..."];
-    NSString *recipeList = [LGApplications recipeList];
+    NSString *recipeList = [LGRecipes recipeList];
     [LGAutoPkgTask runRecipeList:recipeList
                         progress:^(NSString *message, double taskProgress) {
                             [self updateProgress:message progress:taskProgress];
                         }
-                           reply:^(NSDictionary *report,NSError *error) {
+                           reply:^(NSDictionary *report, NSError *error) {
                                [self stopProgress:error];
                                LGEmailer *emailer = [LGEmailer new];
                                [emailer sendEmailForReport:report error:error];
@@ -98,12 +111,14 @@
 
     [NSApp activateIgnoringOtherApps:YES];
     [self->configurationWindowController.window makeKeyAndOrderFront:nil];
+    DLog(@"Activated AutoPkgr configuration window.");
 }
 
 - (IBAction)uninstallHelper:(id)sender
 {
     LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
     LGDefaults *defaults = [[LGDefaults alloc]init];
+    
     [helper connectToHelper];
     [[helper.connection remoteObjectProxy] uninstall:^(NSError *error) {
         [[NSOperationQueue mainQueue]addOperationWithBlock:^{
@@ -111,7 +126,8 @@
                     [NSApp presentError:error];
             } else {
                 NSError *error;
-                if(![AHLaunchCtl uninstallHelper:kLGAutoPkgrHelperToolName prompt:@"Authorize removal of the Helper tool.  " error:&error]){
+
+                if(![AHLaunchCtl uninstallHelper:kLGAutoPkgrHelperToolName prompt:@"Uninstall AutoPkgr and associated files?  " error:&error]){
                     [NSApp presentError:error];
                 }else{
                     // if uninstalling turn off schedule in defaults so it's not automatically recreated
@@ -135,13 +151,15 @@
 }
 
 # pragma mark - Progress Protocol
--(void)startProgressWithMessage:(NSString *)message{
+- (void)startProgressWithMessage:(NSString *)message
+{
     __block NSMenuItem *item = [self.statusMenu itemAtIndex:0];
     [item setAction:nil];
     [item setTitle:message];
 }
 
--(void)stopProgress:(NSError *)error{
+- (void)stopProgress:(NSError *)error
+{
     __block NSMenuItem *item = [self.statusMenu itemAtIndex:0];
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         [item setTitle:@"Check Now"];
@@ -149,14 +167,15 @@
     }];
 }
 
--(void)updateProgress:(NSString *)message progress:(double)progress{
+- (void)updateProgress:(NSString *)message progress:(double)progress
+{
     __block NSMenuItem *item = [self.statusMenu itemAtIndex:0];
     if (message.length < 50) {
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             [item setTitle:message];
         }];
     }
-    NSLog(@"%@",message);
+    NSLog(@"%@", message);
 }
 
 @end

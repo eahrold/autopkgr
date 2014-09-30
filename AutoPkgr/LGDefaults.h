@@ -47,12 +47,17 @@
 @property (copy, nonatomic) NSString *autoPkgCacheDir;
 @property (copy, nonatomic) NSString *autoPkgRecipeOverridesDir;
 @property (copy, nonatomic) NSString *munkiRepo;
+@property (copy, nonatomic) NSString *gitPath;
 @property (copy, nonatomic) NSString *autoPkgRecipeRepoDir;
 @property (copy, nonatomic, readonly) NSArray *autoPkgRecipeSearchDirs;
 @property (copy, nonatomic, readonly) NSDictionary *autoPkgRecipeRepos;
 
 #pragma mark - Utility Settings
 @property (nonatomic) BOOL debug;
+
+#pragma mark - AutoPkg Accessor methods
+- (id)autoPkgDomainObject:(NSString *)key;
+- (void)setAutoPkgDomainObject:(id)object forKey:(NSString *)key;
 
 #pragma Class Methods
 + (BOOL)fixRelativePathsInAutoPkgDefaults:(NSError **)error neededFixing:(NSInteger *)neededFixing;

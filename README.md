@@ -44,7 +44,7 @@ Usage
 1.  On first launch, you'll see the configuration window:
     ![Install](doc-images/config_tab1.png)
 
-1.  Click the button to **Install Git** if needed. (This will prompt you to install the Xcode Command Line Tools.)
+1.  Click the button to **Install Git** if needed.
 
 1.  Click the button to **Install AutoPkg** if needed.
 
@@ -72,6 +72,16 @@ Anytime you'd like to make changes to AutoPkgr's configuration, just click on th
 
 You'll also find some useful shortcuts on the **Local Folders** tab, which will take you directly to several convenient AutoPkg folders. On that tab, you can also configure the location of your local Munki repo, if you use Munki.
     ![Local Folders](doc-images/config_tab4.png)
+
+
+Troubleshooting
+---------------
+
+If AutoPkgr doesn't do what you expect, first try running your selected recipes using `autopkg run` manually. If the issue repeats itself there, it's likely that a particular recipe or repo is having trouble, and not the AutoPkgr app itself.
+
+During troubleshooting, you may find it useful to enable AutoPkgr's verbose logging feature. To do that, hold the **Option** key while you click the AutoPkgr icon in the menu bar (![Menu bar icon](doc-images/menulet.png)). Then select **Verbose Logs**. The simplest way to view the logs is to filter for "AutoPkgr" in the Console app on your Mac.
+
+If you discover an issue with the AutoPkgr app itself, you may want to post a message to our [Google Group](https://groups.google.com/forum/#!forum/autopkgr-discuss). And if it's a reproducible problem, please submit an [issue](https://github.com/lindegroup/autopkgr/issues) on GitHub. We do our best to investigate and squash bugs.
 
 
 Credits

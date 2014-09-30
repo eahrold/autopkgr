@@ -21,10 +21,10 @@
 
 #import <Cocoa/Cocoa.h>
 #import "LGPopularRepositories.h"
-#import "LGApplications.h"
+#import "LGRecipes.h"
 #import "LGTestPort.h"
 
-@interface LGConfigurationWindowController : NSWindowController <NSTextDelegate, NSTokenFieldDelegate, NSWindowDelegate>
+@interface LGConfigurationWindowController : NSWindowController <NSTextDelegate, NSTokenFieldDelegate, NSWindowDelegate, NSTabViewDelegate>
 
 // Text/token fields
 @property (weak) IBOutlet NSTokenField *smtpTo;
@@ -43,6 +43,7 @@
 // Checkboxes
 @property (weak) IBOutlet NSButton *smtpAuthenticationEnabledButton;
 @property (weak) IBOutlet NSButton *smtpTLSEnabledButton;
+@property (weak) IBOutlet NSButton *warnBeforeQuittingButton;
 @property (weak) IBOutlet NSButton *checkForNewVersionsOfAppsAutomaticallyButton;
 @property (weak) IBOutlet NSButton *checkForRepoUpdatesAutomaticallyButton;
 @property (weak) IBOutlet NSButton *sendEmailNotificationsWhenNewVersionsAreFoundButton;
@@ -85,7 +86,7 @@
 
 // Objects
 @property (strong) IBOutlet LGPopularRepositories *popRepoTableViewHandler;
-@property (strong) IBOutlet LGApplications *appTableViewHandler;
+@property (strong) IBOutlet LGRecipes *recipeTableViewHandler;
 
 // IBActions
 - (IBAction)sendTestEmail:(id)sender;
@@ -105,9 +106,5 @@
 - (IBAction)updateReposNow:(id)sender;
 - (IBAction)checkAppsNow:(id)sender;
 - (IBAction)cancelAutoPkgRun:(id)sender;
-
-- (IBAction)editTimeInterval:(id)sender;
-
-- (void)downloadAndInstallAutoPkg;
 
 @end

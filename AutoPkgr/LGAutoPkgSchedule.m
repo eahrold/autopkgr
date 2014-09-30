@@ -11,19 +11,15 @@
 #import <AHLaunchCtl/AHLaunchCtl.h>
 #import "LGAutoPkgrHelperConnection.h"
 
-@implementation LGAutoPkgSchedule {
-    NSTimer *_timer;
-}
+@implementation LGAutoPkgSchedule
 
-+(BOOL)scheduleIsRunning{
-    return jobIsRunning(kLGAutoPkgrLaunchDaemonPlist, kAHGlobalLaunchDaemon);
-}
-
-- (void)startAutoPkgSchedule:(BOOL)start isForced:(BOOL)forced reply:(void (^)(NSError* error))reply;
++ (void)startAutoPkgSchedule:(BOOL)start interval:(NSInteger)interval isForced:(BOOL)forced reply:(void (^)(NSError* error))reply;
 {
-    LGDefaults *defaults = [[LGDefaults alloc] init];
-    
     BOOL scheduleIsRunning = jobIsRunning(kLGAutoPkgrLaunchDaemonPlist, kAHGlobalLaunchDaemon);
+    if (start && interval == 0) {
+        reply([LGError errorWithCode:kLGErrorIncorrectScheduleTimerInterval]);
+        return;
+    }
     
     // Create the external form authorization data for the helper
     NSData *authorization = [LGAutoPkgrAuthorizer authorizeHelper];
@@ -35,7 +31,7 @@
     if (start && (!scheduleIsRunning || forced)) {
         
         // Convert seconds to hours for our time interval
-        NSTimeInterval runInterval = defaults.autoPkgRunInterval * 60 * 60;
+        NSTimeInterval runInterval = interval * 60 * 60;
         NSString *program = [[NSProcessInfo processInfo] arguments].firstObject;
 
         [[helper.connection remoteObjectProxy] scheduleRun:runInterval user:NSUserName() program:program authorization:authorization reply:^(NSError *error) {

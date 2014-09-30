@@ -1,5 +1,6 @@
 #import "LGAutoPkgrAuthorizer.h"
 #import "LGAutoPkgrProtocol.h"
+#import "LGError.h"
 
 @implementation LGAutoPkgrAuthorizer
 
@@ -15,53 +16,29 @@ static NSString *kCommandKeyAuthRightDesc = @"authRightDescription";
     dispatch_once(&dOnceToken, ^{
         dCommandInfo = @{
             NSStringFromSelector(@selector(installPackageFromPath:authorization:reply:)) : @{
-                kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.pkg.install",
+                kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.pkg.installer",
                 kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin, 
                 kCommandKeyAuthRightDesc    : NSLocalizedString(
-                    @"AutoPkgr is trying to install a .pkg.",
-                    @"prompt shown when user is required to authorize to insatll a package"
-                )
-            },
-            NSStringFromSelector(@selector(addPassword:forUser:andAutoPkgr:authorization:reply:)) : @{
-                    kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.update.keychain.password",
-                    kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
-                    kCommandKeyAuthRightDesc    : NSLocalizedString(
-                                                                    @"AutoPkgr wants to update the keychain password.",
-                                                                    @"prompt shown when user is required to authorize to update password"
-                                                                    )
-                    },
-            NSStringFromSelector(@selector(removePassword:forUser:authorization:reply:)) : @{
-                    kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.remove.keychain.password",
-                    kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
-                    kCommandKeyAuthRightDesc    : NSLocalizedString(
-                                                                    @"AutoPkgr is trying to remove the keychain item",
-                                                                    @""
-                                                                    )
-                    },
+                                                                @"AutoPkgr needs to run a package installer.  ",
+                                                                @"prompt shown when user is required to authorize to insatll a package"
+                                                                )
+                },
             NSStringFromSelector(@selector(scheduleRun:user:program:authorization:reply:)) : @{
-                    kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.add.scheduled.run",
-                    kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
-                    kCommandKeyAuthRightDesc    : NSLocalizedString(
-                                                                    @"AutoPkgr is trying to schedule autopkg runs",
-                                                                    @""
-                                                                    )
-                    },
+                kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.add.scheduled.run",
+                kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
+                kCommandKeyAuthRightDesc    : NSLocalizedString(
+                                                                @"AutoPkgr is trying to add an autopkg run schedule.  ",
+                                                                @"Prompt shown when user is required to authorize adding schedule"
+                                                                )
+                },
             NSStringFromSelector(@selector(removeScheduleWithAuthorization:reply:)) : @{
-                    kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.remove.schedule.run",
-                    kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
-                    kCommandKeyAuthRightDesc    : NSLocalizedString(
-                                                                    @"AutoPkgr is trying to remove the autopkg run schedule",
-                                                                    @""
-                                                                    )
-                    },
-            NSStringFromSelector(@selector(uninstallWithAuthorization:reply:)) : @{
-                    kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.uninstall.helper.items",
-                    kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
-                    kCommandKeyAuthRightDesc    : NSLocalizedString(
-                                                                    @"AutoPkgr is trying to remove the helper tool files",
-                                                                    @""
-                                                                    )
-                    },
+                kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.remove.schedule.run",
+                kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
+                kCommandKeyAuthRightDesc    : NSLocalizedString(
+                                                                @"AutoPkgr is trying to remove the autopkg run schedule.  ",
+                                                                @"Prompt shown when user is required to authorize removing schedule"
+                                                                )
+                },
         };
     });
     return dCommandInfo;
@@ -156,9 +133,7 @@ static NSString *kCommandKeyAuthRightDesc = @"authRightDescription";
                 NULL);
         }
         if (err != errAuthorizationSuccess) {
-            error = [NSError errorWithDomain:kLGApplicationName
-                                        code:-1
-                                    userInfo:@{ NSLocalizedDescriptionKey : @"You are not authorized to perform this action" }];
+            error = [LGError errorWithCode:kLGErrorAuthChallenge];
         }
     }
 

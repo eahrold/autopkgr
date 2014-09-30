@@ -1,8 +1,8 @@
 //
-//  LGApplications.h
+//  LGHTTPRequest.h
 //  AutoPkgr
 //
-//  Created by Josh Senick on 7/10/14.
+//  Created by Eldon on 8/9/14.
 //
 //  Copyright 2014 The Linde Group, Inc.
 //
@@ -16,28 +16,15 @@
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
-//  limitations under the License.
 //
 
 #import <Foundation/Foundation.h>
-#import "LGAutoPkgTask.h"
 
-@interface LGApplications : NSObject <NSApplicationDelegate, NSTableViewDataSource, NSTableViewDelegate> {
+@interface LGHTTPRequest : NSObject
 
-    IBOutlet NSTableView *applicationTableView;
-
-    NSArray *apps;
-    NSArray *activeApps;
-    NSArray *searchedApps;
-    __weak NSSearchField *_appSearch;
-}
-
-- (void)reload;
-- (void)writeRecipeList;
-- (NSString *)getAppSupportDirectory;
-
-@property (weak) IBOutlet NSSearchField *appSearch;
-
-+ (NSString *)recipeList;
+- (void)retrieveDistributionPoints:(NSString *)server
+                          withUser:(NSString *)user
+                       andPassword:(NSString *)password
+                             reply:(void (^)(NSDictionary *distributionPoints, NSError *error))reply;
 
 @end
