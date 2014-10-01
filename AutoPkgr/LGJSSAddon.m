@@ -14,8 +14,7 @@
 #import "LGHostInfo.h"
 
 
-@implementation LGJSSAddon 
-{
+@implementation LGJSSAddon {
     LGDefaults *_defaults;
     LGTestPort *_portTester;
     BOOL _serverReachable;
@@ -154,6 +153,7 @@
             [_jssStatusLight setImage:[NSImage imageNamed:@"NSStatusUnavailable"]];
         }
         [self stopStatusUpdate:nil];
+        _portTester = nil;
     }];
 }
 

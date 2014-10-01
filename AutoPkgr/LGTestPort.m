@@ -9,10 +9,14 @@
 #import "LGTestPort.h"
 #import "LGAutoPkgr.h"
 
+@interface LGTestPort ()
+@property (strong, nonatomic) NSInputStream *inputStream;
+@property (strong, nonatomic) NSOutputStream *outputStream;
+@property (strong, nonatomic) NSTimer *streamTimeoutTimer;
+
+@end
+
 @implementation LGTestPort {
-    NSInputStream *_inputStream;
-    NSOutputStream *_outputStream;
-    NSTimer *_streamTimeoutTimer;
     void (^_reachable)(BOOL);
 }
 
@@ -26,10 +30,10 @@
     if (eventCode & (NSStreamEventOpenCompleted | NSStreamEventErrorOccurred)) {
         if ([_inputStream streamStatus] == NSStreamStatusError ||
             [_outputStream streamStatus] == NSStreamStatusError) {
-                [self portTestDidCompletedWithSuccess:NO];
+            [self portTestDidCompletedWithSuccess:NO];
         } else if ([_inputStream streamStatus] == NSStreamStatusOpen &&
                    [_outputStream streamStatus] == NSStreamStatusOpen) {
-                [self portTestDidCompletedWithSuccess:YES];
+            [self portTestDidCompletedWithSuccess:YES];
         }
     }
 }
@@ -60,7 +64,7 @@
                           port:port
                    inputStream:&tempRead
                   outputStream:&tempWrite];
-
+    
     if (tempRead && tempWrite) {
         [self startStreamTimeoutTimer];
         _inputStream = tempRead;
@@ -69,7 +73,7 @@
         [_outputStream setDelegate:self];
         [_inputStream open];
         [_outputStream open];
-
+        
         [_inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
         [_outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     } else {
@@ -102,10 +106,10 @@
 - (void)startStreamTimeoutTimer
 {
     _streamTimeoutTimer = [NSTimer scheduledTimerWithTimeInterval:3.0
-                                                          target:self
-                                                        selector:@selector(handleStreamTimeout)
-                                                        userInfo:nil
-                                                         repeats:NO];
+                                                           target:self
+                                                         selector:@selector(handleStreamTimeout)
+                                                         userInfo:nil
+                                                          repeats:NO];
 }
 
 - (void)handleStreamTimeout
