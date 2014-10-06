@@ -3,7 +3,19 @@
 //  AutoPkgr
 //
 //  Created by Eldon on 9/25/14.
-//  Copyright (c) 2014 The Linde Group, Inc. All rights reserved.
+//  Copyright 2014 The Linde Group, Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 
 #import "LGJSSAddon.h"
@@ -13,23 +25,55 @@
 #import "LGInstaller.h"
 #import "LGHostInfo.h"
 
-
 @implementation LGJSSAddon {
     LGDefaults *_defaults;
     LGTestPort *_portTester;
     BOOL _serverReachable;
 }
 
--(void)awakeFromNib
+- (void)awakeFromNib
 {
     _defaults = [LGDefaults standardUserDefaults];
-    [_jssStatusLight setImage:[NSImage imageNamed:@"NSStatusNone"]];
-    if (_defaults.JSSAPIUsername) _jssAPIUsernameTF.stringValue = _defaults.JSSAPIUsername;
-    if (_defaults.JSSAPIPassword) _jssAPIPasswordTF.stringValue = _defaults.JSSAPIPassword;
+
+    NSImage *notInstalled = [NSImage imageNamed:@"NSStatusNone"];
+    NSImage *updateAvaliable = [NSImage imageNamed:@"NSStatusPartiallyAvailable"];
+
+    [_jssStatusLight setImage:notInstalled];
+    [_jssInstallStatusLight setHidden:NO];
+
+    if ([LGHostInfo jssAddonInstalled]) {
+        [_jssInstallStatusLight setImage:updateAvaliable];
+        [_jssInstallStatusLight setHidden:NO];
+        NSOperationQueue *bgQueue = [[NSOperationQueue alloc] init];
+        [bgQueue addOperationWithBlock:^{
+            BOOL updateAvaliable = [LGHostInfo jssAddonUpdateAvailable];
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                if (updateAvaliable) {
+                    _jssInstallStatusTF.stringValue = @"JSS AutoPkg update avaliable";
+                    [_jssInstallButton setEnabled:YES];
+                } else {
+                    NSString *version = [LGHostInfo getJSSAddonVersion];
+                    NSImage *image = [NSImage imageNamed:@"NSStatusAvailable"];
+                    NSString *title = [NSString stringWithFormat:@"Version %@ installed",version];
+                    
+                    _jssInstallStatusLight.image = image;
+                    _jssInstallButton.title = title ;
+
+                }
+            }];
+        }];
+    } else {
+        [_jssInstallStatusLight setImage:notInstalled];
+    }
+
+    _jssAPIUsernameTF.safeStringValue = _defaults.JSSAPIUsername;
+    _jssAPIPasswordTF.safeStringValue = _defaults.JSSAPIPassword;
+
     if (_defaults.JSSURL) {
-        _jssURLTF.stringValue = _defaults.JSSURL;
+        _jssURLTF.safeStringValue = _defaults.JSSURL;
         [self checkReachability];
     }
+
     [self evaluateRepoViability];
     [_jssDistributionPointTableView reloadData];
 }
@@ -37,47 +81,40 @@
 #pragma mark - IBActions
 - (IBAction)updateJSSUsername:(id)sender
 {
-    if ([_jssAPIUsernameTF.stringValue isEqualToString:@""]) {
-        _defaults.JSSAPIUsername = nil;
-    } else {
-        _defaults.JSSAPIUsername = _jssAPIUsernameTF.stringValue;
-    }
+    _defaults.JSSAPIUsername = _jssAPIUsernameTF.safeStringValue;
     [self evaluateRepoViability];
 }
 
--(IBAction)updateJSSPassword:(id)sender
+- (IBAction)updateJSSPassword:(id)sender
 {
-    if ([_jssAPIPasswordTF.stringValue isEqualToString:@""]) {
-        _defaults.JSSAPIPassword = nil;
-    } else {
-        _defaults.JSSAPIPassword = _jssAPIPasswordTF.stringValue;
-    }
+    _defaults.JSSAPIPassword = _jssAPIPasswordTF.safeStringValue;
     [self evaluateRepoViability];
 }
 
--(IBAction)updateJSSURL:(id)sender
+- (IBAction)updateJSSURL:(id)sender
 {
-    if ([_jssURLTF.stringValue isEqualToString:@""]) {
-        _defaults.JSSURL = nil;
-    } else {
-        _defaults.JSSURL = _jssURLTF.stringValue;
-        [self checkReachability];
-    }
+    _defaults.JSSURL = _jssURLTF.safeStringValue;
+    [self checkReachability];
     [self evaluateRepoViability];
 }
 
--(IBAction)reloadJSSServerInformation:(id)sender
+- (IBAction)reloadJSSServerInformation:(id)sender
 {
     if (!_serverReachable) {
         [self stopStatusUpdate:[LGError errorWithCode:kLGErrorTestingPort]];
         return;
     }
-    
+
+    if ([self requiresInstall]) {
+        return;
+    }
+
     [self startStatusUpdate];
     LGHTTPRequest *request = [[LGHTTPRequest alloc] init];
     [request retrieveDistributionPoints:_jssURLTF.stringValue
                                withUser:_jssAPIUsernameTF.stringValue
-                            andPassword:_jssAPIPasswordTF.stringValue reply:^(NSDictionary *distributionPoints, NSError *error) {
+                            andPassword:_jssAPIPasswordTF.stringValue
+                                  reply:^(NSDictionary *distributionPoints, NSError *error) {
                                    [self stopStatusUpdate:error];
                                    
                                    id distPoints = distributionPoints[@"distribution_point"];
@@ -88,7 +125,22 @@
                                            [_jssDistributionPointTableView reloadData];
                                        }
                                    }
-                               }];
+                                  }];
+}
+
+- (void)installJSSAddon:(id)sender
+{
+    LGInstaller *installer = [[LGInstaller alloc] init];
+    installer.progressDelegate = [NSApp delegate];
+    [installer installJSSAddon:^(NSError *error) {
+        if (!error) {
+            [[NSOperationQueue mainQueue]addOperationWithBlock:^{
+                _jssInstallStatusTF.stringValue = @"JSS AutoPkg Addon is up to date.";
+                _jssInstallStatusLight.image = [NSImage imageNamed:@"NSStatusAvailable"];
+                [_jssReloadServerBT setEnabled:NO];
+            }];
+        }
+    }];
 }
 
 #pragma mark - Progress
@@ -108,13 +160,13 @@
         [_jssStatusSpinner setHidden:YES];
         [_jssStatusSpinner stopAnimation:self];
         if (error) {
-            [NSApp presentError:error];
+            [[NSApp delegate] stopProgress:error];
         }
     }];
 }
 
 #pragma mark - NSTableViewDataSource
--(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
     return [_defaults.JSSRepos count];
 }
@@ -129,14 +181,15 @@
     return distributionPoint[identifier];
 }
 
--(void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row{
+- (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
 
     NSMutableArray *workingArray = [NSMutableArray arrayWithArray:_defaults.JSSRepos];
     NSMutableDictionary *distributionPoint = [NSMutableDictionary dictionaryWithDictionary:workingArray[row]];
-    
+
     [distributionPoint setValue:object forKey:[tableColumn identifier]];
     [workingArray replaceObjectAtIndex:row withObject:distributionPoint];
-    
+
     _defaults.JSSRepos = [NSArray arrayWithArray:workingArray];
 }
 
@@ -145,7 +198,7 @@
 {
     _portTester = [[LGTestPort alloc] init];
     [self startStatusUpdate];
-    [_portTester testServerURL:_jssURLTF.stringValue reply:^(BOOL reachable) {
+    [_portTester testServerURL:_jssURLTF.safeStringValue reply:^(BOOL reachable) {
         _serverReachable = reachable;
         if (reachable) {
             [_jssStatusLight setImage:[NSImage imageNamed:@"NSStatusAvailable"]];
@@ -161,17 +214,17 @@
 {
     NSArray *dictArray;
     NSMutableArray *newRepos;
-    
+
     // If there is just one ditribution point distPoint will be a dictionary entry
     // and we need to normalize it here by wrapping it in an array.
     if ([distPoints isKindOfClass:[NSDictionary class]]) {
-        dictArray = @[distPoints];
+        dictArray = @[ distPoints ];
     }
     // If there are more then one entries distPoint will be an array, so pass it along.
     else if ([distPoints isKindOfClass:[NSArray class]]) {
         dictArray = distPoints;
     }
-    
+
     if (dictArray) {
         newRepos = [[NSMutableArray alloc] init];
         for (NSDictionary *repo in dictArray) {
@@ -179,22 +232,21 @@
                 NSString *name = repo[@"name"];
                 NSString *password = [self promptForSharePassword:name];
                 if (password) {
-                    [newRepos addObject:@{@"name": name, @"password":password}];
+                    [newRepos addObject:@{ @"name" : name,
+                                           @"password" : password }];
                 }
             } else {
                 [newRepos addObject:repo];
             }
         }
     }
-    
+
     return [NSArray arrayWithArray:newRepos];
 }
 
 - (void)evaluateRepoViability
 {
-    if (!_defaults.JSSAPIPassword &&
-        !_defaults.JSSAPIUsername &&
-        !_defaults.JSSURL) {
+    if (!_defaults.JSSAPIPassword && !_defaults.JSSAPIUsername && !_defaults.JSSURL) {
         _defaults.JSSRepos = nil;
     }
     [_jssDistributionPointTableView reloadData];
@@ -203,15 +255,14 @@
 - (NSString *)promptForSharePassword:(NSString *)shareName
 {
     NSString *password;
-    NSString *alertString = [NSString stringWithFormat:@"Please enter read/write password for the %@ distribution point",shareName];
+    NSString *alertString = [NSString stringWithFormat:@"Please enter read/write password for the %@ distribution point", shareName];
     NSAlert *alert = [NSAlert alertWithMessageText:alertString
                                      defaultButton:@"OK"
                                    alternateButton:@"Cancel"
                                        otherButton:nil
                          informativeTextWithFormat:@""];
-    
-    
-    NSSecureTextField *input = [[NSSecureTextField alloc]init];
+
+    NSSecureTextField *input = [[NSSecureTextField alloc] init];
     [input setFrame:NSMakeRect(0, 0, 300, 24)];
     [alert setAccessoryView:input];
 
@@ -224,71 +275,21 @@
 }
 
 #pragma mark - Class Methods
-+ (BOOL)requiresInstall:(NSArray *)recipeList
+- (BOOL)requiresInstall
 {
     BOOL required = NO;
-    
-    NSPredicate *jssAddonPredicate = [NSPredicate predicateWithFormat:@"SELF contains[cd] %@",@"jss"];
-    if ([[recipeList filteredArrayUsingPredicate:jssAddonPredicate] count] &&
-        ![LGHostInfo jssAddonInstalled]) {
+
+    if (![LGHostInfo jssAddonInstalled]) {
         NSAlert *alert = [NSAlert alertWithMessageText:@"Install autopkg-jss-addon?" defaultButton:@"Install" alternateButton:@"Cancel" otherButton:nil informativeTextWithFormat:@"You have selected a recipe that requres installation of the autopkg-jss-addon, would you like to install it now?"];
-        
+
         NSInteger button = [alert runModal];
         if (button == NSAlertDefaultReturn) {
             LGInstaller *installer = [[LGInstaller alloc] init];
-            required = ![installer runJSSAddonInstaller:nil];
-        } else {
-            required = YES;
+            installer.progressDelegate = [NSApp delegate];
+            [installer installJSSAddon:^(NSError *error) {}];
         }
+        return YES;
     }
     return required;
 }
-@end
-
-
-#pragma mark - LGDefaults catagory implementation for JSS Addon Interface
-
-@implementation LGDefaults (JSSAddon)
--(NSString *)JSSURL
-{
-    return [self autoPkgDomainObject:@"JSS_URL"];
-}
-
--(void)setJSSURL:(NSString *)JSSURL{
-    [self setAutoPkgDomainObject:JSSURL forKey:@"JSS_URL"];
-}
-
-#pragma mark -
--(NSString *)JSSAPIUsername
-{
-    return [self autoPkgDomainObject:@"API_USERNAME"];
-}
-
--(void)setJSSAPIUsername:(NSString *)JSSAPIUsername
-{
-    [self setAutoPkgDomainObject:JSSAPIUsername forKey:@"API_USERNAME"];
-}
-
-#pragma mark -
--(NSString *)JSSAPIPassword
-{
-    return [self autoPkgDomainObject:@"API_PASSWORD"];
-}
-
--(void)setJSSAPIPassword:(NSString *)JSSAPIPassword
-{
-    [self setAutoPkgDomainObject:JSSAPIPassword forKey:@"API_PASSWORD"];
-}
-
-#pragma mark -
--(NSArray *)JSSRepos
-{
-    return [self autoPkgDomainObject:@"JSS_REPOS"];
-}
-
--(void)setJSSRepos:(NSArray *)JSSRepos
-{
-    [self setAutoPkgDomainObject:JSSRepos forKey:@"JSS_REPOS"];
-}
-
 @end

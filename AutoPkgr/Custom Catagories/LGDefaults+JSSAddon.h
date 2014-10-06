@@ -1,8 +1,8 @@
 //
-//  AutoPkgr.h
+//  LGDefaults+JSSAddon.h
 //  AutoPkgr
 //
-//  Created by Eldon on 8/24/14.
+//  Created by Eldon on 10/3/14.
 //  Copyright 2014 The Linde Group, Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,12 +18,14 @@
 //  limitations under the License.
 //
 
-#ifndef AutoPkgr_AutoPkgr_h
-#define AutoPkgr_AutoPkgr_h
+#import "LGDefaults.h"
 
-#import "LGConstants.h"
-#import "LGError.h"
-#import "LGDefaults+JSSAddon.h"
-#import "NSString+cleaned.h"
-#import "NSTextField+setSafeStringValue.h"
-#endif
+#pragma mark - LGDefaults extensions for JSS Addon Interface
+@interface LGDefaults (JSSAddon)
+
+@property (copy, nonatomic) NSString* JSSURL;
+@property (copy, nonatomic) NSString* JSSAPIUsername;
+@property (copy, nonatomic) NSString* JSSAPIPassword;
+@property (copy, nonatomic) NSArray* JSSRepos;
+@property (assign, nonatomic) BOOL JSSVerifySSL;
+@end

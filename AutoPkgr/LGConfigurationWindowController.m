@@ -33,7 +33,7 @@
 #import "LGAutoPkgrHelperConnection.h"
 #import "AHKeychain.h"
 
-@interface LGConfigurationWindowController () <LGProgressDelegate> {
+@interface LGConfigurationWindowController () {
     LGDefaults *_defaults;
     LGAutoPkgTask *_task;
 }
@@ -63,7 +63,6 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     if (self) {
         // Initialization code here.
         _defaults = [LGDefaults new];
-        _menuProgressDelegate = [NSApp delegate];
         
         NSNotificationCenter *ndc = [NSNotificationCenter defaultCenter];
         [ndc addObserver:self selector:@selector(startProgressNotificationReceived:) name:kLGNotificationProgressStart object:nil];
@@ -279,7 +278,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         }];
     }
     
-    _popRepoTableViewHandler.progressDelegate = self;
+    _popRepoTableViewHandler.progressDelegate = [NSApp delegate];
 
     // Synchronize with the defaults database
     [_defaults synchronize];
@@ -440,7 +439,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     [_installGitButton setEnabled:NO];
 
     LGInstaller *installer = [[LGInstaller alloc] init];
-    installer.progressDelegate = self;
+    installer.progressDelegate = [NSApp delegate];
     [installer installGit:^(NSError *error) {
         [self stopProgress:error];
         if ([LGHostInfo gitInstalled]) {
@@ -466,7 +465,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     [self startProgressWithMessage:@"Installing newest version of AutoPkg..."];
 
     LGInstaller *installer = [[LGInstaller alloc] init];
-    installer.progressDelegate = self;
+    installer.progressDelegate = [NSApp delegate];
     [installer installAutoPkg:^(NSError *error) {
         // Update the autoPkgStatus icon and label if it installed successfully
         [self stopProgress:error];
@@ -787,10 +786,10 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     _task = [[LGAutoPkgTask alloc] init];
     [_task runRecipeList:recipeList
                         progress:^(NSString *message, double taskProgress) {
-                            [self updateProgress:message progress:taskProgress];
+                            [[NSApp delegate] updateProgress:message progress:taskProgress];
         }
         reply:^(NSDictionary *report, NSError *error) {
-                            [self stopProgress:error];
+                            [[NSApp delegate] stopProgress:error];
                             if (report.count || error) {
                                 LGEmailer *emailer = [LGEmailer new];
                                 [emailer sendEmailForReport:report error:error];
@@ -1069,7 +1068,6 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 #pragma mark - LGProgressDelegate
 - (void)startProgressWithMessage:(NSString *)message
 {
-    [_menuProgressDelegate startProgressWithMessage:message];
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         [self.progressMessage setStringValue:message];
         [self.progressIndicator setHidden:NO];
@@ -1084,7 +1082,6 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 {
     // Stop the progress panel, and if and error was sent in
     // do a sheet modal
-    [_menuProgressDelegate stopProgress:error];
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         [self.progressPanel orderOut:self];
         [self.progressIndicator setDoubleValue:0.0];
@@ -1112,7 +1109,6 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 
 - (void)updateProgress:(NSString *)message progress:(double)progress
 {
-    [_menuProgressDelegate updateProgress:message progress:progress];
     if (message.length < 100) {
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             [self.progressIndicator setIndeterminate:NO];
