@@ -54,6 +54,6 @@
 
 #pragma mark - Life Cycle
 - (void)quitHelper:(void (^)(BOOL success))reply;
-- (void)uninstall:(void (^)(NSError *))reply;
+- (void)uninstall:(NSData *)authData reply:(void (^)(NSError *))reply;
 
 @end

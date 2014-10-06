@@ -145,20 +145,26 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     reply(error);
 }
 
-- (void)uninstall:(void (^)(NSError*))reply
+- (void)uninstall:(NSData *)authData reply:(void (^)(NSError *))reply;
 {
    
     NSError *error;
+    error = [LGAutoPkgrAuthorizer checkAuthorization:authData command:_cmd];
+
+    if (error) {
+        return reply(error);
+    }
+    
     if(jobIsRunning(kLGAutoPkgrLaunchDaemonPlist, kAHGlobalLaunchDaemon))
     {
         [[AHLaunchCtl sharedControler] remove:kLGAutoPkgrLaunchDaemonPlist
                                    fromDomain:kAHGlobalLaunchDaemon
-                                        error:&error];
+                                        error:nil];
     }
     
     [AHLaunchCtl removeFilesForHelperWithLabel:kLGAutoPkgrHelperToolName error:&error];
-
     reply(error);
+    [AHLaunchCtl uninstallHelper:kLGAutoPkgrHelperToolName prompt:@"" error:nil];
 }
 
 //----------------------------------------
@@ -169,6 +175,7 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
     
     newConnection.exportedObject = self;
     newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(HelperAgent)];
+
     self.connection = newConnection;
     
     [newConnection resume];

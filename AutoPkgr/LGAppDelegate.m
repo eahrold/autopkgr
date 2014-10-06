@@ -119,23 +119,19 @@
     LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
     LGDefaults *defaults = [[LGDefaults alloc]init];
     
+    NSData *authData = [LGAutoPkgrAuthorizer authorizeHelper];
+    
     [helper connectToHelper];
-    [[helper.connection remoteObjectProxy] uninstall:^(NSError *error) {
+    [[helper.connection remoteObjectProxy] uninstall:authData reply:^(NSError *error) {
         [[NSOperationQueue mainQueue]addOperationWithBlock:^{
             if(error){
                     [NSApp presentError:error];
             } else {
-                NSError *error;
-
-                if(![AHLaunchCtl uninstallHelper:kLGAutoPkgrHelperToolName prompt:@"Uninstall AutoPkgr and associated files?  " error:&error]){
-                    [NSApp presentError:error];
-                }else{
-                    // if uninstalling turn off schedule in defaults so it's not automatically recreated
-                    defaults.checkForNewVersionsOfAppsAutomaticallyEnabled = NO;
-                    NSAlert *alert = [NSAlert alertWithMessageText:@"Removed AutoPkgr Associated files" defaultButton:@"Thanks for using AutoPkgr" alternateButton:nil otherButton:nil informativeTextWithFormat: @"including the helper tool, launchd schedule, and other launchd plist.  You can safely remove it from your Application Folder"];
-                    [alert runModal];
-                    [[NSApplication sharedApplication]terminate:self];
-                }
+                // if uninstalling turn off schedule in defaults so it's not automatically recreated
+                defaults.checkForNewVersionsOfAppsAutomaticallyEnabled = NO;
+                NSAlert *alert = [NSAlert alertWithMessageText:@"Removed AutoPkgr Associated files" defaultButton:@"Thanks for using AutoPkgr" alternateButton:nil otherButton:nil informativeTextWithFormat: @"including the helper tool, launchd schedule, and other launchd plist.  You can safely remove it from your Application Folder"];
+                [alert runModal];
+                [[NSApplication sharedApplication]terminate:self];
             }
         }];
     }];

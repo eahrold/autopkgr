@@ -39,6 +39,14 @@ static NSString *kCommandKeyAuthRightDesc = @"authRightDescription";
                                                                 @"Prompt shown when user is required to authorize removing schedule"
                                                                 )
                 },
+            NSStringFromSelector(@selector(uninstall:reply:)) : @{
+                    kCommandKeyAuthRightName    : @"com.lindegroup.autopkgr.uninstall.helper.tool",
+                    kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
+                    kCommandKeyAuthRightDesc    : NSLocalizedString(
+                                                                    @"AutoPkgr wants to remove the helper tool and associated files.  ",
+                                                                    @"Prompt shown when user is required to authorize removing schedule"
+                                                                    )
+                    },
         };
     });
     return dCommandInfo;
