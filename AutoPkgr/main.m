@@ -69,7 +69,7 @@ void migratePreferences(NSArray *preferences, NSString *fromUser)
 
         // Make sure the pref is a .plist
         NSString *ePref = pref;
-        if (![pref.lastPathComponent isEqualToString:@"plist"]) {
+        if (![pref.pathExtension isEqualToString:@"plist"]) {
             ePref = [pref stringByAppendingPathExtension:@"plist"];
         }
         
