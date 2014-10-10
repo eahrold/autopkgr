@@ -169,9 +169,11 @@ static NSDictionary *userInfoFromHTTPResponse(NSHTTPURLResponse *response)
         case 404:
             // Not Found
             localizedBaseString = @"kLGHTTPErrorNotFound";
+            break;
         case 408:
             // Timeout
             localizedBaseString = @"kLGHTTPErrorTimeout";
+            break;
         default:
             // General failure
             localizedBaseString = @"kLGHTTPErrorUnknown";

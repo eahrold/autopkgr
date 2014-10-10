@@ -3,6 +3,7 @@
 //  AutoPkgr
 //
 //  Created by Eldon on 8/24/14.
+//
 //  Copyright 2014 The Linde Group, Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,4 +27,5 @@
 #import "LGDefaults+JSSAddon.h"
 #import "NSString+cleaned.h"
 #import "NSTextField+setSafeStringValue.h"
+#import "NSImage+statusLight.h"
 #endif

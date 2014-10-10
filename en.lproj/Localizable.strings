@@ -45,7 +45,7 @@
 "kLGErrorInstallAutoPkgrSuggestion" = "If the problem persists please try manually downloading and installing AutoPkgr: https://github.com/lindegroup/autopkgr/releases/latest";
 
 /** Error installing/updating JSSAddon */
-"kLGErrorInstallJSSAddonDescription" = "Error installing autopkg-jss-addon";
+"kLGErrorInstallJSSAddonDescription" = "Error installing JSS AutoPkg Addon";
 "kLGErrorInstallJSSAddonSuggestion" = "If the problem persists please try manually downloading and installing from: https://github.com/sheagcraig/jss-autopkg-addon/releases/latest";
 
 /** Error Serializing JSS response */
@@ -90,15 +90,15 @@
 
 // Success
 "kLGHTTPErrorSuccessDescription" = "Connection Success!";
-"kLGHTTPErrorSuccessSuggestion" = "Nothing more needs to be done";
+"kLGHTTPErrorSuccessSuggestion" = "Nothing more needs to be done.";
 
 // Bad Request
 "kLGHTTPErrorBadRequestDescription" = "Bad Request";
-"kLGHTTPErrorBadRequestSuggestion" = "The request to the server was not formatted correctly.  Please check the infomation you supplied";
+"kLGHTTPErrorBadRequestSuggestion" = "The request to the server was not formatted correctly.  Please check the infomation you supplied.";
 
 // Unauthorized
 "kLGHTTPErrorUnauthorizedDescription" = "User authorization failed.";
-"kLGHTTPErrorUnauthorizedSuggestion" = "Please make you have entered the correct user name and password for the connection";
+"kLGHTTPErrorUnauthorizedSuggestion" = "Please make you have entered the correct user name and password for the connection.";
 
 // Forbidden
 "kLGHTTPErrorForbiddenDescription" = "Access forbidden";
@@ -106,11 +106,11 @@
 
 // Not Found
 "kLGHTTPErrorNotFoundDescription" = "Resource not found";
-"kLGHTTPErrorNotFoundSuggestion" = "The requested resource could not be found.  Please make sure you've entered the correct protocol, host name, and port";
+"kLGHTTPErrorNotFoundSuggestion" = "The requested resource could not be found.  Please make sure you've entered the correct protocol, hostname, and port.";
 
 // Timeout
 "kLGHTTPErrorTimeoutDescription" = "Connection timed out";
-"kLGHTTPErrorTimeoutSuggestion" = "Please make sure you have an active network connection and, that the server you've entered is correct.";
+"kLGHTTPErrorTimeoutSuggestion" = "Please make sure you have an active network connection and the server you've entered is correct.";
 
 // General failure
 "kLGHTTPErrorUnknownDescription" = "There was a problem connecting to the server";
