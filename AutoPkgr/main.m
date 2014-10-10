@@ -64,7 +64,7 @@ void migratePreferences(NSArray *preferences, NSString *fromUser)
 {
 
     NSString *userPreferenceFolder = preferencesFolder(fromUser);
-    
+
     for (NSString *pref in preferences) {
 
         // Make sure the pref is a .plist
@@ -72,15 +72,15 @@ void migratePreferences(NSArray *preferences, NSString *fromUser)
         if (![pref.pathExtension isEqualToString:@"plist"]) {
             ePref = [pref stringByAppendingPathExtension:@"plist"];
         }
-        
+
         NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:[userPreferenceFolder stringByAppendingPathComponent:ePref]];
-        
+
         // Now that the file is created, register it with cfprefsd
-        NSLog(@"Registering Defaults: %@",pref);
+        NSLog(@"Registering Defaults: %@", pref);
         NSUserDefaults *defaults = [NSUserDefaults new];
 
         [defaults setPersistentDomain:dict forName:pref];
-        if(![defaults synchronize]){
+        if (![defaults synchronize]) {
             NSLog(@"There was a problem synchronizing the pref");
         }
     }
@@ -88,6 +88,7 @@ void migratePreferences(NSArray *preferences, NSString *fromUser)
 
 BOOL backupAndLink(NSString *source, NSString *dest)
 {
+    NSLog(@"Linking %@",dest);
     NSFileManager *fm = [NSFileManager new];
     NSError *error;
     if ([fm fileExistsAtPath:dest]) {
@@ -133,8 +134,8 @@ BOOL restoreLinkedBackup(NSString *originalPath)
 
 BOOL setFolderOwnerRecursively(NSString *user, NSString *path)
 {
-    NSLog(@"Resetting ownership: %@ ",path);
-    NSLog(@"Setting owner as: %@ ",user);
+    NSLog(@"Resetting ownership: %@ ", path);
+    NSLog(@"Setting owner as: %@ ", user);
 
     NSFileManager *fileManager = [NSFileManager new];
 
@@ -164,10 +165,10 @@ BOOL setupRootContext(NSString *user)
 
     // Create symlink for AutoPkg and AutoPkgr
     NSLog(@"Linking AutoPkg folders");
-    if (!backupAndLink(autoPkgFolder(user), autoPkgFolder(kRootUser))){
+    if (!backupAndLink(autoPkgFolder(user), autoPkgFolder(kRootUser))) {
         NSLog(@"Problem creating link for autopkgr");
     };
-    
+
     NSLog(@"Linking AutoPkgr folders");
     if (!backupAndLink(autoPkgrFolder(user), autoPkgrFolder(kRootUser))) {
         NSLog(@"Problem creating link for autopkgr");
@@ -176,7 +177,8 @@ BOOL setupRootContext(NSString *user)
     return YES;
 }
 
-NSString *ownerOfItemAtPath(NSString *folderPath){
+NSString *ownerOfItemAtPath(NSString *folderPath)
+{
     NSFileManager *manager = [NSFileManager new];
     NSDictionary *attrs = [manager attributesOfItemAtPath:folderPath error:nil];
     return attrs[NSFileOwnerAccountName];
@@ -192,12 +194,12 @@ void cleanUpRootContext(NSString *user)
 
     // Reset Folders created by root to their proper permissions
     setFolderOwnerRecursively(user, autoPkgFolder(user));
-    
+
     // Fix AutoPkg's CACHE_DIR Directory as well
     LGDefaults *defaults = [[LGDefaults alloc] init];
     NSString *cacheDir = defaults.autoPkgCacheDir;
-    
-    if ( cacheDir ) {
+
+    if (cacheDir) {
         // Don't assume the user this is running as is the same
         // as the cache dir's owner, in the case of a shared env
         NSString *currentOwner = ownerOfItemAtPath(cacheDir);
@@ -211,7 +213,7 @@ int main(int argc, const char *argv[])
     if ([args boolForKey:@"runInBackground"]) {
         NSLog(@"Running AutoPkgr in background...");
         NSString *user = [args objectForKey:@"asUser"];
-        if([NSUserName() isEqualToString:kRootUser]){
+        if ([NSUserName() isEqualToString:kRootUser]) {
             if (!user) {
                 NSLog(@"A user must be specified when running in background");
                 return 1;
@@ -220,20 +222,20 @@ int main(int argc, const char *argv[])
             NSLog(@"this must be run as root");
             return 1;
         }
-        
+
         __block LGEmailer *emailer = [[LGEmailer alloc] init];
         setupRootContext(user);
         LGAutoPkgTask *task = [[LGAutoPkgTask alloc] init];
         [task runRecipeList:[LGRecipes recipeList] progress:^(NSString *message, double progress) {
                                                                 NSLog(@"%@",message);
-                                                         } reply:^(NSDictionary *report, NSError *error) {
+        } reply:^(NSDictionary *report, NSError *error) {
                                                                 [emailer sendEmailForReport:report error:error];
-                                                         }];
-        
-        while (!emailer.complete) {
+        }];
+
+        while (emailer && !emailer.complete) {
             [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
         }
-        
+
         cleanUpRootContext(user);
     } else {
         return NSApplicationMain(argc, argv);
