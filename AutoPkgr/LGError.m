@@ -30,12 +30,11 @@ void DLog(NSString *format, ...)
         if (format) {
             va_list args;
             va_start(args, format);
-            NSLogv([@"[DEBUG] "stringByAppendingString:format], args);
+            NSLogv([@"[DEBUG] " stringByAppendingString:format], args);
             va_end(args);
         }
     }
 }
-
 
 static NSDictionary *userInfoFromCode(LGErrorCodes code)
 {
@@ -83,61 +82,62 @@ static NSDictionary *userInfoFromCode(LGErrorCodes code)
             localizedBaseString = @"kLGErrorUnknown";
             break;
     }
-    
+
     // Setup the localized descripton
     message = NSLocalizedString([localizedBaseString stringByAppendingString:@"Description"],
                                 @"NSLocalizedDescriptionKey");
-    
+
     // Setup the localized recovery suggestion
     suggestion = NSLocalizedString([localizedBaseString stringByAppendingString:@"Suggestion"],
                                    @"NSLocalizedRecoverySuggestionErrorKey");
 
-    
-    return @{NSLocalizedDescriptionKey:message,
-              NSLocalizedRecoverySuggestionErrorKey:suggestion,};
+    return @{
+        NSLocalizedDescriptionKey : message,
+        NSLocalizedRecoverySuggestionErrorKey : suggestion,
+    };
 }
 
 static NSString *errorMessageFromAutoPkgVerb(LGAutoPkgVerb verb)
 {
     NSString *localizedBaseString;
     NSString *message;
-    
+
     switch (verb) {
-        case kLGAutoPkgUndefinedVerb:
-            localizedBaseString = @"kLGAutoPkgUndefinedVerb";
-            break;
-        case kLGAutoPkgRun:
-            localizedBaseString = @"kLGAutoPkgRun";
-            break;
-        case kLGAutoPkgRecipeList:
-            localizedBaseString = @"kLGAutoPkgRecipeList";
-            break;
-        case kLGAutoPkgMakeOverride:
-            localizedBaseString = @"kLGAutoPkgMakeOverride";
-            break;
-        case kLGAutoPkgSearch:
-            localizedBaseString = @"kLGAutoPkgSearch";
-            break;
-        case kLGAutoPkgRepoAdd:
-            localizedBaseString = @"kLGAutoPkgRepoAdd";
-            break;
-        case kLGAutoPkgRepoDelete:
-            localizedBaseString = @"kLGAutoPkgRepoDelete";
-            break;
-        case kLGAutoPkgRepoUpdate:
-            localizedBaseString = @"kLGAutoPkgRepoUpdate";
-            break;
-        case kLGAutoPkgRepoList:
-            localizedBaseString = @"kLGAutoPkgRepoList";
-            break;
-        case kLGAutoPkgVersion:
-            localizedBaseString = @"kLGAutoPkgVersion";
-            break;
-        default:
-            localizedBaseString = @"kLGAutoPkgUndefinedVerb";
-            break;
+    case kLGAutoPkgUndefinedVerb:
+        localizedBaseString = @"kLGAutoPkgUndefinedVerb";
+        break;
+    case kLGAutoPkgRun:
+        localizedBaseString = @"kLGAutoPkgRun";
+        break;
+    case kLGAutoPkgRecipeList:
+        localizedBaseString = @"kLGAutoPkgRecipeList";
+        break;
+    case kLGAutoPkgMakeOverride:
+        localizedBaseString = @"kLGAutoPkgMakeOverride";
+        break;
+    case kLGAutoPkgSearch:
+        localizedBaseString = @"kLGAutoPkgSearch";
+        break;
+    case kLGAutoPkgRepoAdd:
+        localizedBaseString = @"kLGAutoPkgRepoAdd";
+        break;
+    case kLGAutoPkgRepoDelete:
+        localizedBaseString = @"kLGAutoPkgRepoDelete";
+        break;
+    case kLGAutoPkgRepoUpdate:
+        localizedBaseString = @"kLGAutoPkgRepoUpdate";
+        break;
+    case kLGAutoPkgRepoList:
+        localizedBaseString = @"kLGAutoPkgRepoList";
+        break;
+    case kLGAutoPkgVersion:
+        localizedBaseString = @"kLGAutoPkgVersion";
+        break;
+    default:
+        localizedBaseString = @"kLGAutoPkgUndefinedVerb";
+        break;
     }
-    
+
     message = NSLocalizedString([localizedBaseString stringByAppendingString:@"Description"],
                                 @"NSLocalizedDescriptionKey");
     return message;
@@ -150,46 +150,48 @@ static NSDictionary *userInfoFromHTTPResponse(NSHTTPURLResponse *response)
     NSString *suggestion;
 
     switch (response.statusCode) {
-        case 200:
-            // success
-            localizedBaseString = @"kLGHTTPErrorSuccess";
-            break;
-        case 400:
-            // Bad Request
-            localizedBaseString = @"kLGHTTPErrorBadRequest";
-            break;
-        case 401:
-            // Unauthorized
-            localizedBaseString = @"kLGHTTPErrorUnauthorized";
-            break;
-        case 403:
-            // Forbidden
-            localizedBaseString = @"kLGHTTPErrorForbidden";
-            break;
-        case 404:
-            // Not Found
-            localizedBaseString = @"kLGHTTPErrorNotFound";
-            break;
-        case 408:
-            // Timeout
-            localizedBaseString = @"kLGHTTPErrorTimeout";
-            break;
-        default:
-            // General failure
-            localizedBaseString = @"kLGHTTPErrorUnknown";
-            break;
+    case 200:
+        // success
+        localizedBaseString = @"kLGHTTPErrorSuccess";
+        break;
+    case 400:
+        // Bad Request
+        localizedBaseString = @"kLGHTTPErrorBadRequest";
+        break;
+    case 401:
+        // Unauthorized
+        localizedBaseString = @"kLGHTTPErrorUnauthorized";
+        break;
+    case 403:
+        // Forbidden
+        localizedBaseString = @"kLGHTTPErrorForbidden";
+        break;
+    case 404:
+        // Not Found
+        localizedBaseString = @"kLGHTTPErrorNotFound";
+        break;
+    case 408:
+        // Timeout
+        localizedBaseString = @"kLGHTTPErrorTimeout";
+        break;
+    default:
+        // General failure
+        localizedBaseString = @"kLGHTTPErrorUnknown";
+        break;
     }
-    
+
     // Setup the localized descripton
     message = NSLocalizedString([localizedBaseString stringByAppendingString:@"Description"],
                                 @"NSLocalizedDescriptionKey");
-    
+
     // Setup the localized recovery suggestion
     suggestion = NSLocalizedString([localizedBaseString stringByAppendingString:@"Suggestion"],
                                    @"NSLocalizedRecoverySuggestionErrorKey");
-    
-    return @{NSLocalizedDescriptionKey:message,
-             NSLocalizedRecoverySuggestionErrorKey:suggestion,};
+
+    return @{
+        NSLocalizedDescriptionKey : message,
+        NSLocalizedRecoverySuggestionErrorKey : suggestion,
+    };
 }
 
 @implementation LGError
@@ -199,10 +201,10 @@ static NSDictionary *userInfoFromHTTPResponse(NSHTTPURLResponse *response)
     NSError *error;
     [[self class] errorWithCode:code error:&error];
     [NSApp presentError:error
-         modalForWindow:NULL
-               delegate:sender
-     didPresentSelector:selector
-            contextInfo:NULL];
+            modalForWindow:NULL
+                  delegate:sender
+        didPresentSelector:selector
+               contextInfo:NULL];
 }
 #endif
 
@@ -210,7 +212,8 @@ static NSDictionary *userInfoFromHTTPResponse(NSHTTPURLResponse *response)
 + (BOOL)errorWithCode:(LGErrorCodes)code error:(NSError *__autoreleasing *)error
 {
     NSError *err = [self errorWithCode:code];
-    if (error)*error = err;
+    if (error)
+        *error = err;
     return (code == kLGErrorSuccess);
 }
 
@@ -245,17 +248,17 @@ static NSDictionary *userInfoFromHTTPResponse(NSHTTPURLResponse *response)
     if ([task isRunning]) {
         return nil;
     }
-    
+
     if (task.terminationReason == NSTaskTerminationReasonUncaughtSignal) {
         DLog(@"AutoPkg run canceled by user.");
         return nil;
     }
-    
+
     NSError *error;
     NSString *errorMsg = errorMessageFromAutoPkgVerb(verb);
     NSString *errorDetails;
     NSInteger taskError;
-    
+
     if ([task.standardError isKindOfClass:[NSPipe class]]) {
         NSData *errData = [[task.standardError fileHandleForReading] readDataToEndOfFile];
         if (errData) {
@@ -263,7 +266,7 @@ static NSDictionary *userInfoFromHTTPResponse(NSHTTPURLResponse *response)
         }
     }
 
-    taskError = task.terminationStatus;    
+    taskError = task.terminationStatus;
     // AutoPkg's rc on a failed repo-update / add / delete is 0, so check the stderr for "ERROR" string
     if (verb == kLGAutoPkgRepoUpdate || verb == kLGAutoPkgRepoDelete || verb == kLGAutoPkgRepoAdd) {
         if (errorDetails && ![errorDetails isEqualToString:@""]) {
@@ -274,24 +277,23 @@ static NSDictionary *userInfoFromHTTPResponse(NSHTTPURLResponse *response)
     else if (verb == kLGAutoPkgRun && task.terminationStatus == kLGErrorAutoPkgNoRecipes) {
         errorDetails = @"No recipes specified.";
     }
-    
+
     // Otherwise we can just use the termination status
     if (taskError != 0) {
         error = [NSError errorWithDomain:kLGApplicationName
                                     code:taskError
                                 userInfo:@{ NSLocalizedDescriptionKey : errorMsg,
                                             NSLocalizedRecoverySuggestionErrorKey : errorDetails ? errorDetails : @"" }];
-        
+
         // If Debugging is enabled, log the error message
         DLog(@"Error [%ld] %@ \n %@", (long)taskError, errorMsg, errorDetails);
     }
     return error;
 }
 
-
 #pragma mark - NSURLResponse Error
 
-+(NSError *)errorWithResponse:(NSHTTPURLResponse *)response
++ (NSError *)errorWithResponse:(NSHTTPURLResponse *)response
 {
     NSError *error;
     NSInteger code = response.statusCode;
@@ -305,9 +307,11 @@ static NSDictionary *userInfoFromHTTPResponse(NSHTTPURLResponse *response)
     return error;
 }
 
-+(BOOL)errorWithResponse:(NSHTTPURLResponse *)response error:(NSError *__autoreleasing *)error{
++ (BOOL)errorWithResponse:(NSHTTPURLResponse *)response error:(NSError *__autoreleasing *)error
+{
     NSError *err = [self errorWithResponse:response];
-    if (error)*error = err;
+    if (error)
+        *error = err;
     return (err.code == kLGErrorSuccess);
 }
 

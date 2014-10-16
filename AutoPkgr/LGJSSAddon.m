@@ -49,7 +49,6 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
         [self showInstallTabItems:YES];
     } else {
         [_jssInstallButton setEnabled:YES];
-        [_jssInstallButton setTitle:@"Install JSS AutoPkg Addon"];
         [_jssInstallStatusTF setStringValue:@"JSS AutoPkg Addon not installed."];
     }
 
@@ -60,15 +59,7 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
         _jssURLTF.safeStringValue = _defaults.JSSURL;
     }
 
-    [self evaluateRepoViability];
-
-    if (!_defaults.JSSRepos) {
-        [_jssStatusLight setHidden:YES];
-    } else {
-        if (_defaults.JSSAPIPassword && _defaults.JSSAPIUsername && _defaults.JSSURL) {
-            [self checkReachability];
-        }
-    }
+    [self updateJSSURL:nil];
     [_jssDistributionPointTableView reloadData];
 }
 
@@ -87,10 +78,16 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
 {
     [self evaluateRepoViability];
     [self checkReachability];
+
+    [_jssReloadServerBT setEnabled:_jssURLTF.safeStringValue ? YES : NO];
 }
 
 - (IBAction)reloadJSSServerInformation:(id)sender
 {
+    if (!_jssURLTF.safeStringValue) {
+        return;
+    }
+
     if (![LGHostInfo jssAddonInstalled]) {
         _installRequestedDuringConnect = YES;
         if ([self requiresInstall]) {
@@ -129,31 +126,24 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
     [installer installJSSAddon:^(NSError *error) {
         BOOL success = (error == nil);
         if (success) {
+            NSString *message = [NSString stringWithFormat:@"Adding %@",defaultJSSRepo];
+            [[NSApp delegate] startProgressWithMessage:message];
             [LGAutoPkgTask repoAdd:defaultJSSRepo reply:^(NSError *error) {
-                if (error) {
-                    NSLog(@"Problem adding the default jss-repo");
-                    DLog(@"%@",error);
+                [[NSApp delegate]stopProgress:error];
+                [[NSNotificationCenter defaultCenter] postNotificationName:kLGNotificationReposModified
+                                                                    object:nil];
+
+                if (_installRequestedDuringConnect) {
+                    _installRequestedDuringConnect = NO;
+                    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                        [self reloadJSSServerInformation:self];
+                    }];
                 }
             }];
         }
         [[NSOperationQueue mainQueue]addOperationWithBlock:^{
             if (success) {
-                NSString *version = [LGHostInfo getJSSAddonVersion];
-                NSString *title = [NSString stringWithFormat:@"Version %@ installed",version];
-                [_jssInstallStatusLight setHidden:NO];
-                [_jssInstallStatusTF setHidden:NO];
-                [_jssInstallButton setHidden:NO];
-                
-                
-                _jssInstallStatusTF.stringValue = @"JSS AutoPkg Addon is up to date.";
-                _jssInstallButton.title = title;
-                _jssInstallStatusLight.image = [NSImage LGStatusUpToDate];
-            }
-            [_jssInstallButton setEnabled:success ? NO:YES];
-
-            if (success && _installRequestedDuringConnect) {
-                _installRequestedDuringConnect = NO;
-                [self reloadJSSServerInformation:self];
+                [self showInstallTabItems:YES];
             }
         }];
     }];
@@ -212,6 +202,9 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
 #pragma mark - Utility
 - (void)checkReachability
 {
+    if (!_jssURLTF.safeStringValue) {
+        return;
+    }
     // If there's a currently processing _portTester nil it out
     if (_portTester) {
         _portTester = nil;
@@ -219,7 +212,6 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
 
     _portTester = [[LGTestPort alloc] init];
     [self startStatusUpdate];
-    [_jssStatusLight setHidden:NO];
 
     [_portTester testServerURL:_jssURLTF.safeStringValue reply:^(BOOL reachable) {
         _serverReachable = reachable;
@@ -278,8 +270,8 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
     if (!_jssAPIPasswordTF.safeStringValue && !_jssAPIUsernameTF.safeStringValue && !_jssURLTF.safeStringValue) {
         _defaults.JSSRepos = nil;
         [self saveDefaults];
-        [_jssStatusLight setHidden:YES];
         [self showInstallTabItems:NO];
+        [_jssStatusLight setImage:[NSImage LGStatusNone]];
     } else if (![_defaults.JSSAPIPassword isEqualToString:_jssAPIPasswordTF.safeStringValue] || ![_defaults.JSSAPIUsername isEqualToString:_jssAPIUsernameTF.safeStringValue] || ![_defaults.JSSURL isEqualToString:_jssURLTF.safeStringValue]) {
         // Update server status
         if ([_jssStatusLight.image isEqualTo:[NSImage LGStatusAvaliable]]) {
@@ -306,14 +298,13 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
                 [_jssInstallButton setEnabled:updateAvaliable];
                 if (updateAvaliable) {
-                    _jssInstallStatusTF.stringValue = @"JSS AutoPkg update avaliable.";
+                    _jssInstallButton.title = @"Update JSS AutoPkg Addon";
+                    _jssInstallStatusTF.stringValue = kLGJSSAutoPkgAddonUpdateAvailableLabel;
                     _jssInstallStatusLight.image = [NSImage LGStatusUpdateAvaliable];
                 } else {
-                    NSString *version = [LGHostInfo getJSSAddonVersion];
-                    NSString *title = [NSString stringWithFormat:@"Version %@ installed",version];
-
+                    _jssInstallButton.title = @"Install JSS AutoPkg Addon";
+                    _jssInstallStatusTF.stringValue = kLGJSSAutoPkgAddonInstalledLabel;
                     _jssInstallStatusLight.image = [NSImage LGStatusUpToDate];
-                    _jssInstallButton.title = title ;
                 }
             }];
         }];

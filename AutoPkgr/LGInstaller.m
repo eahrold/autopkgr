@@ -4,7 +4,7 @@
 //
 //  Created by Eldon on 9/9/14.
 //
-//  Copyright 2014 The Linde Group, Inc. All rights reserved.
+//  Copyright 2014 The Linde Group, Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -88,7 +88,8 @@ typedef NS_ENUM(NSInteger, LGInstallType) {
     NSError *installError;
     BOOL success = [self runInstallerFor:@"AutoPkg" githubAPI:kLGAutoPkgReleasesJSONURL error:&installError];
     if (!success) {
-        if (installError) DLog(@"%@", installError);
+        if (installError)
+            DLog(@"%@", installError);
         return [LGError errorWithCode:kLGErrorInstallAutoPkg error:error];
     }
     return success;
@@ -112,7 +113,8 @@ typedef NS_ENUM(NSInteger, LGInstallType) {
     NSError *installError;
     BOOL success = [self runInstallerFor:@"JSS AutoPkg Addon" githubAPI:kLGJSSAddonJSONURL error:error];
     if (!success) {
-        if (installError) DLog(@"%@", installError);
+        if (installError)
+            DLog(@"%@", installError);
         success = [LGError errorWithCode:kLGErrorInstallJSSAddon error:error];
     }
     return success;

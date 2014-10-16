@@ -4,7 +4,7 @@
 //
 //  Created by Josh Senick on 7/29/14.
 //
-//  Copyright 2014 The Linde Group, Inc. All rights reserved.
+//  Copyright 2014 The Linde Group, Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -94,20 +94,21 @@
     }
 }
 
--(void)testServerURL:(NSString *)url reply:(void (^)(BOOL))reply{
+- (void)testServerURL:(NSString *)url reply:(void (^)(BOOL))reply
+{
     NSURL *serverURL = [NSURL URLWithString:url];
     NSHost *host = [NSHost hostWithName:[serverURL host]];
     NSNumber *port = [serverURL port];
-    
+
     // if no port specified set to defaults
     if (!port) {
-        if ([serverURL.scheme isEqualToString:@"http" ]) {
+        if ([serverURL.scheme isEqualToString:@"http"]) {
             port = @(80);
         } else if ([serverURL.scheme isEqualToString:@"https"]) {
             port = @(443);
         }
     }
-    
+
     if (host && port) {
         _reachable = reply;
         [self testHost:host withPort:[port integerValue]];
@@ -136,11 +137,11 @@
     if (_reachable) {
         _reachable(success);
     }
-    
+
     [[NSNotificationCenter defaultCenter] postNotificationName:kLGNotificationTestSmtpServerPort
                                                         object:nil
-                                                      userInfo:@{ kLGNotificationUserInfoSuccess : @(success)}];
-    
+                                                      userInfo:@{ kLGNotificationUserInfoSuccess : @(success) }];
+
     [self stopTest];
 }
 

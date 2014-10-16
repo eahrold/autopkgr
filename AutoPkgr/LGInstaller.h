@@ -4,7 +4,7 @@
 //
 //  Created by Eldon on 9/9/14.
 //
-//  Copyright 2014 The Linde Group, Inc. All rights reserved.
+//  Copyright 2014 The Linde Group, Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@
  *
  *  @param reply block that is executed upon completion that takes one argument NSError
  */
- - (void)installJSSAddon:(void (^)(NSError* error))reply;
+- (void)installJSSAddon:(void (^)(NSError *error))reply;
 
 #pragma mark - Blocking Methdos
 - (BOOL)runGitInstaller:(NSError **)error;

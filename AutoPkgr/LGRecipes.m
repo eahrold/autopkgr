@@ -27,11 +27,14 @@
 - (id)init
 {
     self = [super init];
-    _activeRecipes = [self getActiveRecipes];
-    _searchedRecipes = _recipes;
+
+    if (self) {
+        _activeRecipes = [self getActiveRecipes];
+        _searchedRecipes = _recipes;
+    }
+
     return self;
 }
-
 
 - (void)reload
 {
@@ -70,7 +73,6 @@
     }
 
     return autoPkgrSupportDirectory;
-
 }
 
 - (NSArray *)getActiveRecipes
@@ -107,9 +109,9 @@
 
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
-    if ([[tableColumn identifier] isEqualToString:@"appCheckbox"]) {
+    if ([[tableColumn identifier] isEqualToString:@"recipeCheckbox"]) {
         return @([_activeRecipes containsObject:[_searchedRecipes objectAtIndex:row]]);
-    } else if ([[tableColumn identifier] isEqualToString:@"appName"]) {
+    } else if ([[tableColumn identifier] isEqualToString:@"recipeName"]) {
         return [_searchedRecipes objectAtIndex:row];
     }
 
@@ -118,7 +120,7 @@
 
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
-    if ([[tableColumn identifier] isEqualToString:@"appCheckbox"]) {
+    if ([[tableColumn identifier] isEqualToString:@"recipeCheckbox"]) {
         NSMutableArray *workingArray = [NSMutableArray arrayWithArray:_activeRecipes];
         if ([object isEqual:@YES]) {
             [workingArray addObject:[_searchedRecipes objectAtIndex:row]];
@@ -143,7 +145,7 @@
     // activeApps array that cannot be found in the new apps array.
 
     NSMutableArray *workingArray = [NSMutableArray arrayWithArray:_activeRecipes];
-    
+
     for (NSString *string in _activeRecipes) {
         if (![_recipes containsObject:string]) {
             [workingArray removeObject:string];
@@ -170,7 +172,7 @@
     NSPredicate *munkiPredicate = [NSPredicate predicateWithFormat:@"SELF contains[cd] 'munki'"];
 
     // Make a working array filtering out any instances of MakeCatalogs.munki, so there will only be one occurence
-    NSMutableArray * workingArray = [NSMutableArray arrayWithArray:[_activeRecipes filteredArrayUsingPredicate:makeCatalogPredicate]];
+    NSMutableArray *workingArray = [NSMutableArray arrayWithArray:[_activeRecipes filteredArrayUsingPredicate:makeCatalogPredicate]];
 
     // Check if any of the apps is a .munki run
     if ([workingArray filteredArrayUsingPredicate:munkiPredicate].count) {
@@ -189,8 +191,8 @@
 
 - (void)executeAppSearch:(id)sender
 {
-    [recipeTableView beginUpdates];
-    [recipeTableView removeRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, _searchedRecipes.count)] withAnimation:NSTableViewAnimationEffectNone];
+    [_recipeTableView beginUpdates];
+    [_recipeTableView removeRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, _searchedRecipes.count)] withAnimation:NSTableViewAnimationEffectNone];
 
     if ([[_recipeSearchField stringValue] isEqualToString:@""]) {
         _searchedRecipes = _recipes;
@@ -208,9 +210,9 @@
         _searchedRecipes = [NSArray arrayWithArray:workingSearchArray];
     }
 
-    [recipeTableView insertRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, _searchedRecipes.count)] withAnimation:NSTableViewAnimationEffectNone];
+    [_recipeTableView insertRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, _searchedRecipes.count)] withAnimation:NSTableViewAnimationEffectNone];
 
-    [recipeTableView endUpdates];
+    [_recipeTableView endUpdates];
 }
 
 - (void)awakeFromNib

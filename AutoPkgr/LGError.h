@@ -55,7 +55,7 @@ typedef NS_ENUM(NSInteger, LGErrorCodes) {
 typedef NS_ENUM(NSInteger, LGErrorAutoPkgCodes) {
     /** AutoPkg often returns -1 on when misconfigured */
     kLGErrorAutoPkgConfig = -1,
-    
+
     /** AutoPkg returns 255 if no recipe is specified */
     kLGErrorAutoPkgNoRecipes = 255,
 };
@@ -67,13 +67,13 @@ typedef NS_ENUM(NSInteger, LGAutoPkgVerb) {
     kLGAutoPkgRecipeList,
     kLGAutoPkgMakeOverride,
     kLGAutoPkgSearch,
-    
+
     // repo verbs
     kLGAutoPkgRepoAdd,
     kLGAutoPkgRepoDelete,
     kLGAutoPkgRepoUpdate,
     kLGAutoPkgRepoList,
-    
+
     // other verbs
     kLGAutoPkgVersion,
 };
@@ -131,6 +131,6 @@ typedef NS_ENUM(NSInteger, LGAutoPkgVerb) {
 
 #pragma mark - NSURLConnection response Error
 + (BOOL)errorWithResponse:(NSHTTPURLResponse *)response error:(NSError **)error;
-+ (NSError *)errorWithResponse:(NSHTTPURLResponse *)response ;
++ (NSError *)errorWithResponse:(NSHTTPURLResponse *)response;
 
 @end
