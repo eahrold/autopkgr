@@ -251,27 +251,6 @@ typedef NS_ENUM(NSInteger, LGInstallType) {
     return type;
 }
 
-- (BOOL)runCommandAsRoot:(NSString *)command error:(NSError *__autoreleasing *)error;
-{
-    // Super dirty hack, but way easier than
-    // using Authorization Services
-    NSDictionary *errorDict = [[NSDictionary alloc] init];
-    NSString *script = [NSString stringWithFormat:@"do shell script \"sh -c '%@'\" with administrator privileges", command];
-    NSLog(@"AppleScript commands: %@", script);
-    NSAppleScript *appleScript = [[NSAppleScript alloc] initWithSource:script];
-    if ([appleScript executeAndReturnError:&errorDict]) {
-        return YES;
-    } else {
-        NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : errorDict[NSAppleScriptErrorBriefMessage],
-                                    NSLocalizedRecoverySuggestionErrorKey : errorDict[NSAppleScriptErrorMessage] };
-        NSNumber *exitCode = errorDict[NSAppleScriptErrorNumber];
-
-        if (error)
-            *error = [NSError errorWithDomain:kLGApplicationName code:[exitCode intValue] userInfo:userInfo];
-        return NO;
-    }
-}
-
 - (BOOL)unmountVolume
 {
     if (_mountPoint) {
