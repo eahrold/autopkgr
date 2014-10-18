@@ -34,7 +34,7 @@
 
 @interface LGConfigurationWindowController () {
     LGDefaults *_defaults;
-    LGAutoPkgTask *_task;
+    LGAutoPkgTaskManager *_taskManager;
 }
 
 @end
@@ -728,41 +728,47 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 - (IBAction)updateReposNow:(id)sender
 {
     [self startProgressWithMessage:@"Updating AutoPkg recipe repos."];
-    [self.updateRepoNowButton setEnabled:NO];
-
-    [LGAutoPkgTask repoUpdate:^(NSError *error) {
+    [_updateRepoNowButton setEnabled:NO];
+    if (!_taskManager) {
+        _taskManager = [[LGAutoPkgTaskManager alloc] init];
+    }
+    _taskManager.progressDelegate = self;
+    [_taskManager repoUpdate:^(NSError *error) {
         [self stopProgress:error];
-        [self.updateRepoNowButton setEnabled:YES];
-        [self.recipeTableViewHandler reload];
+        [_updateRepoNowButton setEnabled:YES];
+        [_recipeTableViewHandler reload];
     }];
 }
 
 - (IBAction)checkAppsNow:(id)sender
 {
     NSString *recipeList = [LGRecipes recipeList];
+    if (!_taskManager) {
+        _taskManager = [[LGAutoPkgTaskManager alloc] init];
+    }
+
+    _taskManager.progressDelegate = [NSApp delegate];
+
     [_cancelAutoPkgRunButton setHidden:NO];
     [_progressDetailsMessage setHidden:NO];
     [[NSApp delegate] startProgressWithMessage:@"Running selected AutoPkg recipes."];
-    _task = [[LGAutoPkgTask alloc] init];
-    [_task runRecipeList:recipeList
-        progress:^(NSString *message, double taskProgress) {
-                            [[NSApp delegate] updateProgress:message progress:taskProgress];
-        }
+
+    [_taskManager runRecipeList:recipeList
+        updateRepo:_defaults.checkForRepoUpdatesAutomaticallyEnabled
+        progress:^(NSString *message, double taskProgress) {}
         reply:^(NSDictionary *report, NSError *error) {
                             [[NSApp delegate] stopProgress:error];
                             if (report.count || error) {
                                 LGEmailer *emailer = [LGEmailer new];
                                 [emailer sendEmailForReport:report error:error];
                             }
-                            _task = nil;
         }];
 }
 
 - (IBAction)cancelAutoPkgRun:(id)sender
 {
-    if (_task) {
-        [_task cancel];
-        NSLog(@"AutoPkg task cancelled.");
+    if (_taskManager) {
+        [_taskManager cancel];
     }
 }
 

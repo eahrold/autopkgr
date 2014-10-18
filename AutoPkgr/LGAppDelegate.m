@@ -87,6 +87,7 @@
     [self startProgressWithMessage:@"Running selected AutoPkg recipes."];
     NSString *recipeList = [LGRecipes recipeList];
     [LGAutoPkgTask runRecipeList:recipeList
+                      updateRepo:[[LGDefaults standardUserDefaults] checkForRepoUpdatesAutomaticallyEnabled]
         progress:^(NSString *message, double taskProgress) {
                             [self updateProgress:message progress:taskProgress];
         }

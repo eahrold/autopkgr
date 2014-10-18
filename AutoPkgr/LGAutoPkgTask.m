@@ -35,6 +35,10 @@ NSString *autopkg()
     return @"/usr/local/bin/autopkg";
 }
 
+@interface LGAutoPkgTaskManager () <LGProgressDelegate>
+@property (strong, atomic) NSMutableArray *currentOperations;
+@end
+
 @interface LGAutoPkgTask ()
 
 @property (strong, atomic) NSTask *task;
@@ -50,7 +54,143 @@ NSString *autopkg()
 @property (nonatomic, readwrite, assign) BOOL complete;
 @property (strong, nonatomic) NSOperationQueue *taskQueue;
 @property (strong, nonatomic) NSOperationQueue *statusUpdateQueue;
+@property (strong, atomic) NSError *error;
 @property (readwrite, nonatomic, strong) NSRecursiveLock *taskLock;
+
+- (NSString *)taskDescription;
+
+@end
+
+@implementation LGAutoPkgTaskManager
+
+- (void)addOperation:(LGAutoPkgTask *)op
+{
+    [super addOperation:op];
+    if (_progressDelegate) {
+        op.progressDelegate = _progressDelegate;
+    } else {
+        op.progressDelegate = self;
+    }
+}
+
+- (void)addOperations:(NSArray *)ops waitUntilFinished:(BOOL)wait
+{
+    NSPredicate *classPredicate = [NSPredicate predicateWithFormat:@"class == %@", [LGAutoPkgTask class]];
+    NSArray *validObjects = [ops filteredArrayUsingPredicate:classPredicate];
+    for (LGAutoPkgTask *op in validObjects) {
+        if (_progressDelegate) {
+            op.progressDelegate = _progressDelegate;
+        } else {
+            op.progressDelegate = self;
+        }
+    }
+
+    [super addOperations:validObjects waitUntilFinished:wait];
+}
+
+- (BOOL)cancel
+{
+    NSPredicate *classPredicate = [NSPredicate predicateWithFormat:@"class == %@", [LGAutoPkgTask class]];
+    for (LGAutoPkgTask *operation in [self.operations filteredArrayUsingPredicate:classPredicate]) {
+        [operation.taskLock lock];
+        if (operation.task && operation.task.isRunning) {
+            NSLog(@"Canceling %@", operation.taskDescription);
+            [operation.task terminate];
+        }
+        [operation.taskLock unlock];
+    }
+    [super cancelAllOperations];
+    return YES;
+}
+
+#pragma mark - Convenience Instance Methods
+- (void)runRecipes:(NSArray *)recipes
+          progress:(void (^)(NSString *, double))progress
+             reply:(void (^)(NSDictionary *, NSError *))reply
+{
+    NSMutableArray *fullRecipes = [[NSMutableArray alloc] init];
+    progress = _runStatusUpdate;
+
+    [fullRecipes addObject:@"run"];
+    for (NSString *recipe in recipes) {
+        [fullRecipes addObject:recipe];
+    }
+
+    LGAutoPkgTask *task = [[LGAutoPkgTask alloc] init];
+
+    [fullRecipes addObjectsFromArray:@[ @"-v", @"--report-plist" ]];
+    task.arguments = [NSArray arrayWithArray:fullRecipes];
+
+    __weak LGAutoPkgTask *weak = task;
+    [task setCompletionBlock:^{
+        reply(weak.reportPlist,weak.error);
+    }];
+}
+
++ (LGAutoPkgTask *)repoUpdateTask
+{
+    LGAutoPkgTask *task = [[LGAutoPkgTask alloc] init];
+    task.arguments = @[ @"repo-update", @"all" ];
+    return task;
+}
+
++ (LGAutoPkgTask *)runRecipeTask
+{
+    LGAutoPkgTask *task = [[LGAutoPkgTask alloc] init];
+    task.arguments = @[ @"run", @"--recipe-list", [LGRecipes recipeList], @"--report-plist" ];
+    return task;
+}
+
+- (void)repoUpdate:(void (^)(NSError *))reply
+{
+    LGAutoPkgTask *task = [[self class] repoUpdateTask];
+    [self addOperation:task];
+
+    __weak LGAutoPkgTask *weakTask = task;
+    [task setCompletionBlock:^{
+        reply(weakTask.error);
+    }];
+}
+
+- (void)runRecipeList:(NSString *)recipeList
+           updateRepo:(BOOL)updateRepo
+             progress:(void (^)(NSString *, double))progress
+                reply:(void (^)(NSDictionary *, NSError *))reply
+{
+    LGAutoPkgTask *runTask = [LGAutoPkgTaskManager runRecipeTask];
+    progress = _runStatusUpdate;
+
+    if (updateRepo) {
+        LGAutoPkgTask *repoUpdate = [LGAutoPkgTaskManager repoUpdateTask];
+        [runTask addDependency:repoUpdate];
+        [self addOperation:repoUpdate];
+    }
+
+    [self addOperation:runTask];
+
+    __weak LGAutoPkgTask *weakTask = runTask;
+    [runTask setCompletionBlock:^{
+        reply(weakTask.reportPlist,weakTask.error);
+    }];
+}
+
+#pragma mark - Progress delegation
+- (void)startProgressWithMessage:(NSString *)message
+{
+    NSLog(@"I'm the prog delegate Runnin start %@", self);
+}
+
+- (void)stopProgress:(NSError *)error
+{
+    NSLog(@"I'm the prog delegate Runnin stop %@", self);
+}
+
+- (void)updateProgress:(NSString *)message progress:(double)progress
+{
+    if (_runStatusUpdate) {
+        _runStatusUpdate(message, progress);
+    }
+}
 
 @end
 
@@ -65,7 +205,6 @@ NSString *autopkg()
 {
     DLog(@"Completed AutoPkg Task:\n  %@\n", [self taskDescription]);
     self.task.terminationHandler = nil;
-    self.runStatusUpdate = nil;
 }
 
 - (id)init
@@ -77,8 +216,20 @@ NSString *autopkg()
         self.statusUpdateQueue = [NSOperationQueue currentQueue];
         self.taskLock = [[NSRecursiveLock alloc] init];
         self.taskLock.name = kLGAutoPkgTaskLock;
+        self.taskStatusDelegate = self;
     }
     return self;
+}
+
+#pragma mark - NSOperation
+- (void)main
+{
+    @autoreleasepool
+    {
+        NSError *error;
+        [self launch:&error];
+        self.error = error;
+    }
 }
 
 #pragma mark - Life Cycle
@@ -136,18 +287,6 @@ NSString *autopkg()
         [self launch:&error];
         reply(error);
     }];
-}
-
-- (BOOL)cancel
-{
-    BOOL canceled = YES;
-    [self.taskLock lock];
-    if (self.task && self.task.isRunning) {
-        [self.task terminate];
-        canceled = ![self.task isRunning];
-    }
-    [self.taskLock unlock];
-    return canceled;
 }
 
 - (BOOL)complete
@@ -217,29 +356,37 @@ NSString *autopkg()
     self.task.standardError = [NSPipe pipe];
     self.task.standardOutput = [NSPipe pipe];
 
-    if (_verb == kLGAutoPkgRun) {
+    if (_verb == kLGAutoPkgRun || _verb == kLGAutoPkgRepoUpdate) {
         if (self.AUTOPKG_VERSION_0_4_0) {
             __block double count = 0.0;
-            __block double total = [self recipeListCount];
-            __weak LGAutoPkgTask *weakSelf = self;
+            __block double recipeTotal = [self recipeListCount];
+            __block double repoTotal = (double)[[[self class] repoList] count];
 
-            NSPredicate *processingPredicate = [NSPredicate predicateWithFormat:@"SELF BEGINSWITH[cd] 'Processing'"];
             [[self.task.standardOutput fileHandleForReading] setReadabilityHandler:^(NSFileHandle *handle) {
-                int cntStr = (int)round(count) + 1;
-                int totStr = (int)round(total);
                 NSString *message = [[NSString alloc]initWithData:[handle availableData] encoding:NSUTF8StringEncoding];
-                NSString *fullMessage;
-                if ([processingPredicate evaluateWithObject:message]) {
-                    fullMessage = [[NSString stringWithFormat:@"(%d/%d) %@", cntStr, totStr, message] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
 
-                    if (weakSelf.runStatusUpdate) {
-                        [weakSelf.statusUpdateQueue addOperationWithBlock:^{
-                            weakSelf.runStatusUpdate(fullMessage, ((count/total) * 100));
-                        }];
+                NSPredicate *progressPredicate = [NSPredicate predicateWithFormat:@"SELF CONTAINS[cd] %@",(_verb == kLGAutoPkgRun) ? @"Processing":@".git"];
+
+                if ([progressPredicate evaluateWithObject:message]) {
+                    NSString *fullMessage;
+                    double progress = 0.0;
+                    if (_verb == kLGAutoPkgRepoUpdate) {
+                        progress = ((count/repoTotal) * 100);
+                        fullMessage = [NSString stringWithFormat:@"Updating %@", [message lastPathComponent]];
+                    } else {
+                        int cntStr = (int)round(count) + 1;
+                        int totStr = (int)round(recipeTotal);
+                        fullMessage = [[NSString stringWithFormat:@"(%d/%d) %@", cntStr, totStr, message] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+                        progress = ((count/recipeTotal) * 100);
                     }
-                    if (count < total) {
-                        count++;
-                    }
+
+                    NSDictionary *dict = @{@"message":fullMessage,
+                                           @"progress":@(progress),
+                                           };
+                    count++;
+
+                    [_taskStatusDelegate performSelectorOnMainThread:@selector(didUpdateStatus:) withObject:dict waitUntilDone:NO];
+
                 } else {
                     NSLog(@"%@",message);
                 }
@@ -318,6 +465,10 @@ NSString *autopkg()
 
 - (NSDictionary *)reportPlist
 {
+    if (_reportPlist) {
+        return _reportPlist;
+    }
+
     if (self.AUTOPKG_VERSION_0_4_0) {
         NSFileManager *fm = [NSFileManager defaultManager];
         NSString *reportPlistFile = self.reportPlistFile;
@@ -436,64 +587,27 @@ NSString *autopkg()
     return count;
 }
 
-#pragma mark - Convenience Instance Methods
-- (void)runRecipes:(NSArray *)recipes
-          progress:(void (^)(NSString *))progress
-             reply:(void (^)(NSError *))reply
-{
-    NSMutableArray *fullRecipes = [[NSMutableArray alloc] init];
-    [fullRecipes addObject:@"run"];
-    for (NSString *recipe in recipes) {
-        [fullRecipes addObject:recipe];
-    }
-
-    [fullRecipes addObjectsFromArray:@[ @"-v", @"--report-plist" ]];
-    self.arguments = [NSArray arrayWithArray:fullRecipes];
-
-    [self setRunStatusUpdate:^(NSString *message, double progressUpdate) {
-        progress(message);
-    }];
-
-    [self launchInBackground:^(NSError *error) {
-        reply(error);
-    }];
-}
-
-- (void)runRecipeList:(NSString *)recipeList
-             progress:(void (^)(NSString *, double))progress
-                reply:(void (^)(NSDictionary *, NSError *))reply
-{
-    self.arguments = @[ @"run", @"--recipe-list", recipeList, @"--report-plist" ];
-
-    [self setRunStatusUpdate:^(NSString *message, double progressUpdate) {
-        progress(message, progressUpdate);
-    }];
-
-    [self launchInBackground:^(NSError *error) {
-        reply(self.reportPlist, error);
-    }];
-}
-
 #pragma mark - Class Methods
 #pragma mark-- Recipe Methods
 + (void)runRecipes:(NSArray *)recipes
-          progress:(void (^)(NSString *))progress
-             reply:(void (^)(NSError *))reply
+          progress:(void (^)(NSString *, double))progress
+             reply:(void (^)(NSDictionary *, NSError *))reply
 {
-    LGAutoPkgTask *task = [[LGAutoPkgTask alloc] init];
-    [task runRecipes:recipes progress:^(NSString *message) {
-        progress(message);
-    } reply:^(NSError *error) {
-        reply(error);
+    LGAutoPkgTaskManager *task = [[LGAutoPkgTaskManager alloc] init];
+    [task runRecipes:recipes progress:^(NSString *message, double progup) {
+        progress(message,progup);
+    } reply:^(NSDictionary *dict, NSError *error) {
+        reply(dict,error);
     }];
 }
 
 + (void)runRecipeList:(NSString *)recipeList
+           updateRepo:(BOOL)updateRepo
              progress:(void (^)(NSString *, double))progress
                 reply:(void (^)(NSDictionary *, NSError *))reply
 {
-    LGAutoPkgTask *task = [[LGAutoPkgTask alloc] init];
-    [task runRecipeList:recipeList progress:^(NSString *message, double prog) {
+    LGAutoPkgTaskManager *task = [[LGAutoPkgTaskManager alloc] init];
+    [task runRecipeList:recipeList updateRepo:updateRepo progress:^(NSString *message, double prog) {
         progress(message, prog);
     } reply:^(NSDictionary *report, NSError *error) {
         reply(report, error);
@@ -628,6 +742,23 @@ NSString *autopkg()
         return YES;
     }
     return NO;
+}
+
+#pragma mark - Status Progress Delegation
+- (void)didUpdateStatus:(NSDictionary *)statusDict
+{
+    NSAssert([[NSThread currentThread] isEqualTo:[NSThread mainThread]], @"Not Main thread!!!");
+
+    NSString *message = statusDict[@"message"];
+    double progress = [statusDict[@"progress"] doubleValue];
+
+    if (message) {
+        [_progressDelegate updateProgress:message progress:progress];
+    }
+}
+
+- (void)didCompleteTask:(NSDictionary *)completionDict
+{
 }
 
 @end
