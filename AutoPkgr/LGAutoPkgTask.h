@@ -25,7 +25,7 @@
 
 @class LGAutoPkgTaskManager;
 @class LGAutoPkgTask;
-
+@class LGAutoPkgTaskResponseObject;
 /**
  *  Constant to access recipe key in autopkg search
  */
@@ -45,21 +45,21 @@ extern NSString *const kLGAutoPkgRepoPathKey;
 
 #pragma mark Task Status Delegate
 @protocol LGTaskStatusDelegate <NSObject>
-- (void)didUpdateStatus:(NSDictionary *)statusDict;
-- (void)didCompleteTask:(NSDictionary *)completionDict;
+- (void)didReceiveStatusUpdate:(LGAutoPkgTaskResponseObject *)object;
+- (void)didCompleteOperation:(LGAutoPkgTaskResponseObject *)object;
 @end
 
+#pragma mark - AutoPkg Task Manager
+/**
+ *  Task manager for autopkg tasks.
+ *  @note LGAutoPkg tasks that runs asynchronously should use this class to handle enqueueing.
+ */
 @interface LGAutoPkgTaskManager : NSOperationQueue
 
-@property (weak, nonatomic) id<LGProgressDelegate> progressDelegate;
-
 /**
- *  The block to use for providing run status updates asynchronously.
+ *  Progress delegate
  */
-@property (copy) void (^runStatusUpdate)(NSString *message, double progress);
-
-#pragma mark - Subclassing
-- (void)addOperation:(LGAutoPkgTask *)op;
+@property (weak, nonatomic) id<LGProgressDelegate> progressDelegate;
 
 /**
  *  Equivelant to /usr/bin/local/autopkg run --recipe-list=xxx --report-plist=xxx
@@ -71,50 +71,72 @@ extern NSString *const kLGAutoPkgRepoPathKey;
  */
 - (void)runRecipeList:(NSString *)recipeList
            updateRepo:(BOOL)updateRepo
-             progress:(void (^)(NSString *, double))progress
-                reply:(void (^)(NSDictionary *, NSError *))reply;
+                reply:(void (^)(NSDictionary *report, NSError *error))reply;
 
 /**
  *  Equivelant to /usr/bin/local/autopkg run recipe1 recipe2 ... recipe(n) --report-plist=xxx
  *
  *  @param recipes  Array of recipes to run
  *  @param progress  Block to be executed whenever new progress information is avaliable.  This block has no return value and takes two arguments: NSString, double
- *  @param reply The block to be executed on upon task completion. This block has no return value and takes one argument: NSError
+ *  @param reply The block to be executed on upon task completion. This block has no return value and takes two arguments: NSDictionary (with ther report plist data), NSError
  */
 - (void)runRecipes:(NSArray *)recipes
-          progress:(void (^)(NSString *, double))progress
-             reply:(void (^)(NSDictionary *, NSError *))reply;
+             reply:(void (^)(NSDictionary *report, NSError *error))reply;
 
-- (void)repoUpdate:(void (^)(NSError *))reply;
+/**
+ *  Equivelant to /usr/bin/local/autopkg repo-update all
+ *
+ *  @param reply The block to be executed on upon task completion. This block has no return value and takes one argument: NSError
+ */
+- (void)repoUpdate:(void (^)(NSError *error))reply;
+
 
 /**
  *  Cancel the current task
  *
  *  @return YES if task was successfully canceled, NO is the task is still running.
  */
-- (BOOL)cancel;
+- (void)cancel;
+
+#pragma mark Subclassing
+/**
+ *  Subclass override 
+ *
+ *  @param op LGAutoPkgTask
+ */
+- (void)addOperation:(LGAutoPkgTask *)op;
 
 @end
 
+#pragma mark - AutoPkg Task
 @interface LGAutoPkgTask : NSOperation <LGTaskStatusDelegate>
 
-@property (weak, nonatomic) LGAutoPkgTask<LGTaskStatusDelegate> *taskStatusDelegate;
+/**
+ *  Task status delegate gets raw output in the form of an LGAutoPkgTaskResponseObject
+ *  @note This is set to the task by default, only override with good reason.
+ */
+@property (weak, nonatomic) id<LGTaskStatusDelegate> taskStatusDelegate;
+
+/**
+ *  Progress Delegate that gets status update messages and progress percent.
+ *  @note Currenlty this only handles status updates, not start/stop
+ */
 @property (weak, nonatomic) id<LGProgressDelegate> progressDelegate;
 
 /**
  *  Arguments passed into autopkg
  */
-@property (strong, nonatomic) NSArray *arguments;
+@property (copy, nonatomic) NSArray *arguments;
 
 /**
  *  stdout from autopkg
  */
-@property (strong, nonatomic, readonly) NSString *standardOutString;
+@property (copy, nonatomic, readonly) NSString *standardOutString;
 
 /**
  *  stderr from autopkg
  */
-@property (strong, nonatomic, readonly) NSString *standardErrString;
+@property (copy, nonatomic, readonly) NSString *standardErrString;
 
 /**
  * An array of dictionaries based on the autopkg verb
@@ -123,9 +145,9 @@ extern NSString *const kLGAutoPkgRepoPathKey;
 @property (copy, nonatomic, readonly) NSArray *results;
 
 /**
- *  Observable KVO property indicating the task has completed.
+ *  The block to use for providing run status updates asynchronously.
  */
-@property (nonatomic, readonly) BOOL complete;
+@property (copy) void (^progressUpdateBlock)(NSString *message, double progress);
 
 #pragma mark - Instance Methods
 /**
@@ -137,7 +159,7 @@ extern NSString *const kLGAutoPkgRepoPathKey;
  *
  *  @discussion a cancel request will also result in a return of YES;
  */
-- (BOOL)launch:(NSError **)error;
+- (BOOL)launch;
 
 /**
  *  Launch task in an asynchronous way
@@ -149,14 +171,20 @@ extern NSString *const kLGAutoPkgRepoPathKey;
 - (void)launchInBackground:(void (^)(NSError *error))reply;
 
 #pragma mark - Class Methods
-#pragma mark-- Run methods
 
+#pragma mark -- Convenience Initializers
++ (LGAutoPkgTask *)runRecipeTask:(NSArray *)recipes;
++ (LGAutoPkgTask *)runRecipeListTask;
++ (LGAutoPkgTask *)searchTask:(NSString *)recipe;
++ (LGAutoPkgTask *)repoUpdateTask;
++ (LGAutoPkgTask *)addRepoTask:(NSString *)repo;
+
+#pragma mark-- Recipe methods
 /**
  *  Convience Accessor to autopkg run: see runRecipeList:progress:reply for details
  *
  */
 + (void)runRecipeList:(NSString *)recipeList
-           updateRepo:(BOOL)updateRepo
              progress:(void (^)(NSString *message, double taskProgress))progress
                 reply:(void (^)(NSDictionary *report, NSError *error))reply;
 
@@ -167,7 +195,6 @@ extern NSString *const kLGAutoPkgRepoPathKey;
 + (void)runRecipes:(NSArray *)recipes
           progress:(void (^)(NSString *, double taskProgress))progress
              reply:(void (^)(NSDictionary *, NSError *))reply;
-
 /**
  *  Equivelant to /usr/bin/local/autopkg search [recipe]
  *
@@ -187,12 +214,6 @@ extern NSString *const kLGAutoPkgRepoPathKey;
 + (void)makeOverride:(NSString *)recipe
                reply:(void (^)(NSError *error))reply;
 
-/**
- *  Equivelant to /usr/bin/local/autopkg list-recipes
- *
- *  @param reply  The block to be executed on upon task completion. This block has no return value and takes two arguments: NSArray, NSError
- */
-+ (void)listRecipes:(void (^)(NSArray *recipes, NSError *error))reply;
 /**
  *  Equivelant to /usr/bin/local/autopkg list-recipes
  *
@@ -224,14 +245,8 @@ extern NSString *const kLGAutoPkgRepoPathKey;
  *
  *  @param reply The block to be executed on upon task completion. This block has no return value and takes one argument: NSError
  */
-+ (void)repoUpdate:(void (^)(NSError *error))reply;
-
-/**
- *  Equivelant to /usr/bin/local/autopkg repo-list (Asynchronous)
- *
- *  @param reply  The block to be executed on upon task completion. This block has no return value and takes two arguments: NSArray, NSError
- */
-+ (void)repoList:(void (^)(NSArray *repos, NSError *error))reply;
++ (void)repoUpdate:(void (^)(NSString *, double taskProgress))progress
+             reply:(void (^)(NSError *error))reply;
 
 /**
  *  Equivelant to /usr/bin/local/autopkg repo-list (Synchronous)
@@ -249,3 +264,16 @@ extern NSString *const kLGAutoPkgRepoPathKey;
 + (NSString *)version;
 
 @end
+
+#pragma mark - AutoPkg Response / Progress message Object
+@interface LGAutoPkgTaskResponseObject : NSObject <NSSecureCoding>
+#pragma mark-- Completion Items
+@property (copy, nonatomic) NSError *error;
+@property (copy, nonatomic) NSDictionary *report;
+@property (copy, nonatomic) NSArray *results;
+
+#pragma mark-- Progress Items
+@property (copy, nonatomic) NSString *progressMessage;
+@property (assign, nonatomic) double progress;
+@end
+

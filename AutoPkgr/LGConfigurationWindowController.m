@@ -281,11 +281,16 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         [_checkAppsNowButton setEnabled:NO];
         [_updateRepoNowButton setTitle:@"Repos Updating..."];
         NSLog(@"Updating AutoPkg recipe repos...");
-        [LGAutoPkgTask repoUpdate:^(NSError *error) {
-            [_updateRepoNowButton setEnabled:YES];
-            [_updateRepoNowButton setTitle:@"Update Repos Now"];
-            [_checkAppsNowButton setEnabled:YES];
-            NSLog(@"AutoPkg recipe repos updated.");
+
+        [LGAutoPkgTask repoUpdate:^(NSString *message, double taskProgress) {
+            [[NSApp delegate] updateProgress:message progress:taskProgress];
+        } reply:^(NSError *error) {
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [_updateRepoNowButton setEnabled:YES];
+                [_updateRepoNowButton setTitle:@"Update Repos Now"];
+                [_checkAppsNowButton setEnabled:YES];
+                NSLog(@"AutoPkg recipe repos updated.");
+            }];
         }];
     }
 
@@ -727,14 +732,20 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 
 - (IBAction)updateReposNow:(id)sender
 {
-    [self startProgressWithMessage:@"Updating AutoPkg recipe repos."];
+    [_cancelAutoPkgRunButton setHidden:NO];
+    [_progressDetailsMessage setHidden:NO];
+    [[NSApp delegate] startProgressWithMessage:@"Updating AutoPkg recipe repos."];
+
     [_updateRepoNowButton setEnabled:NO];
     if (!_taskManager) {
         _taskManager = [[LGAutoPkgTaskManager alloc] init];
     }
-    _taskManager.progressDelegate = self;
+
+    _taskManager.progressDelegate = [NSApp delegate];
+
     [_taskManager repoUpdate:^(NSError *error) {
-        [self stopProgress:error];
+        NSAssert([NSThread isMainThread], @"reply not on manin thread!!");
+        [[NSApp delegate] stopProgress:error];
         [_updateRepoNowButton setEnabled:YES];
         [_recipeTableViewHandler reload];
     }];
@@ -754,15 +765,16 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     [[NSApp delegate] startProgressWithMessage:@"Running selected AutoPkg recipes."];
 
     [_taskManager runRecipeList:recipeList
-        updateRepo:_defaults.checkForRepoUpdatesAutomaticallyEnabled
-        progress:^(NSString *message, double taskProgress) {}
-        reply:^(NSDictionary *report, NSError *error) {
-                            [[NSApp delegate] stopProgress:error];
-                            if (report.count || error) {
-                                LGEmailer *emailer = [LGEmailer new];
-                                [emailer sendEmailForReport:report error:error];
-                            }
-        }];
+                     updateRepo:NO
+                          reply:^(NSDictionary *report, NSError *error) {
+                              NSAssert([NSThread isMainThread], @"reply not on manin thread!!");
+
+                                [[NSApp delegate] stopProgress:error];
+                                if (report.count || error) {
+                                    LGEmailer *emailer = [LGEmailer new];
+                                    [emailer sendEmailForReport:report error:error];
+                                }
+                          }];
 }
 
 - (IBAction)cancelAutoPkgRun:(id)sender
