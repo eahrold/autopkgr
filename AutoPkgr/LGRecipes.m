@@ -197,17 +197,8 @@
     if ([[_recipeSearchField stringValue] isEqualToString:@""]) {
         _searchedRecipes = _recipes;
     } else {
-        NSMutableArray *workingSearchArray = [[NSMutableArray alloc] init];
-
-        for (NSString *string in _recipes) {
-            NSRange range = [string rangeOfString:[_recipeSearchField stringValue] options:NSCaseInsensitiveSearch];
-
-            if (!NSEqualRanges(range, NSMakeRange(NSNotFound, 0))) {
-                [workingSearchArray addObject:string];
-            }
-        }
-
-        _searchedRecipes = [NSArray arrayWithArray:workingSearchArray];
+        NSPredicate *recipeSearchPred = [NSPredicate predicateWithFormat:@"SELF CONTAINS[cd] %@",[_recipeSearchField stringValue]];
+        _searchedRecipes = [_recipes filteredArrayUsingPredicate:recipeSearchPred];
     }
 
     [_recipeTableView insertRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, _searchedRecipes.count)] withAnimation:NSTableViewAnimationEffectNone];

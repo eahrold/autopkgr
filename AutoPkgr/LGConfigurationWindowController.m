@@ -1074,14 +1074,17 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     // Stop the progress panel, and if and error was sent in
     // do a sheet modal
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [self.progressPanel orderOut:self];
-        [self.progressIndicator setDoubleValue:0.0];
-        [self.progressIndicator setIndeterminate:YES];
-        [self.cancelAutoPkgRunButton setHidden:YES];
+        // Give the progress panel a second to got to 100%
+        [self.progressIndicator setDoubleValue:100.0];
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
 
         [NSApp endSheet:self.progressPanel returnCode:0];
-        [self.progressMessage setStringValue:@"Starting..."];
+        [self.progressIndicator setIndeterminate:YES];
+        [self.progressPanel orderOut:self];
+        [self.cancelAutoPkgRunButton setHidden:YES];
         [self.progressDetailsMessage setStringValue:@""];
+        [self.progressMessage setStringValue:@"Starting..."];
+        [self.progressIndicator setDoubleValue:0.0];
 
         if (error) {
             SEL selector = nil;

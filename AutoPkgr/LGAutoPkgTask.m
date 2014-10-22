@@ -20,13 +20,15 @@
 #import "LGAutoPkgTask.h"
 #import "LGRecipes.h"
 #import "LGVersionComparator.h"
+#import "LGHostInfo.h"
 
 NSString *const kLGAutoPkgTaskLock = @"com.lindegroup.autopkg.task.lock";
 
-NSString *const kLGAutoPkgRecipeKey = @"recipe";
+NSString *const kLGAutoPkgRecipeNameKey = @"recipe_name";
 NSString *const kLGAutoPkgRecipePathKey = @"recipe_path";
-NSString *const kLGAutoPkgRepoKey = @"repo";
+NSString *const kLGAutoPkgRepoNameKey = @"repo_name";
 NSString *const kLGAutoPkgRepoPathKey = @"repo_path";
+NSString *const kLGAutoPkgRepoURLKey = @"repo_url";
 
 // This is a function so in the future this could be configured to
 // determine autopkg path in a more robust way.
@@ -103,16 +105,7 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 
 - (void)cancel
 {
-    NSPredicate *classPredicate = [NSPredicate predicateWithFormat:@"SELF isKindOfClass: %@", [LGAutoPkgTask class]];
-    for (LGAutoPkgTask *operation in [self.operations filteredArrayUsingPredicate:classPredicate]) {
-        [operation.taskLock lock];
-        if (operation.task && operation.task.isRunning) {
-            DLog(@"Canceling %@", operation.taskDescription);
-            [operation.task terminate];
-        }
-        [operation.taskLock unlock];
-    }
-    [super cancelAllOperations];
+    [self cancelAllOperations];
 }
 
 #pragma mark - Convenience Instance Methods
@@ -156,8 +149,12 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 
 @end
 
+
 #pragma mark - AutoPkg Task
-@implementation LGAutoPkgTask
+@implementation LGAutoPkgTask {
+    BOOL _isExecuting;
+    BOOL _isFinished;
+}
 
 - (NSString *)taskDescription
 {
@@ -167,7 +164,6 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 - (void)dealloc
 {
     DLog(@"Completed AutoPkg Task:\n  %@\n", [self taskDescription]);
-    self.task.terminationHandler = nil;
     self.replyErrorBlock = nil;
     self.replyReportBlock = nil;
     self.replyResultsBlock = nil;
@@ -181,6 +177,8 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
         _taskLock = [[NSRecursiveLock alloc] init];
         _taskLock.name = kLGAutoPkgTaskLock;
         _taskStatusDelegate = self;
+        _isExecuting = NO;
+        _isFinished = NO;
     }
     return self;
 }
@@ -194,59 +192,103 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
     return self;
 }
 
-#pragma mark - NSOperation
+#pragma mark - NSOperation Overrides
+-(void)start
+{
+    if ([self isCancelled])
+    {
+        // Must move the operation to the finished state if it is canceled.
+        return [self setIsFinished:YES];
+    }
+
+    // If the operation is not canceled, begin executing the task.
+    [self willChangeValueForKey:@"isExecuting"];
+
+    [NSThread detachNewThreadSelector:@selector(main) toTarget:self withObject:nil];
+    _isExecuting = YES;
+    [self didChangeValueForKey:@"isExecuting"];
+}
+
+- (void)cancel {
+    [self.taskLock lock];
+    if (self.task && self.task.isRunning) {
+        DLog(@"Canceling %@", self.taskDescription);
+        [self.task terminate];
+    }
+    [self.taskLock unlock];
+    [super cancel];
+
+}
+
 - (void)main
 {
     @autoreleasepool
     {
-        [self launch];
+        self.task = [[NSTask alloc] init];
+        self.task.launchPath = @"/usr/bin/python";
 
-        LGAutoPkgTaskResponseObject *response = [[LGAutoPkgTaskResponseObject alloc] init];
-        response.results = self.results;
-        response.report = self.report;
-        response.error = self.error;
+        [self.task setArguments:self.internalArgs];
 
-        [(NSObject *)_taskStatusDelegate performSelectorOnMainThread:@selector(didCompleteOperation:) withObject:response waitUntilDone:NO];
+        // If an instance of autopkg is running,
+        // and we're trying to do a run, exit
+        if (_verb == kLGAutoPkgRun && [[self class] instanceIsRunning]) {
+            self.error = [LGError errorWithCode:kLGErrorMultipleRunsOfAutopkg];
+            [self didCompleteTaskExecution];
+        }
+
+        [self configureFileHandles];
+        [self configureEnvironment];
+
+        if (self.internalEnvironment) {
+            self.task.environment = self.internalEnvironment;
+        }
+
+        [self.task setTerminationHandler:^(NSTask *task) {
+        /* 
+         * The task terminationHandler is set to nil in the
+         * didCompleteTaskExecution method to break retain cycles.
+         * so we can silence the retain warnings
+         */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-retain-cycles"
+            [self didCompleteTaskExecution];
+#pragma clang diagnostic pop
+        }];
+        
+        [self.task launch];
     }
 }
 
+#pragma mark
 - (BOOL)isExecuting
 {
-    return [self.task isRunning] && [super isExecuting];
+    return _isExecuting || self.task.isRunning;
+}
+
+- (void)setIsExecuting:(BOOL)isExecuting
+{
+    [self willChangeValueForKey:@"isExecuting"];
+    _isExecuting = isExecuting;
+    [self didChangeValueForKey:@"isExecuting"];
+
 }
 
 - (BOOL)isFinished
 {
-    return ![self.task isRunning] && [super isFinished];
+    return _isFinished && !self.task.isRunning;
 }
 
-#pragma mark - Life Cycle
-- (BOOL)launch
+- (void)setIsFinished:(BOOL)isFinished
 {
-    self.task = [[NSTask alloc] init];
-    self.task.launchPath = @"/usr/bin/python";
+    [self willChangeValueForKey:@"isFinished"];
+    _isFinished = isFinished;
+    [self didChangeValueForKey:@"isFinished"];
 
-    [self.task setArguments:self.internalArgs];
+}
 
-    // If an instance of autopkg is running,
-    // and we're trying to do a run, exit
-    if (_verb == kLGAutoPkgRun && [[self class] instanceIsRunning]) {
-        self.error = [LGError errorWithCode:kLGErrorMultipleRunsOfAutopkg];
-        return NO;
-    }
-
-    [self configureFileHandles];
-    [self configureEnvironment];
-
-    if (self.internalEnvironment) {
-        self.task.environment = self.internalEnvironment;
-    }
-
-    [self.task launch];
-    [self.task waitUntilExit];
-
-    // make sure the out and error readability handlers get set to nil
-    // so the filehandle will get closed
+#pragma mark
+- (void)didCompleteTaskExecution
+{
     if ([self.task.standardOutput isKindOfClass:[NSPipe class]]) {
         [self.task.standardOutput fileHandleForReading].readabilityHandler = nil;
     }
@@ -255,11 +297,30 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
         [self.task.standardError fileHandleForReading].readabilityHandler = nil;
     }
 
+
     [self.taskLock lock];
     self.error = [LGError errorWithTaskError:self.task verb:_verb];
     [self.taskLock unlock];
 
-    return (self.task.terminationStatus == 0);
+    LGAutoPkgTaskResponseObject *response = [[LGAutoPkgTaskResponseObject alloc] init];
+    response.results = self.results;
+    response.report = self.report;
+    response.error = self.error;
+
+    [(NSObject *)self.taskStatusDelegate performSelectorOnMainThread:@selector(didCompleteOperation:) withObject:response waitUntilDone:NO];
+
+    [self setIsExecuting:NO];
+    [self setIsFinished:YES];
+
+    self.task.terminationHandler = nil;
+}
+
+
+#pragma mark - Convenience Initializers
+- (void)launch
+{
+    LGAutoPkgTaskManager *mgr = [[LGAutoPkgTaskManager alloc] init];
+    [mgr addOperationAndWait:self];
 }
 
 - (void)launchInBackground:(void (^)(NSError *))reply
@@ -283,7 +344,9 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
     [self.internalArgs addObjectsFromArray:arguments];
 
     NSString *verbString = [_arguments firstObject];
-    if ([verbString isEqualToString:@"run"]) {
+    if ([verbString isEqualToString:@"version"]) {
+        _verb = kLGAutoPkgVersion;
+    } else if ([verbString isEqualToString:@"run"]) {
         _verb = kLGAutoPkgRun;
         if (self.AUTOPKG_VERSION_0_4_0) {
             [self.internalArgs addObject:self.reportPlistFile];
@@ -305,8 +368,6 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
         _verb = kLGAutoPkgRepoList;
     } else if ([verbString isEqualToString:@"repo-update"]) {
         _verb = kLGAutoPkgRepoUpdate;
-    } else if ([verbString isEqualToString:@"version"]) {
-        _verb = kLGAutoPkgVersion;
     }
 
     [self.taskLock unlock];
@@ -329,7 +390,7 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
     if (_verb == kLGAutoPkgRun || _verb == kLGAutoPkgRepoUpdate) {
         if (self.AUTOPKG_VERSION_0_4_0) {
             __block double count = 0.0;
-            double total;
+            __block double total;
             NSPredicate *progressPredicate;
 
             if (_verb == kLGAutoPkgRun) {
@@ -361,9 +422,8 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 
                     [(NSObject *)_taskStatusDelegate performSelectorOnMainThread:@selector(didReceiveStatusUpdate:) withObject:response waitUntilDone:NO];
 
-                } else {
-                    NSLog(@"%@",message);
                 }
+                NSLog(@"%@",message);
             }];
         }
     }
@@ -439,7 +499,7 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 
 - (NSDictionary *)report
 {
-    if (_report || !_verb == kLGAutoPkgRun) {
+    if (_report || _verb != kLGAutoPkgRun) {
         return _report;
     }
 
@@ -499,7 +559,9 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 {
     if (!_results) {
         NSString *resultString = self.standardOutString;
+        NSPredicate *noEmptyStrings = [NSPredicate predicateWithFormat:@"not (SELF == '')"];
         if (resultString) {
+
             if (_verb == kLGAutoPkgSearch) {
                 __block NSMutableArray *searchResults;
 
@@ -527,22 +589,39 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
                             if (!searchResults) {
                                 searchResults = [[NSMutableArray alloc] init];
                             }
-                            [searchResults addObject:@{kLGAutoPkgRecipeKey:[recipe stringByDeletingPathExtension],
-                                                       kLGAutoPkgRepoKey:repo,
+                            [searchResults addObject:@{kLGAutoPkgRecipeNameKey:[recipe stringByDeletingPathExtension],
+                                                       kLGAutoPkgRepoNameKey:repo,
                                                        kLGAutoPkgRepoPathKey:path,
                                                        }];
                         }
                     }
                 }];
                 _results = [NSArray arrayWithArray:searchResults];
-            } else if (_verb == kLGAutoPkgRepoList || _verb == kLGAutoPkgRecipeList) {
+            } else if (_verb == kLGAutoPkgRepoList) {
                 NSArray *listResults = [resultString componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-                NSPredicate *noEmptyStrings = [NSPredicate predicateWithFormat:@"not (SELF == '')"];
+
+                NSMutableArray *strippedRepos = [[NSMutableArray alloc] init];
+
+                for (NSString *repo in [listResults filteredArrayUsingPredicate:noEmptyStrings]) {
+                    NSArray *splitArray = [repo componentsSeparatedByString:@"(http"];
+
+                    NSString *repoURL = [[@"http" stringByAppendingString:[splitArray lastObject]] stringByReplacingOccurrencesOfString:@")" withString:@""];
+
+                    NSString *repoPath = [[splitArray firstObject] stringByStandardizingPath];
+
+                    NSDictionary *resultDict = @{kLGAutoPkgRepoURLKey:[repoURL stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]],
+                                                 kLGAutoPkgRepoPathKey:[repoPath stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]],
+                                                 };
+                    [strippedRepos addObject:resultDict];
+                }
+                _results = strippedRepos.count ? [NSArray arrayWithArray:strippedRepos]:nil;
+                
+            } else if ( _verb == kLGAutoPkgRecipeList) {
+                NSArray *listResults = [resultString componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
                 _results = [listResults filteredArrayUsingPredicate:noEmptyStrings];
             }
         }
     }
-
     return _results;
 }
 
@@ -627,8 +706,7 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 
 + (NSArray *)listRecipes
 {
-    LGAutoPkgTask *task = [[LGAutoPkgTask alloc] init];
-    task.arguments = @[ @"list-recipes" ];
+    LGAutoPkgTask *task = [[LGAutoPkgTask alloc] initWithArguments:@[ @"list-recipes" ]];
     [task launch];
     id results = [task results];
     return [results isKindOfClass:[NSArray class]] ? results : nil;
@@ -665,8 +743,7 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 
 + (NSArray *)repoList
 {
-    LGAutoPkgTask *task = [[LGAutoPkgTask alloc] init];
-    task.arguments = @[ @"repo-list" ];
+    LGAutoPkgTask *task = [[LGAutoPkgTask alloc] initWithArguments:@[ @"repo-list" ]];
     [task launch];
     id results = [task results];
     return [results isKindOfClass:[NSArray class]] ? results : nil;
@@ -749,8 +826,11 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 #pragma mark - Task Status Delegate Update
 - (void)didReceiveStatusUpdate:(LGAutoPkgTaskResponseObject *)object
 {
-    NSAssert([NSThread isMainThread], @"Not Main thread!!!");
-
+    if (![NSThread isMainThread]) {
+        [self performSelector:@selector(didReceiveStatusUpdate:) onThread:[NSThread mainThread] withObject:object waitUntilDone:NO];
+        return;
+    }
+    
     if (object.progressMessage) {
         if (_progressUpdateBlock) {
             _progressUpdateBlock(object.progressMessage, object.progress);
@@ -764,7 +844,10 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 
 - (void)didCompleteOperation:(LGAutoPkgTaskResponseObject *)object
 {
-    NSAssert([NSThread isMainThread], @"Not Main thread!!!");
+    if (![NSThread isMainThread]) {
+        [self performSelector:@selector(didCompleteOperation:) onThread:[NSThread mainThread] withObject:object waitUntilDone:NO];
+        return;
+    }
 
     if (_replyResultsBlock) {
         _replyResultsBlock(object.results, object.error);

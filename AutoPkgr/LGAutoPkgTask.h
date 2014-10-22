@@ -29,7 +29,7 @@
 /**
  *  Constant to access recipe key in autopkg search
  */
-extern NSString *const kLGAutoPkgRecipeKey;
+extern NSString *const kLGAutoPkgRecipeNameKey;
 /**
  *  Constant to access recipe path key in autopkg search
  */
@@ -37,11 +37,15 @@ extern NSString *const kLGAutoPkgRecipePathKey;
 /**
  *  Constant to access repo name in autopkg search and autopkg repo-list
  */
-extern NSString *const kLGAutoPkgRepoKey;
+extern NSString *const kLGAutoPkgRepoNameKey;
 /**
  *  Constant to access local path of the installed repo from autopkg repo-list
  */
 extern NSString *const kLGAutoPkgRepoPathKey;
+/**
+ *  Constant to access git url for the repo from autopkg repo-list
+ */
+extern NSString *const kLGAutoPkgRepoURLKey;
 
 #pragma mark Task Status Delegate
 @protocol LGTaskStatusDelegate <NSObject>
@@ -92,7 +96,7 @@ extern NSString *const kLGAutoPkgRepoPathKey;
 
 
 /**
- *  Cancel the current task
+ *  Cancel all tasks the task manager is responsible for.
  *
  *  @return YES if task was successfully canceled, NO is the task is still running.
  */
@@ -100,7 +104,7 @@ extern NSString *const kLGAutoPkgRepoPathKey;
 
 #pragma mark Subclassing
 /**
- *  Subclass override 
+ *  Subclass override to produce warning if an incorrect operation is submitted
  *
  *  @param op LGAutoPkgTask
  */
@@ -113,7 +117,7 @@ extern NSString *const kLGAutoPkgRepoPathKey;
 
 /**
  *  Task status delegate gets raw output in the form of an LGAutoPkgTaskResponseObject
- *  @note This is set to the task by default, only override with good reason.
+ *  @note This is set to self by default, only override with good reason.
  */
 @property (weak, nonatomic) id<LGTaskStatusDelegate> taskStatusDelegate;
 
@@ -153,13 +157,11 @@ extern NSString *const kLGAutoPkgRepoPathKey;
 /**
  *  Launch task in a synchronous way
  *
- *  @param error NSError object populated should error occur
- *
  *  @return YES if the task was completed successfully, no if the task ended with an error;
  *
  *  @discussion a cancel request will also result in a return of YES;
  */
-- (BOOL)launch;
+- (void)launch;
 
 /**
  *  Launch task in an asynchronous way
