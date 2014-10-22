@@ -149,7 +149,6 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 
 @end
 
-
 #pragma mark - AutoPkg Task
 @implementation LGAutoPkgTask {
     BOOL _isExecuting;
@@ -193,10 +192,9 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 }
 
 #pragma mark - NSOperation Overrides
--(void)start
+- (void)start
 {
-    if ([self isCancelled])
-    {
+    if ([self isCancelled]) {
         // Must move the operation to the finished state if it is canceled.
         return [self setIsFinished:YES];
     }
@@ -209,7 +207,8 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
     [self didChangeValueForKey:@"isExecuting"];
 }
 
-- (void)cancel {
+- (void)cancel
+{
     [self.taskLock lock];
     if (self.task && self.task.isRunning) {
         DLog(@"Canceling %@", self.taskDescription);
@@ -217,7 +216,6 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
     }
     [self.taskLock unlock];
     [super cancel];
-
 }
 
 - (void)main
@@ -227,7 +225,7 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
         self.task = [[NSTask alloc] init];
         self.task.launchPath = @"/usr/bin/python";
 
-        [self.task setArguments:self.internalArgs];
+        self.task.arguments = [NSArray arrayWithArray:self.internalArgs];
 
         // If an instance of autopkg is running,
         // and we're trying to do a run, exit
@@ -240,21 +238,21 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
         [self configureEnvironment];
 
         if (self.internalEnvironment) {
-            self.task.environment = self.internalEnvironment;
+            self.task.environment = [NSDictionary dictionaryWithDictionary:self.internalEnvironment];
         }
 
         [self.task setTerminationHandler:^(NSTask *task) {
-        /* 
+/* 
          * The task terminationHandler is set to nil in the
          * didCompleteTaskExecution method to break retain cycles.
-         * so we can silence the retain warnings
+         * so we can silence the retain warnings here.
          */
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-retain-cycles"
             [self didCompleteTaskExecution];
 #pragma clang diagnostic pop
         }];
-        
+
         [self.task launch];
     }
 }
@@ -270,7 +268,6 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
     [self willChangeValueForKey:@"isExecuting"];
     _isExecuting = isExecuting;
     [self didChangeValueForKey:@"isExecuting"];
-
 }
 
 - (BOOL)isFinished
@@ -283,7 +280,6 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
     [self willChangeValueForKey:@"isFinished"];
     _isFinished = isFinished;
     [self didChangeValueForKey:@"isFinished"];
-
 }
 
 #pragma mark
@@ -297,7 +293,6 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
         [self.task.standardError fileHandleForReading].readabilityHandler = nil;
     }
 
-
     [self.taskLock lock];
     self.error = [LGError errorWithTaskError:self.task verb:_verb];
     [self.taskLock unlock];
@@ -307,14 +302,13 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
     response.report = self.report;
     response.error = self.error;
 
-    [(NSObject *)self.taskStatusDelegate performSelectorOnMainThread:@selector(didCompleteOperation:) withObject:response waitUntilDone:NO];
+    [(NSObject *)_taskStatusDelegate performSelectorOnMainThread:@selector(didCompleteOperation:) withObject:response waitUntilDone:NO];
 
     [self setIsExecuting:NO];
     [self setIsFinished:YES];
 
     self.task.terminationHandler = nil;
 }
-
 
 #pragma mark - Convenience Initializers
 - (void)launch
@@ -609,14 +603,15 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 
                     NSString *repoPath = [[splitArray firstObject] stringByStandardizingPath];
 
-                    NSDictionary *resultDict = @{kLGAutoPkgRepoURLKey:[repoURL stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]],
-                                                 kLGAutoPkgRepoPathKey:[repoPath stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]],
-                                                 };
+                    NSDictionary *resultDict = @{
+                        kLGAutoPkgRepoURLKey : [repoURL stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]],
+                        kLGAutoPkgRepoPathKey : [repoPath stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]],
+                    };
                     [strippedRepos addObject:resultDict];
                 }
-                _results = strippedRepos.count ? [NSArray arrayWithArray:strippedRepos]:nil;
-                
-            } else if ( _verb == kLGAutoPkgRecipeList) {
+                _results = strippedRepos.count ? [NSArray arrayWithArray:strippedRepos] : nil;
+
+            } else if (_verb == kLGAutoPkgRecipeList) {
                 NSArray *listResults = [resultString componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
                 _results = [listResults filteredArrayUsingPredicate:noEmptyStrings];
             }
@@ -823,14 +818,14 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
     return NO;
 }
 
-#pragma mark - Task Status Delegate Update
+#pragma mark - Task Status Update Delegate
 - (void)didReceiveStatusUpdate:(LGAutoPkgTaskResponseObject *)object
 {
     if (![NSThread isMainThread]) {
         [self performSelector:@selector(didReceiveStatusUpdate:) onThread:[NSThread mainThread] withObject:object waitUntilDone:NO];
         return;
     }
-    
+
     if (object.progressMessage) {
         if (_progressUpdateBlock) {
             _progressUpdateBlock(object.progressMessage, object.progress);
@@ -864,6 +859,9 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 @end
 
 #pragma mark - Task Response Object
+#pragma mark-- Secure Coding --
+// Currently there is no need for this, but if we ever move the task over to an XPC bundle,
+// we'll be able to pass this back and forth.
 @implementation LGAutoPkgTaskResponseObject
 + (BOOL)supportsSecureCoding
 {
@@ -872,7 +870,7 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
-    self = [self init];
+    self = [super init];
     if (self) {
         self.progressMessage = [decoder decodeObjectOfClass:[NSString class]
                                                      forKey:NSStringFromSelector(@selector(progressMessage))];
@@ -880,8 +878,8 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
         self.progress = [[decoder decodeObjectOfClass:[NSNumber class]
                                                forKey:NSStringFromSelector(@selector(progress))] doubleValue];
 
-        self.results = [decoder decodeObjectOfClass:[NSArray class]
-                                             forKey:NSStringFromSelector(@selector(results))];
+        self.results = [decoder decodeObjectOfClasses:[NSSet setWithObjects:[NSArray class], [NSDictionary class], nil]
+                                               forKey:NSStringFromSelector(@selector(results))];
 
         self.report = [decoder decodeObjectOfClass:[NSDictionary class]
                                             forKey:NSStringFromSelector(@selector(report))];
