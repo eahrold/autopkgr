@@ -257,7 +257,7 @@ static NSDictionary *userInfoFromHTTPResponse(NSHTTPURLResponse *response)
     NSError *error;
     NSString *errorMsg = errorMessageFromAutoPkgVerb(verb);
     NSString *errorDetails;
-    NSInteger taskError;
+    NSInteger taskError = 0;
 
     if ([task.standardError isKindOfClass:[NSPipe class]]) {
         NSData *errData = [[task.standardError fileHandleForReading] readDataToEndOfFile];

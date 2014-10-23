@@ -35,7 +35,7 @@
 
 @interface LGConfigurationWindowController () {
     LGDefaults *_defaults;
-    LGAutoPkgTask *_task;
+    LGAutoPkgTaskManager *_taskManager;
 }
 
 @end
@@ -267,11 +267,16 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         [_checkAppsNowButton setEnabled:NO];
         [_updateRepoNowButton setTitle:@"Repos Updating..."];
         NSLog(@"Updating AutoPkg recipe repos...");
-        [LGAutoPkgTask repoUpdate:^(NSError *error) {
-            [_updateRepoNowButton setEnabled:YES];
-            [_updateRepoNowButton setTitle:@"Update Repos Now"];
-            [_checkAppsNowButton setEnabled:YES];
-            NSLog(@"AutoPkg recipe repos updated.");
+
+        [LGAutoPkgTask repoUpdate:^(NSString *message, double taskProgress) {
+            [[NSApp delegate] updateProgress:message progress:taskProgress];
+        } reply:^(NSError *error) {
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [_updateRepoNowButton setEnabled:YES];
+                [_updateRepoNowButton setTitle:@"Update Repos Now"];
+                [_checkAppsNowButton setEnabled:YES];
+                NSLog(@"AutoPkg recipe repos updated.");
+            }];
         }];
     }
 
@@ -766,42 +771,55 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 
 - (IBAction)updateReposNow:(id)sender
 {
-    [self startProgressWithMessage:@"Updating AutoPkg recipe repos."];
-    [self.updateRepoNowButton setEnabled:NO];
+    [_cancelAutoPkgRunButton setHidden:NO];
+    [_progressDetailsMessage setHidden:NO];
+    [[NSApp delegate] startProgressWithMessage:@"Updating AutoPkg recipe repos."];
 
-    [LGAutoPkgTask repoUpdate:^(NSError *error) {
-        [self stopProgress:error];
-        [self.updateRepoNowButton setEnabled:YES];
-        [self.recipeTableViewHandler reload];
+    [_updateRepoNowButton setEnabled:NO];
+    if (!_taskManager) {
+        _taskManager = [[LGAutoPkgTaskManager alloc] init];
+    }
+
+    _taskManager.progressDelegate = [NSApp delegate];
+
+    [_taskManager repoUpdate:^(NSError *error) {
+        NSAssert([NSThread isMainThread], @"reply not on manin thread!!");
+        [[NSApp delegate] stopProgress:error];
+        [_updateRepoNowButton setEnabled:YES];
+        [_recipeTableViewHandler reload];
     }];
 }
 
 - (IBAction)checkAppsNow:(id)sender
 {
     NSString *recipeList = [LGRecipes recipeList];
+    if (!_taskManager) {
+        _taskManager = [[LGAutoPkgTaskManager alloc] init];
+    }
+
+    _taskManager.progressDelegate = [NSApp delegate];
+
     [_cancelAutoPkgRunButton setHidden:NO];
     [_progressDetailsMessage setHidden:NO];
     [[NSApp delegate] startProgressWithMessage:@"Running selected AutoPkg recipes."];
-    _task = [[LGAutoPkgTask alloc] init];
-    [_task runRecipeList:recipeList
-        progress:^(NSString *message, double taskProgress) {
-                            [[NSApp delegate] updateProgress:message progress:taskProgress];
-        }
-        reply:^(NSDictionary *report, NSError *error) {
-                            [[NSApp delegate] stopProgress:error];
-                            if (report.count || error) {
-                                LGEmailer *emailer = [LGEmailer new];
-                                [emailer sendEmailForReport:report error:error];
-                            }
-                            _task = nil;
-        }];
+
+    [_taskManager runRecipeList:recipeList
+                     updateRepo:NO
+                          reply:^(NSDictionary *report, NSError *error) {
+                              NSAssert([NSThread isMainThread], @"reply not on manin thread!!");
+
+                                [[NSApp delegate] stopProgress:error];
+                                if (report.count || error) {
+                                    LGEmailer *emailer = [LGEmailer new];
+                                    [emailer sendEmailForReport:report error:error];
+                                }
+                          }];
 }
 
 - (IBAction)cancelAutoPkgRun:(id)sender
 {
-    if (_task) {
-        [_task cancel];
-        NSLog(@"AutoPkg task cancelled.");
+    if (_taskManager) {
+        [_taskManager cancel];
     }
 }
 
@@ -1079,14 +1097,17 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     // Stop the progress panel, and if and error was sent in
     // do a sheet modal
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [self.progressPanel orderOut:self];
-        [self.progressIndicator setDoubleValue:0.0];
-        [self.progressIndicator setIndeterminate:YES];
-        [self.cancelAutoPkgRunButton setHidden:YES];
+        // Give the progress panel a second to got to 100%
+        [self.progressIndicator setDoubleValue:100.0];
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
 
         [NSApp endSheet:self.progressPanel returnCode:0];
-        [self.progressMessage setStringValue:@"Starting..."];
+        [self.progressIndicator setIndeterminate:YES];
+        [self.progressPanel orderOut:self];
+        [self.cancelAutoPkgRunButton setHidden:YES];
         [self.progressDetailsMessage setStringValue:@""];
+        [self.progressMessage setStringValue:@"Starting..."];
+        [self.progressIndicator setDoubleValue:0.0];
 
         if (error) {
             SEL selector = nil;

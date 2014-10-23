@@ -68,7 +68,9 @@
 - (void)updateAutoPkgRecipeReposInBackgroundAtAppLaunch
 {
     NSLog(@"Updating AutoPkg repos...");
-    [LGAutoPkgTask repoUpdate:^(NSError *error) {
+    [LGAutoPkgTask repoUpdate:^(NSString *message, double taskProgress) {
+        [self updateProgress:message progress:taskProgress];
+    } reply:^(NSError *error) {
        NSLog(@"%@", error ? error.localizedDescription:@"AutoPkg repos updated.");
     }];
 }
@@ -92,15 +94,17 @@
 
     [self startProgressWithMessage:@"Running selected AutoPkg recipes."];
     NSString *recipeList = [LGRecipes recipeList];
-    [LGAutoPkgTask runRecipeList:recipeList
-        progress:^(NSString *message, double taskProgress) {
-                            [self updateProgress:message progress:taskProgress];
-        }
-        reply:^(NSDictionary *report, NSError *error) {
-                               [self stopProgress:error];
-                               LGEmailer *emailer = [LGEmailer new];
-                               [emailer sendEmailForReport:report error:error];
-        }];
+    BOOL updateRepos = [[LGDefaults standardUserDefaults] checkForRepoUpdatesAutomaticallyEnabled];
+
+    LGAutoPkgTaskManager *manager = [[LGAutoPkgTaskManager alloc] init];
+    manager.progressDelegate = self;
+    [manager runRecipeList:recipeList
+                updateRepo:updateRepos
+                     reply:^(NSDictionary *report, NSError *error) {
+                         [self stopProgress:error];
+                         LGEmailer *emailer = [LGEmailer new];
+                         [emailer sendEmailForReport:report error:error];
+                     }];
 }
 
 - (void)showConfigurationWindow:(id)sender

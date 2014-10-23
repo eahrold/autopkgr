@@ -88,7 +88,7 @@ void migratePreferences(NSArray *preferences, NSString *fromUser)
 
 BOOL backupAndLink(NSString *source, NSString *dest)
 {
-    NSLog(@"Linking %@",dest);
+    NSLog(@"Linking %@", dest);
     NSFileManager *fm = [NSFileManager new];
     NSError *error;
     if ([fm fileExistsAtPath:dest]) {
@@ -225,12 +225,13 @@ int main(int argc, const char *argv[])
 
         __block LGEmailer *emailer = [[LGEmailer alloc] init];
         setupRootContext(user);
-        LGAutoPkgTask *task = [[LGAutoPkgTask alloc] init];
-        [task runRecipeList:[LGRecipes recipeList] progress:^(NSString *message, double progress) {
-                                                                NSLog(@"%@",message);
-        } reply:^(NSDictionary *report, NSError *error) {
-                                                                [emailer sendEmailForReport:report error:error];
-        }];
+        LGDefaults *defaults = [LGDefaults standardUserDefaults];
+        LGAutoPkgTaskManager *manager = [[LGAutoPkgTaskManager alloc] init];
+        [manager runRecipeList:[LGRecipes recipeList]
+                    updateRepo:defaults.checkForRepoUpdatesAutomaticallyEnabled
+                         reply:^(NSDictionary *report, NSError *error) {
+            [emailer sendEmailForReport:report error:error];
+                         }];
 
         while (emailer && !emailer.complete) {
             [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
