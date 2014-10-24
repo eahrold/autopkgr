@@ -39,8 +39,6 @@
     NSLog(@"Welcome to AutoPkgr!");
     DLog(@"Verbose logging is active. To deactivate, option-click the AutoPkgr menu icon and uncheck Verbose Logs.");
 
-    LGDefaults *defaults = [LGDefaults new];
-
     // Setup the status item
     [self setupStatusItem];
     
@@ -55,24 +53,7 @@
         }
     }
 
-    // Update AutoPkg recipe repos when the application launches
-    // if the user has enabled automatic repo updates
-    if (defaults.checkForRepoUpdatesAutomaticallyEnabled) {
-        NSLog(@"Updating AutoPkg recipe repos.");
-        [self updateAutoPkgRecipeReposInBackgroundAtAppLaunch];
-    }
-    
     [self showConfigurationWindow:self];
-}
-
-- (void)updateAutoPkgRecipeReposInBackgroundAtAppLaunch
-{
-    NSLog(@"Updating AutoPkg repos...");
-    [LGAutoPkgTask repoUpdate:^(NSString *message, double taskProgress) {
-        [self updateProgress:message progress:taskProgress];
-    } reply:^(NSError *error) {
-       NSLog(@"%@", error ? error.localizedDescription:@"AutoPkg repos updated.");
-    }];
 }
 
 - (void)setupStatusItem

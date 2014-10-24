@@ -260,26 +260,6 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         }
     }];
 
-    // Update AutoPkg recipe repos when the application launches
-    // if the user has enabled automatic repo updates
-    if (_defaults.checkForRepoUpdatesAutomaticallyEnabled && gitInstalled && autoPkgInstalled) {
-        [_updateRepoNowButton setEnabled:NO];
-        [_checkAppsNowButton setEnabled:NO];
-        [_updateRepoNowButton setTitle:@"Repos Updating..."];
-        NSLog(@"Updating AutoPkg recipe repos...");
-
-        [LGAutoPkgTask repoUpdate:^(NSString *message, double taskProgress) {
-            [[NSApp delegate] updateProgress:message progress:taskProgress];
-        } reply:^(NSError *error) {
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [_updateRepoNowButton setEnabled:YES];
-                [_updateRepoNowButton setTitle:@"Update Repos Now"];
-                [_checkAppsNowButton setEnabled:YES];
-                NSLog(@"AutoPkg recipe repos updated.");
-            }];
-        }];
-    }
-
     _popRepoTableViewHandler.progressDelegate = [NSApp delegate];
 
     // Synchronize with the defaults database
