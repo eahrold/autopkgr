@@ -24,4 +24,6 @@ DerivedData
 *.hmap
 *.ipa
 *.xcuserstate
+mailcore2/unittest/data
 *.orig
+
