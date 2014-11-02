@@ -57,6 +57,7 @@
 		BE73CDC719E062AC00441443 /* NSString+cleaned.m in Sources */ = {isa = PBXBuildFile; fileRef = BE73CDC619E062AC00441443 /* NSString+cleaned.m */; };
 		BE8526B219D5F641007DFA9E /* SecurityInterface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE8526B119D5F641007DFA9E /* SecurityInterface.framework */; };
 		BE87994B1995BA410082472B /* LGDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = BE87994A1995BA410082472B /* LGDefaults.m */; };
+		BEC0B5711A05DA5F009B9BE8 /* LGUserNotifications.m in Sources */ = {isa = PBXBuildFile; fileRef = BEC0B5701A05DA5F009B9BE8 /* LGUserNotifications.m */; };
 		BEC1258519F045EB006696C4 /* LGRecipes.m in Sources */ = {isa = PBXBuildFile; fileRef = 6A0ACE33196FB349002C7FE4 /* LGRecipes.m */; };
 		BEC1258619F0465C006696C4 /* LGConfigurationWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AC9841D195CEC350071CAB3 /* LGConfigurationWindowController.m */; };
 		BEC1258719F0465F006696C4 /* LGAutoPkgTask.m in Sources */ = {isa = PBXBuildFile; fileRef = BE025CF519BAE93400D36345 /* LGAutoPkgTask.m */; };
@@ -126,6 +127,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = BE05CE6619DAF26B0089068B;
 			remoteInfo = com.lindegroup.AutoPkgr.helper;
+		};
+		BEC0B5781A05DA5F009B9BE8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A0A869D195CE5DB00A49434 /* mailcore2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 27780C3A19CF9CD100C77E44;
+			remoteInfo = "mailcore ios";
+		};
+		BEC0B57A1A05DA5F009B9BE8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A0A869D195CE5DB00A49434 /* mailcore2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = C6B5AE0219F630B3001352A6;
+			remoteInfo = unittest;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -245,6 +260,8 @@
 		BE94AA7B19BB8A78001A00D0 /* LGProgressDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LGProgressDelegate.h; sourceTree = "<group>"; };
 		BEAA76CA19BFD635002D73EE /* LGInstaller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGInstaller.h; sourceTree = "<group>"; };
 		BEAA76CB19BFD635002D73EE /* LGInstaller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGInstaller.m; sourceTree = "<group>"; };
+		BEC0B56F1A05DA5F009B9BE8 /* LGUserNotifications.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGUserNotifications.h; sourceTree = "<group>"; };
+		BEC0B5701A05DA5F009B9BE8 /* LGUserNotifications.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGUserNotifications.m; sourceTree = "<group>"; };
 		BED6123819F98E0100F33741 /* libPods-AutoPkgr-AHCodesignValidator.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-AutoPkgr-AHCodesignValidator.a"; path = "Pods/build/Debug/libPods-AutoPkgr-AHCodesignValidator.a"; sourceTree = "<group>"; };
 		BEE05F051A05CDBE00EF80B3 /* libPods-AutoPkgr-AHCodesignVerifier.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-AutoPkgr-AHCodesignVerifier.a"; path = "../../../../Library/Developer/Xcode/DerivedData/AutoPkgr-gvffmulnnaejibfmmwfptzyobmbb/Build/Products/Debug/libPods-AutoPkgr-AHCodesignVerifier.a"; sourceTree = "<group>"; };
 		BEE8CF1119E0E7F400981C4B /* NSTextField+setSafeStringValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSTextField+setSafeStringValue.h"; path = "Custom Catagories/NSTextField+setSafeStringValue.h"; sourceTree = "<group>"; };
@@ -299,6 +316,8 @@
 				1A0A86AA195CE5DC00A49434 /* tests */,
 				1A0A86AC195CE5DC00A49434 /* test-ios.app */,
 				1A0A86AE195CE5DC00A49434 /* MailCore.framework */,
+				BEC0B5791A05DA5F009B9BE8 /* MailCore.framework */,
+				BEC0B57B1A05DA5F009B9BE8 /* unittest.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -535,6 +554,8 @@
 				1AC86D3C195E0AC6006FDD2B /* LGHostInfo.m */,
 				BE0E857719D668F600B25B5E /* LGHTTPRequest.h */,
 				BE0E857819D668F600B25B5E /* LGHTTPRequest.m */,
+				BEC0B56F1A05DA5F009B9BE8 /* LGUserNotifications.h */,
+				BEC0B5701A05DA5F009B9BE8 /* LGUserNotifications.m */,
 				1A979FDE1960BCCC00EE9881 /* LGUnzipper.h */,
 				1A979FDF1960BCCC00EE9881 /* LGUnzipper.m */,
 				1A1BAD94197A0407008192A7 /* LGVersionComparator.h */,
@@ -686,6 +707,20 @@
 			fileType = wrapper.framework;
 			path = MailCore.framework;
 			remoteRef = 1A0A86AD195CE5DC00A49434 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BEC0B5791A05DA5F009B9BE8 /* MailCore.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = MailCore.framework;
+			remoteRef = BEC0B5781A05DA5F009B9BE8 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BEC0B57B1A05DA5F009B9BE8 /* unittest.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = unittest.xctest;
+			remoteRef = BEC0B57A1A05DA5F009B9BE8 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -844,6 +879,7 @@
 				6A53625D1988BE59008A949C /* LGTestPort.m in Sources */,
 				BEFC931D1995F0710074C938 /* LGError.m in Sources */,
 				1A1BAD96197A0407008192A7 /* LGVersionComparator.m in Sources */,
+				BEC0B5711A05DA5F009B9BE8 /* LGUserNotifications.m in Sources */,
 				1A979FE01960BCCC00EE9881 /* LGUnzipper.m in Sources */,
 				BE05CE8219DAF6320089068B /* LGAutoPkgrAuthorizer.m in Sources */,
 				BE05CE8319DAF6320089068B /* LGAutoPkgrHelperConnection.m in Sources */,

@@ -23,6 +23,7 @@
 #import "LGAutoPkgr.h"
 #import "LGHostInfo.h"
 #import "AHKeychain.h"
+#import "LGUserNotifications.h"
 
 @implementation LGEmailer
 
@@ -100,6 +101,11 @@
 
         MCOSMTPSendOperation *sendOperation = [smtpSession sendOperationWithData:rfc822Data];
         [sendOperation start:^(NSError *error) {
+
+            if ([subject isEqualToString:@"Test notification from AutoPkgr"]) {
+                [LGUserNotifications sendNotificationOfTestEmailSuccess:error ? NO:YES error:error];
+            }
+            
             NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
             NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:@{kLGNotificationUserInfoSubject:subject,
                                                                                             kLGNotificationUserInfoMessage:message}];
