@@ -10,7 +10,7 @@
 #import "LGAutoPkgrProtocol.h"
 #import "LGAutoPkgr.h"
 #import <AHLaunchCtl/AHLaunchCtl.h>
-#import "AHCodesignValidator.h"
+#import "AHCodesignVerifier.h"
 #import "AHKeychain.h"
 
 #import <pwd.h>
@@ -85,7 +85,7 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
 - (BOOL)launchPathIsValid:(NSString *)path error:(NSError *__autoreleasing *)error;
 {
     NSString *helperExecPath = [[[NSProcessInfo processInfo] arguments] firstObject];
-    return [AHCodesignValidator codesignOfItemAtPath:path
+    return [AHCodesignVerifier codesignOfItemAtPath:path
                                   isSameAsItemAtPath:helperExecPath
                                                error:error];
 }

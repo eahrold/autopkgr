@@ -17,7 +17,7 @@ PODS:
   - AFNetworking/Reachability (2.4.1)
   - AFNetworking/Security (2.4.1)
   - AFNetworking/Serialization (2.4.1)
-  - AHCodesignValidator (0.1)
+  - AHCodesignVerifier (0.1)
   - AHKeychain (0.1.3)
   - AHLaunchCtl (0.2.2)
   - Sparkle (1.8.0)
@@ -25,7 +25,7 @@ PODS:
 
 DEPENDENCIES:
   - AFNetworking (~> 2.4.1)
-  - AHCodesignValidator (~> 0.1)
+  - AHCodesignVerifier (~> 0.1)
   - AHKeychain (~> 0.1.3)
   - AHLaunchCtl (~> 0.2.2)
   - Sparkle (~> 1.8)
@@ -33,7 +33,7 @@ DEPENDENCIES:
 
 SPEC CHECKSUMS:
   AFNetworking: 0aabc6fae66d6e5d039eeb21c315843c7aae51ab
-  AHCodesignValidator: 9d43942826a55a338e6d3fadfa1bcefa5783618a
+  AHCodesignVerifier: d85f1962a32cac1bf671f47f1ac015dcb45192f2
   AHKeychain: 4f4e5a27008014589511f603e7093fdea9d8bf32
   AHLaunchCtl: 64ef6f7c2725193e586dac0fb8967462097f46c3
   Sparkle: 5eb20bb37ca21e471dab8417dee880198d905327

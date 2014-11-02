@@ -53,7 +53,6 @@
 		BE1C810419E8224000EF77F3 /* NSImage+statusLight.m in Sources */ = {isa = PBXBuildFile; fileRef = BE1C810219E8224000EF77F3 /* NSImage+statusLight.m */; };
 		BE32178B19ED9ACA00A92E5A /* LGRecipeOverrides.m in Sources */ = {isa = PBXBuildFile; fileRef = BE32178A19ED9ACA00A92E5A /* LGRecipeOverrides.m */; };
 		BE39FE5319DFBB0100C1B4A1 /* LGDefaults+JSSAddon.m in Sources */ = {isa = PBXBuildFile; fileRef = BE39FE5219DFBB0100C1B4A1 /* LGDefaults+JSSAddon.m */; };
-		BE4D32C719F98E9F00121E8B /* libPods-AutoPkgr-AHCodesignValidator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BE4D32C619F98E9F00121E8B /* libPods-AutoPkgr-AHCodesignValidator.a */; };
 		BE57AC2A19BA3BBC00BB17B1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BE57AC2C19BA3BBC00BB17B1 /* Localizable.strings */; };
 		BE73CDC719E062AC00441443 /* NSString+cleaned.m in Sources */ = {isa = PBXBuildFile; fileRef = BE73CDC619E062AC00441443 /* NSString+cleaned.m */; };
 		BE8526B219D5F641007DFA9E /* SecurityInterface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE8526B119D5F641007DFA9E /* SecurityInterface.framework */; };
@@ -66,6 +65,7 @@
 		BEC1258A19F04703006696C4 /* LGInstaller.m in Sources */ = {isa = PBXBuildFile; fileRef = BEAA76CB19BFD635002D73EE /* LGInstaller.m */; };
 		BEC1258B19F04703006696C4 /* LGPopularRepositories.m in Sources */ = {isa = PBXBuildFile; fileRef = 6A0BABE8196E560000A136BB /* LGPopularRepositories.m */; };
 		BEC1258C19F049A1006696C4 /* LGTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = BE32178D19EDA15400A92E5A /* LGTableView.m */; };
+		BEE05F061A05CDBE00EF80B3 /* libPods-AutoPkgr-AHCodesignVerifier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BEE05F051A05CDBE00EF80B3 /* libPods-AutoPkgr-AHCodesignVerifier.a */; };
 		BEE8CF1319E0E7F400981C4B /* NSTextField+setSafeStringValue.m in Sources */ = {isa = PBXBuildFile; fileRef = BEE8CF1219E0E7F400981C4B /* NSTextField+setSafeStringValue.m */; };
 		BEFC931D1995F0710074C938 /* LGError.m in Sources */ = {isa = PBXBuildFile; fileRef = BEFC931C1995F0710074C938 /* LGError.m */; };
 /* End PBXBuildFile section */
@@ -246,6 +246,7 @@
 		BEAA76CA19BFD635002D73EE /* LGInstaller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGInstaller.h; sourceTree = "<group>"; };
 		BEAA76CB19BFD635002D73EE /* LGInstaller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGInstaller.m; sourceTree = "<group>"; };
 		BED6123819F98E0100F33741 /* libPods-AutoPkgr-AHCodesignValidator.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-AutoPkgr-AHCodesignValidator.a"; path = "Pods/build/Debug/libPods-AutoPkgr-AHCodesignValidator.a"; sourceTree = "<group>"; };
+		BEE05F051A05CDBE00EF80B3 /* libPods-AutoPkgr-AHCodesignVerifier.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-AutoPkgr-AHCodesignVerifier.a"; path = "../../../../Library/Developer/Xcode/DerivedData/AutoPkgr-gvffmulnnaejibfmmwfptzyobmbb/Build/Products/Debug/libPods-AutoPkgr-AHCodesignVerifier.a"; sourceTree = "<group>"; };
 		BEE8CF1119E0E7F400981C4B /* NSTextField+setSafeStringValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSTextField+setSafeStringValue.h"; path = "Custom Catagories/NSTextField+setSafeStringValue.h"; sourceTree = "<group>"; };
 		BEE8CF1219E0E7F400981C4B /* NSTextField+setSafeStringValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSTextField+setSafeStringValue.m"; path = "Custom Catagories/NSTextField+setSafeStringValue.m"; sourceTree = "<group>"; };
 		BEFC931B1995F0710074C938 /* LGError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGError.h; sourceTree = "<group>"; };
@@ -283,7 +284,7 @@
 				BE05CE8E19DB37DF0089068B /* Security.framework in Frameworks */,
 				BE05CE8719DB35380089068B /* libPods-AutoPkgr-AHKeychain.a in Frameworks */,
 				BE05CE8819DB35380089068B /* libPods-AutoPkgr-AHLaunchCtl.a in Frameworks */,
-				BE4D32C719F98E9F00121E8B /* libPods-AutoPkgr-AHCodesignValidator.a in Frameworks */,
+				BEE05F061A05CDBE00EF80B3 /* libPods-AutoPkgr-AHCodesignVerifier.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -337,6 +338,7 @@
 		1AC6954F195B59ED00D2BD81 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				BEE05F051A05CDBE00EF80B3 /* libPods-AutoPkgr-AHCodesignVerifier.a */,
 				BE4D32C619F98E9F00121E8B /* libPods-AutoPkgr-AHCodesignValidator.a */,
 				BED6123819F98E0100F33741 /* libPods-AutoPkgr-AHCodesignValidator.a */,
 				BE05CE8F19DB37E50089068B /* ServiceManagement.framework */,
@@ -1107,7 +1109,7 @@
 					"\"${PODS_ROOT}/Headers/AHKeychain\"",
 					"\"${PODS_ROOT}/Headers/AHLaunchCtl\"",
 				);
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = "$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/AutoPkgr-gvffmulnnaejibfmmwfptzyobmbb/Build/Products/Debug";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -1158,7 +1160,7 @@
 					"\"${PODS_ROOT}/Headers/AHKeychain\"",
 					"\"${PODS_ROOT}/Headers/AHLaunchCtl\"",
 				);
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = "$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/AutoPkgr-gvffmulnnaejibfmmwfptzyobmbb/Build/Products/Debug";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = (
 					"$(inherited)",
