@@ -42,45 +42,12 @@
     [self executeAppSearch:self];
 }
 
-- (NSString *)getAppSupportDirectory
-{
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
-    NSString *applicationSupportDirectory = [paths firstObject];
-    NSString *autoPkgrSupportDirectory = [applicationSupportDirectory stringByAppendingString:@"/AutoPkgr"];
-    NSFileManager *fm = [NSFileManager defaultManager];
-    BOOL isDir;
-    NSError *error;
-
-    if ([fm fileExistsAtPath:autoPkgrSupportDirectory isDirectory:&isDir]) {
-        if (!isDir) {
-            [fm removeItemAtPath:autoPkgrSupportDirectory error:&error];
-            if (error) {
-                NSLog(@"%@ is a file, and it cannot be deleted.", autoPkgrSupportDirectory);
-                return @"";
-            }
-            [fm createDirectoryAtPath:autoPkgrSupportDirectory withIntermediateDirectories:NO attributes:nil error:&error];
-            if (error) {
-                NSLog(@"Error when creating directory %@", autoPkgrSupportDirectory);
-                return @"";
-            }
-        }
-    } else {
-        [fm createDirectoryAtPath:autoPkgrSupportDirectory withIntermediateDirectories:NO attributes:nil error:&error];
-        if (error) {
-            NSLog(@"Error when creating directory %@", autoPkgrSupportDirectory);
-            return @"";
-        }
-    }
-
-    return autoPkgrSupportDirectory;
-}
-
 - (NSArray *)getActiveRecipes
 {
     NSFileManager *fm = [NSFileManager defaultManager];
     NSError *error;
 
-    NSString *autoPkgrSupportDirectory = [self getAppSupportDirectory];
+    NSString *autoPkgrSupportDirectory = [LGHostInfo getAppSupportDirectory];
     if ([autoPkgrSupportDirectory isEqual:@""]) {
         return [[NSArray alloc] init];
     }
@@ -160,7 +127,7 @@
 
     NSError *error;
 
-    NSString *autoPkgrSupportDirectory = [self getAppSupportDirectory];
+    NSString *autoPkgrSupportDirectory = [LGHostInfo getAppSupportDirectory];
     if ([autoPkgrSupportDirectory isEqual:@""]) {
         NSLog(@"Could not write recipe_list.txt.");
         return;
@@ -215,8 +182,7 @@
 
 + (NSString *)recipeList
 {
-    LGRecipes *apps = [[LGRecipes alloc] init];
-    NSString *applicationSupportDirectory = [apps getAppSupportDirectory];
+    NSString *applicationSupportDirectory = [LGHostInfo getAppSupportDirectory];
     return [applicationSupportDirectory stringByAppendingString:@"/recipe_list.txt"];
 }
 

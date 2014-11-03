@@ -57,10 +57,15 @@
         NSError *error = nil;
 
         if (smtpSession.username) {
-            NSString *password = [AHKeychain getPasswordForService:kLGApplicationName
-                                                           account:smtpSession.username
-                                                          keychain:kAHKeychainSystemKeychain
-                                                             error:&error];
+            AHKeychain *keychain = [LGHostInfo appKeychain];
+            AHKeychainItem *item = [[AHKeychainItem alloc] init];
+            
+            item.label = kLGApplicationName;
+            item.service = kLGAutoPkgrPreferenceDomain;
+            item.account = smtpSession.username;
+
+            [keychain getItem:item error:&error];
+            NSString *password = item.password;
 
             if ([error code] == errSecItemNotFound) {
                 NSLog(@"Keychain item not found for account %@.", smtpSession.username);

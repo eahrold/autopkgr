@@ -212,19 +212,8 @@ int main(int argc, const char *argv[])
     NSUserDefaults *args = [NSUserDefaults standardUserDefaults];
     if ([args boolForKey:@"runInBackground"]) {
         NSLog(@"Running AutoPkgr in background...");
-        NSString *user = [args objectForKey:@"asUser"];
-        if ([NSUserName() isEqualToString:kRootUser]) {
-            if (!user) {
-                NSLog(@"A user must be specified when running in background");
-                return 1;
-            }
-        } else {
-            NSLog(@"this must be run as root");
-            return 1;
-        }
 
         __block LGEmailer *emailer = [[LGEmailer alloc] init];
-        setupRootContext(user);
         LGDefaults *defaults = [LGDefaults standardUserDefaults];
         LGAutoPkgTaskManager *manager = [[LGAutoPkgTaskManager alloc] init];
         [manager runRecipeList:[LGRecipes recipeList]
@@ -237,7 +226,6 @@ int main(int argc, const char *argv[])
             [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
         }
 
-        cleanUpRootContext(user);
     } else {
         return NSApplicationMain(argc, argv);
     }

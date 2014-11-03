@@ -60,9 +60,10 @@ static const NSTimeInterval kHelperCheckInterval = 1.0; // how often to check wh
             AHLaunchJob *job = [AHLaunchJob new];
             job.Program = program;
             job.Label = kLGAutoPkgrLaunchDaemonPlist;
-            job.ProgramArguments = @[ program, @"-runInBackground", @"YES", @"-asUser", user ];
+            job.ProgramArguments = @[ program, @"-runInBackground", @"YES"];
             job.StartInterval = timer;
             job.SessionCreate = YES;
+            job.UserName = user;
 
             [[AHLaunchCtl sharedControler] add:job toDomain:kAHGlobalLaunchDaemon error:&error];
         }

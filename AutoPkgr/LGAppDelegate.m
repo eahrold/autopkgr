@@ -21,6 +21,7 @@
 
 #import "LGAppDelegate.h"
 #import "LGAutoPkgr.h"
+#import "LGHostInfo.h"
 #import "LGAutoPkgTask.h"
 #import "LGEmailer.h"
 #import "LGAutoPkgSchedule.h"
@@ -52,7 +53,7 @@
             [[NSApplication sharedApplication] terminate:self];
         }
     }
-
+    
     [self showConfigurationWindow:self];
 }
 

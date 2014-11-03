@@ -333,9 +333,17 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     NSError *error;
     
     NSString *user = _smtpUsername.stringValue;
-    
-    password = [AHKeychain getPasswordForService:kLGApplicationName account:user keychain:kAHKeychainSystemKeychain error:&error];
-    
+
+    AHKeychain *keychain = [LGHostInfo appKeychain];
+    AHKeychainItem *item = [[AHKeychainItem alloc] init];
+    item.label = kLGApplicationName;
+    item.service = kLGAutoPkgrPreferenceDomain;
+    item.account = user;
+
+    [keychain getItem:item error:&error];
+
+    password = item.password;
+
     if ([error code] == errSecItemNotFound) {
         NSLog(@"Keychain entry not found for account %@.", user);
     } else if ([error code] == errSecNotAvailable) {
@@ -343,33 +351,29 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     } else if (error) {
         NSLog(@"An error occurred when attempting to retrieve the keychain entry for %@. Error: %@", user, [error localizedDescription]);
     }
-        
+    
     return password;
 }
 
 - (IBAction)updateKeychainPassword:(id)sender
 {
-    // we send the autoPkgr Executable to the helper, so it can add that
-    // to the list of trusted applications in the keychain item's ACL
-    NSString *autoPkgrExecutable = [NSProcessInfo processInfo].arguments[0];
     NSString *user = _smtpUsername.stringValue;
     NSString *password = _smtpPassword.stringValue;
-    
-    // Create the external form authorization data for the helper
-    NSData *authorization = [LGAutoPkgrAuthorizer authorizeHelper];
-    assert(authorization != nil);
-    
-    LGAutoPkgrHelperConnection *helper = [LGAutoPkgrHelperConnection new];
-    [helper connectToHelper];
-    [[helper.connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
-        if (error) {
-            NSLog(@"Error Connecting to helper: %@", error);
-        }
-    }] addPassword:password forUser:user andAutoPkgr:autoPkgrExecutable reply:^(NSError *error) {
-         if (error) {
-             NSLog(@"Error while storing e-mail password: %@", error);
-         }
-     }];
+
+    NSError *error;
+
+    AHKeychain *keychain = [LGHostInfo appKeychain];
+    AHKeychainItem *item = [[AHKeychainItem alloc] init];
+
+    item.service = kLGAutoPkgrPreferenceDomain;
+    item.label = kLGApplicationName;
+    item.account = user;
+    item.password = password;
+
+    [keychain saveItem:item error:&error];
+    if (error) {
+        NSLog(@"%@",error);
+    }
 }
 
 # pragma mark - AutoPkgr actions

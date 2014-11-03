@@ -127,6 +127,20 @@
 			remoteGlobalIDString = BE05CE6619DAF26B0089068B;
 			remoteInfo = com.lindegroup.AutoPkgr.helper;
 		};
+		BEB068C61A06AE280007E29E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A0A869D195CE5DB00A49434 /* mailcore2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 27780C3A19CF9CD100C77E44;
+			remoteInfo = "mailcore ios";
+		};
+		BEB068C81A06AE280007E29E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A0A869D195CE5DB00A49434 /* mailcore2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = C6B5AE0219F630B3001352A6;
+			remoteInfo = unittest;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -299,6 +313,8 @@
 				1A0A86AA195CE5DC00A49434 /* tests */,
 				1A0A86AC195CE5DC00A49434 /* test-ios.app */,
 				1A0A86AE195CE5DC00A49434 /* MailCore.framework */,
+				BEB068C71A06AE280007E29E /* MailCore.framework */,
+				BEB068C91A06AE280007E29E /* unittest.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -688,6 +704,20 @@
 			remoteRef = 1A0A86AD195CE5DC00A49434 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		BEB068C71A06AE280007E29E /* MailCore.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = MailCore.framework;
+			remoteRef = BEB068C61A06AE280007E29E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BEB068C91A06AE280007E29E /* unittest.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = unittest.xctest;
+			remoteRef = BEB068C81A06AE280007E29E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -1019,7 +1049,7 @@
 			baseConfigurationReference = 5F5D515706D5DA01E7256573 /* Pods-AutoPkgr.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Developer ID Application: The Linde Group Computer Support Inc (JVY2ZR6SEF)";
+				CODE_SIGN_IDENTITY = "Local Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "AutoPkgr/AutoPkgr-Prefix.pch";
@@ -1036,7 +1066,7 @@
 			baseConfigurationReference = 906DD048439B1EC0FBD74F69 /* Pods-AutoPkgr.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Developer ID Application: The Linde Group Computer Support Inc (JVY2ZR6SEF)";
+				CODE_SIGN_IDENTITY = "Local Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "AutoPkgr/AutoPkgr-Prefix.pch";
@@ -1095,7 +1125,7 @@
 			baseConfigurationReference = 5F5D515706D5DA01E7256573 /* Pods-AutoPkgr.debug.xcconfig */;
 			buildSettings = {
 				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CODE_SIGN_IDENTITY = "Developer ID Application: The Linde Group Computer Support Inc (JVY2ZR6SEF)";
+				CODE_SIGN_IDENTITY = "Local Mac Developer";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_PREFIX_HEADER = "helper/helper-Prefix.pch";
