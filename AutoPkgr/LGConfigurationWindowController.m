@@ -159,6 +159,8 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     // Populate the preference values from the user defaults, if they exist
     DLog(@"Populating configuration window settings based on user defaults, if they exist.");
 
+    _progressDelegate = [(id)[NSApplication sharedApplication] delegate];
+
     if ([_defaults autoPkgRunInterval]) {
         [_autoPkgRunInterval setIntegerValue:[_defaults autoPkgRunInterval]];
     }
@@ -260,7 +262,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         }
     }];
 
-    _popRepoTableViewHandler.progressDelegate = [NSApp delegate];
+    _popRepoTableViewHandler.progressDelegate = _progressDelegate;
 
     // Synchronize with the defaults database
     [_defaults synchronize];
@@ -423,7 +425,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     [_installGitButton setEnabled:NO];
 
     LGInstaller *installer = [[LGInstaller alloc] init];
-    installer.progressDelegate = [NSApp delegate];
+    installer.progressDelegate = _progressDelegate;
     [installer installGit:^(NSError *error) {
         [self stopProgress:error];
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
@@ -451,7 +453,7 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     [self startProgressWithMessage:@"Installing newest version of AutoPkg..."];
 
     LGInstaller *installer = [[LGInstaller alloc] init];
-    installer.progressDelegate = [NSApp delegate];
+    installer.progressDelegate = _progressDelegate;
     [installer installAutoPkg:^(NSError *error) {
         // Update the autoPkgStatus icon and label if it installed successfully
         [self stopProgress:error];
@@ -757,18 +759,18 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
 {
     [_cancelAutoPkgRunButton setHidden:NO];
     [_progressDetailsMessage setHidden:NO];
-    [[NSApp delegate] startProgressWithMessage:@"Updating AutoPkg recipe repos."];
+    [_progressDelegate startProgressWithMessage:@"Updating AutoPkg recipe repos."];
 
     [_updateRepoNowButton setEnabled:NO];
     if (!_taskManager) {
         _taskManager = [[LGAutoPkgTaskManager alloc] init];
     }
 
-    _taskManager.progressDelegate = [NSApp delegate];
+    _taskManager.progressDelegate = _progressDelegate;
 
     [_taskManager repoUpdate:^(NSError *error) {
         NSAssert([NSThread isMainThread], @"reply not on manin thread!!");
-        [[NSApp delegate] stopProgress:error];
+        [_progressDelegate stopProgress:error];
         [_updateRepoNowButton setEnabled:YES];
         [_recipeTableViewHandler reload];
     }];
@@ -781,18 +783,18 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
         _taskManager = [[LGAutoPkgTaskManager alloc] init];
     }
 
-    _taskManager.progressDelegate = [NSApp delegate];
+    _taskManager.progressDelegate = _progressDelegate;
 
     [_cancelAutoPkgRunButton setHidden:NO];
     [_progressDetailsMessage setHidden:NO];
-    [[NSApp delegate] startProgressWithMessage:@"Running selected AutoPkg recipes."];
+    [_progressDelegate startProgressWithMessage:@"Running selected AutoPkg recipes."];
 
     [_taskManager runRecipeList:recipeList
                      updateRepo:NO
                           reply:^(NSDictionary *report, NSError *error) {
                               NSAssert([NSThread isMainThread], @"reply not on manin thread!!");
 
-                                [[NSApp delegate] stopProgress:error];
+                                [_progressDelegate stopProgress:error];
                                 if (report.count || error) {
                                     LGEmailer *emailer = [LGEmailer new];
                                     [emailer sendEmailForReport:report error:error];
