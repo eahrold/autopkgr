@@ -54,6 +54,7 @@
 		BE32178B19ED9ACA00A92E5A /* LGRecipeOverrides.m in Sources */ = {isa = PBXBuildFile; fileRef = BE32178A19ED9ACA00A92E5A /* LGRecipeOverrides.m */; };
 		BE39FE5319DFBB0100C1B4A1 /* LGDefaults+JSSAddon.m in Sources */ = {isa = PBXBuildFile; fileRef = BE39FE5219DFBB0100C1B4A1 /* LGDefaults+JSSAddon.m */; };
 		BE57AC2A19BA3BBC00BB17B1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BE57AC2C19BA3BBC00BB17B1 /* Localizable.strings */; };
+		BE6815D51A0B18DE004AD310 /* LGUserNotifications.m in Sources */ = {isa = PBXBuildFile; fileRef = BE6815D41A0B18DE004AD310 /* LGUserNotifications.m */; };
 		BE73CDC719E062AC00441443 /* NSString+cleaned.m in Sources */ = {isa = PBXBuildFile; fileRef = BE73CDC619E062AC00441443 /* NSString+cleaned.m */; };
 		BE8526B219D5F641007DFA9E /* SecurityInterface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE8526B119D5F641007DFA9E /* SecurityInterface.framework */; };
 		BE87994B1995BA410082472B /* LGDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = BE87994A1995BA410082472B /* LGDefaults.m */; };
@@ -251,6 +252,8 @@
 		BE57733619D519E400D872A4 /* LGJSSAddon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGJSSAddon.h; sourceTree = "<group>"; };
 		BE57733719D519E400D872A4 /* LGJSSAddon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGJSSAddon.m; sourceTree = "<group>"; };
 		BE57AC2B19BA3BBC00BB17B1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		BE6815D31A0B18DE004AD310 /* LGUserNotifications.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGUserNotifications.h; sourceTree = "<group>"; };
+		BE6815D41A0B18DE004AD310 /* LGUserNotifications.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGUserNotifications.m; sourceTree = "<group>"; };
 		BE73CDC519E062AC00441443 /* NSString+cleaned.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSString+cleaned.h"; path = "Custom Catagories/NSString+cleaned.h"; sourceTree = "<group>"; };
 		BE73CDC619E062AC00441443 /* NSString+cleaned.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+cleaned.m"; path = "Custom Catagories/NSString+cleaned.m"; sourceTree = "<group>"; };
 		BE8526B119D5F641007DFA9E /* SecurityInterface.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SecurityInterface.framework; path = System/Library/Frameworks/SecurityInterface.framework; sourceTree = SDKROOT; };
@@ -437,6 +440,8 @@
 				BE025CF519BAE93400D36345 /* LGAutoPkgTask.m */,
 				1AC98410195CE8510071CAB3 /* LGEmailer.h */,
 				1AC98411195CE8520071CAB3 /* LGEmailer.m */,
+				BE6815D31A0B18DE004AD310 /* LGUserNotifications.h */,
+				BE6815D41A0B18DE004AD310 /* LGUserNotifications.m */,
 				1A1BAD9C197A4133008192A7 /* LGGitHubJSONLoader.h */,
 				1A1BAD9D197A4133008192A7 /* LGGitHubJSONLoader.m */,
 				BEAA76CA19BFD635002D73EE /* LGInstaller.h */,
@@ -863,6 +868,7 @@
 				BEC1258719F0465F006696C4 /* LGAutoPkgTask.m in Sources */,
 				BE025CFE19BAEF8800D36345 /* LGAutoPkgSchedule.m in Sources */,
 				1AC98412195CE8520071CAB3 /* LGEmailer.m in Sources */,
+				BE6815D51A0B18DE004AD310 /* LGUserNotifications.m in Sources */,
 				BEC1258A19F04703006696C4 /* LGInstaller.m in Sources */,
 				BEC1258519F045EB006696C4 /* LGRecipes.m in Sources */,
 				BE32178B19ED9ACA00A92E5A /* LGRecipeOverrides.m in Sources */,

@@ -27,12 +27,14 @@
 #import "LGAutoPkgSchedule.h"
 #import "LGConfigurationWindowController.h"
 #import "LGAutoPkgrHelperConnection.h"
+#import "LGUserNotifications.h"
 #import <AHLaunchCtl/AHLaunchCtl.h>
 
 @implementation LGAppDelegate {
 @private
     LGConfigurationWindowController *_configurationWindowController;
     BOOL _configurationWindowInitiallyVisible;
+    LGUserNotifications *notificationDelegate;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
@@ -53,7 +55,11 @@
             [[NSApplication sharedApplication] terminate:self];
         }
     }
-    
+
+    // Setup User Notification Delegate
+    notificationDelegate = [[LGUserNotifications alloc] init];
+    [NSUserNotificationCenter defaultUserNotificationCenter].delegate = notificationDelegate;
+
     [self showConfigurationWindow:self];
 }
 
