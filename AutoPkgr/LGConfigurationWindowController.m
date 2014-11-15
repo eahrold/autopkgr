@@ -159,7 +159,9 @@ static void *XXAuthenticationEnabledContext = &XXAuthenticationEnabledContext;
     // Populate the preference values from the user defaults, if they exist
     DLog(@"Populating configuration window settings based on user defaults, if they exist.");
 
-    _progressDelegate = [(id)[NSApplication sharedApplication] delegate];
+    if ([[[NSApplication sharedApplication] delegate] conformsToProtocol:@protocol(LGProgressDelegate) ]){
+        _progressDelegate = (id)[[NSApplication sharedApplication] delegate];
+    }
 
     if ([_defaults autoPkgRunInterval]) {
         [_autoPkgRunInterval setIntegerValue:[_defaults autoPkgRunInterval]];

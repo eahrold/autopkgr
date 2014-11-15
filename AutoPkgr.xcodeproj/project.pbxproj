@@ -248,7 +248,6 @@
 		BE34DF2B19AA21E200DC2FAF /* LGAutoPkgr.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LGAutoPkgr.h; sourceTree = "<group>"; };
 		BE39FE5119DFBB0100C1B4A1 /* LGDefaults+JSSAddon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "LGDefaults+JSSAddon.h"; path = "Custom Catagories/LGDefaults+JSSAddon.h"; sourceTree = "<group>"; };
 		BE39FE5219DFBB0100C1B4A1 /* LGDefaults+JSSAddon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "LGDefaults+JSSAddon.m"; path = "Custom Catagories/LGDefaults+JSSAddon.m"; sourceTree = "<group>"; };
-		BE4D32C619F98E9F00121E8B /* libPods-AutoPkgr-AHCodesignValidator.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-AutoPkgr-AHCodesignValidator.a"; path = "../../../../Library/Developer/Xcode/DerivedData/AutoPkgr-gvffmulnnaejibfmmwfptzyobmbb/Build/Products/Debug/libPods-AutoPkgr-AHCodesignValidator.a"; sourceTree = "<group>"; };
 		BE57733619D519E400D872A4 /* LGJSSAddon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGJSSAddon.h; sourceTree = "<group>"; };
 		BE57733719D519E400D872A4 /* LGJSSAddon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGJSSAddon.m; sourceTree = "<group>"; };
 		BE57AC2B19BA3BBC00BB17B1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -262,7 +261,6 @@
 		BE94AA7B19BB8A78001A00D0 /* LGProgressDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LGProgressDelegate.h; sourceTree = "<group>"; };
 		BEAA76CA19BFD635002D73EE /* LGInstaller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGInstaller.h; sourceTree = "<group>"; };
 		BEAA76CB19BFD635002D73EE /* LGInstaller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGInstaller.m; sourceTree = "<group>"; };
-		BED6123819F98E0100F33741 /* libPods-AutoPkgr-AHCodesignValidator.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-AutoPkgr-AHCodesignValidator.a"; path = "Pods/build/Debug/libPods-AutoPkgr-AHCodesignValidator.a"; sourceTree = "<group>"; };
 		BEE05F051A05CDBE00EF80B3 /* libPods-AutoPkgr-AHCodesignVerifier.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-AutoPkgr-AHCodesignVerifier.a"; path = "../../../../Library/Developer/Xcode/DerivedData/AutoPkgr-gvffmulnnaejibfmmwfptzyobmbb/Build/Products/Debug/libPods-AutoPkgr-AHCodesignVerifier.a"; sourceTree = "<group>"; };
 		BEE8CF1119E0E7F400981C4B /* NSTextField+setSafeStringValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSTextField+setSafeStringValue.h"; path = "Custom Catagories/NSTextField+setSafeStringValue.h"; sourceTree = "<group>"; };
 		BEE8CF1219E0E7F400981C4B /* NSTextField+setSafeStringValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSTextField+setSafeStringValue.m"; path = "Custom Catagories/NSTextField+setSafeStringValue.m"; sourceTree = "<group>"; };
@@ -357,18 +355,15 @@
 		1AC6954F195B59ED00D2BD81 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FF435269A548437DA5380201 /* libPods-AutoPkgr.a */,
 				BEE05F051A05CDBE00EF80B3 /* libPods-AutoPkgr-AHCodesignVerifier.a */,
-				BE4D32C619F98E9F00121E8B /* libPods-AutoPkgr-AHCodesignValidator.a */,
-				BED6123819F98E0100F33741 /* libPods-AutoPkgr-AHCodesignValidator.a */,
-				BE05CE8F19DB37E50089068B /* ServiceManagement.framework */,
 				BE05CE8519DB35380089068B /* libPods-AutoPkgr-AHKeychain.a */,
 				BE05CE8619DB35380089068B /* libPods-AutoPkgr-AHLaunchCtl.a */,
+				BE05CE8F19DB37E50089068B /* ServiceManagement.framework */,
 				BE8526B119D5F641007DFA9E /* SecurityInterface.framework */,
 				1A0A86B0195CE69300A49434 /* Security.framework */,
 				1AC69550195B59ED00D2BD81 /* Cocoa.framework */,
-				1AC6956F195B59EE00D2BD81 /* XCTest.framework */,
 				1AC69552195B59ED00D2BD81 /* Other Frameworks */,
-				FF435269A548437DA5380201 /* libPods-AutoPkgr.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -376,6 +371,7 @@
 		1AC69552195B59ED00D2BD81 /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1AC6956F195B59EE00D2BD81 /* XCTest.framework */,
 				1AC69553195B59ED00D2BD81 /* AppKit.framework */,
 				1AC69554195B59ED00D2BD81 /* CoreData.framework */,
 				1AC69555195B59ED00D2BD81 /* Foundation.framework */,
