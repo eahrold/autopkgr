@@ -26,6 +26,7 @@
 #import "LGInstaller.h"
 #import "LGHostInfo.h"
 #import "LGAutoPkgTask.h"
+#import "LGJSSDistributionPointsPrefPanel.h"
 
 #pragma mark - Class constants
 NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
@@ -35,6 +36,7 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
     LGTestPort *_portTester;
     BOOL _serverReachable;
     BOOL _installRequestedDuringConnect;
+    LGJSSDistributionPointsPrefPanel *_preferencePanel;
 }
 
 - (void)awakeFromNib
@@ -56,12 +58,10 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
         [_jssInstallStatusTF setStringValue:@"JSS AutoPkg Addon not installed."];
     }
 
+    // .safeStringValue is a NSTextField category that you can pass a nil value into.
     _jssAPIUsernameTF.safeStringValue = _defaults.JSSAPIUsername;
     _jssAPIPasswordTF.safeStringValue = _defaults.JSSAPIPassword;
-
-    if (_defaults.JSSURL) {
-        _jssURLTF.safeStringValue = _defaults.JSSURL;
-    }
+    _jssURLTF.safeStringValue = _defaults.JSSURL;
 
     [self updateJSSURL:nil];
     [_jssDistributionPointTableView reloadData];
@@ -105,18 +105,20 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
                                withUser:_jssAPIUsernameTF.stringValue
                             andPassword:_jssAPIPasswordTF.stringValue
                                   reply:^(NSDictionary *distributionPoints, NSError *error) {
-                                      [self stopStatusUpdate:error];
+                                      if (!error) {
+                                          [self saveDefaults];
+                                          [_jssStatusLight setImage:[NSImage LGStatusAvaliable]];
+                                      }
+
                                       [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                                          [self stopStatusUpdate:error];
                                            id distPoints = distributionPoints[@"distribution_point"];
                                            if (distPoints) {
                                                NSArray *cleanedArray = [self evaluateJSSRepoDictionaries:distPoints];
                                                if (cleanedArray) {
                                                    _defaults.JSSRepos = cleanedArray;
-                                                   [self saveDefaults];
-                                                   [_jssStatusLight setImage:[NSImage LGStatusAvaliable]];
                                                    [_jssDistributionPointTableView reloadData];
                                                }
-                                               
                                            }
                                       }];
                                   }];
@@ -187,11 +189,16 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
     NSDictionary *distributionPoint;
+
     if ([_defaults.JSSRepos count] >= row) {
         distributionPoint = _defaults.JSSRepos[row];
     };
     NSString *identifier = [tableColumn identifier];
-    return distributionPoint[identifier];
+    NSString *setObject = distributionPoint[identifier];
+    if (!setObject && [identifier isEqualToString:kLGJSSDistPointNameKey]) {
+        setObject = distributionPoint[kLGJSSDistPointURLKey];
+    }
+    return setObject;
 }
 
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
@@ -199,11 +206,18 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
     NSMutableArray *workingArray = [NSMutableArray arrayWithArray:_defaults.JSSRepos];
     NSMutableDictionary *distributionPoint = [NSMutableDictionary dictionaryWithDictionary:workingArray[row]];
 
-    [distributionPoint setValue:object forKey:[tableColumn identifier]];
+    if (!distributionPoint[kLGJSSDistPointTypeKey]) {
+        if (![tableColumn.identifier isEqualToString:kLGJSSDistPointPasswordKey]) {
+            return;
+        }
+    }
+
+    [distributionPoint setValue:object forKey:tableColumn.identifier];
     [workingArray replaceObjectAtIndex:row withObject:distributionPoint];
 
     _defaults.JSSRepos = [NSArray arrayWithArray:workingArray];
 }
+
 
 #pragma mark - Utility
 - (void)checkReachability
@@ -258,15 +272,21 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
         dictArray = distPoints;
     }
 
+    // If the "type" key is not set for the DP then it's auto detected via the server
+    // and we'll strip them out here.
+    LGDefaults *defaults = [LGDefaults standardUserDefaults];
+    NSPredicate *customDistPointsPredicate = [NSPredicate predicateWithFormat:@"not %K == nil", kLGJSSDistPointTypeKey];
+    NSArray *customDistPoints = [defaults.JSSRepos filteredArrayUsingPredicate:customDistPointsPredicate];
+    newRepos = [[NSMutableArray alloc] initWithArray:customDistPoints];
+
     if (dictArray) {
-        newRepos = [[NSMutableArray alloc] init];
         for (NSDictionary *repo in dictArray) {
-            if (!repo[@"password"]) {
-                NSString *name = repo[@"name"];
+            if (!repo[kLGJSSDistPointPasswordKey]) {
+                NSString *name = repo[kLGJSSDistPointNameKey];
                 NSString *password = [self promptForSharePassword:name];
                 if (password && ![password isEqualToString:@""]) {
-                    [newRepos addObject:@{ @"name" : name,
-                                           @"password" : password }];
+                    [newRepos addObject:@{ kLGJSSDistPointNameKey : name,
+                                           kLGJSSDistPointPasswordKey : password }];
                 }
             } else {
                 [newRepos addObject:repo];
@@ -387,28 +407,69 @@ NSString *defaultJSSRepo = @"https://github.com/sheagcraig/jss-recipes.git";
 #pragma mark - Table View Contextual menu
 - (void)removeDistributionPoint:(NSMenuItem *)item
 {
-    NSString *distPoint = item.representedObject;
-    LGDefaults *defaults = [LGDefaults standardUserDefaults];
+    NSDictionary *distPoint = item.representedObject;
     NSLog(@"Request received to remove distribution point: %@", distPoint);
-    NSPredicate *removePredicate = [NSPredicate predicateWithFormat:@"NOT (name == %@)", distPoint];
-    NSArray *newArray = [defaults.JSSRepos filteredArrayUsingPredicate:removePredicate];
-    if (newArray.count) {
-        defaults.JSSRepos = newArray;
-    } else {
-        defaults.JSSRepos = nil;
-    }
+    NSMutableArray *workingArray = [[NSMutableArray alloc] initWithArray:_defaults.JSSRepos];
+    [workingArray removeObject:distPoint];
+    _defaults.JSSRepos = [NSArray arrayWithArray:workingArray];
     [_jssDistributionPointTableView reloadData];
 }
 
-- (NSMenu *)contextualMenuForDistributionPoint:(NSString *)distPoint
+- (void)editDistributionPoint:(NSMenuItem *)item
+{
+
+    NSDictionary *repoDict = item.representedObject;
+
+    if (repoDict && repoDict[kLGJSSDistPointTypeKey]) {
+        if (!_preferencePanel) {
+            _preferencePanel = [[LGJSSDistributionPointsPrefPanel alloc] initWithDistPointDictionary:repoDict];
+        }
+
+        [NSApp beginSheet:_preferencePanel.window modalForWindow:_modalWindow modalDelegate:self didEndSelector:@selector(didClosePreferencePanel) contextInfo:nil];
+    }
+}
+
+- (NSMenu *)contextualMenuForDistributionPoint:(NSDictionary *)distPoint
 {
     NSMenu *menu = [[NSMenu alloc] init];
-    NSString *removeString = [NSString stringWithFormat:@"Remove %@", distPoint];
-    NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:removeString action:@selector(removeDistributionPoint:) keyEquivalent:@""];
-    item.target = self;
-    item.representedObject = distPoint;
-    [menu addItem:item];
+
+    if (distPoint[kLGJSSDistPointTypeKey]) {
+        NSMenuItem *editItem = [[NSMenuItem alloc] initWithTitle:@"Edit" action:@selector(editDistributionPoint:) keyEquivalent:@""];
+        editItem.target = self;
+        editItem.representedObject = distPoint;
+        editItem.representedObject = distPoint;
+        [menu addItem:editItem];
+    }
+
+    NSString *name = distPoint[kLGJSSDistPointNameKey] ? distPoint[kLGJSSDistPointNameKey] : distPoint[kLGJSSDistPointURLKey];
+    NSString *removeString = [NSString stringWithFormat:@"Remove %@", name];
+    NSMenuItem *removeItem = [[NSMenuItem alloc] initWithTitle:removeString action:@selector(removeDistributionPoint:) keyEquivalent:@""];
+    removeItem.target = self;
+    removeItem.representedObject = distPoint;
+    [menu addItem:removeItem];
+
     return menu;
 }
 
+#pragma mark - JSS Distribution Point Preference Panel
+- (void)addDistributionPoint:(id)sender
+{
+
+    if (!_preferencePanel) {
+        _preferencePanel = [[LGJSSDistributionPointsPrefPanel alloc] init];
+    }
+
+    [NSApp beginSheet:_preferencePanel.window modalForWindow:_modalWindow modalDelegate:self didEndSelector:@selector(didClosePreferencePanel) contextInfo:nil];
+}
+
+- (void)didClosePreferencePanel
+{
+    if (![NSThread isMainThread]) {
+        return [self performSelectorOnMainThread:@selector(didClosePreferencePanel) withObject:self waitUntilDone:NO];
+    }
+
+    [_preferencePanel.window close];
+    _preferencePanel = nil;
+    [_jssDistributionPointTableView reloadData];
+}
 @end
