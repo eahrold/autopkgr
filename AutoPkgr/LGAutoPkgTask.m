@@ -574,9 +574,9 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
             }
             [mgr createDirectoryAtPath:reportSubfolder withIntermediateDirectories:YES attributes:nil error:nil];
         }
-        NSDateFormatter *fomatter = [[NSDateFormatter alloc] init];
-        [fomatter setDateFormat:@"YYYYMMddHHmmss"];
-        _reportPlistFile = [reportSubfolder stringByAppendingPathComponent:[fomatter stringFromDate:[NSDate date]]];
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateFormat:@"YYYYMMddHHmmss"];
+        _reportPlistFile = [reportSubfolder stringByAppendingPathComponent:[formatter stringFromDate:[NSDate date]]];
     }
     return _reportPlistFile;
 }
@@ -585,7 +585,6 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 {
     if (!_results) {
         NSString *resultString = self.standardOutString;
-        NSPredicate *noEmptyStrings = [NSPredicate predicateWithFormat:@"not (SELF == '')"];
         if (resultString) {
 
             if (_verb == kLGAutoPkgSearch) {
@@ -628,7 +627,7 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 
                 NSMutableArray *strippedRepos = [[NSMutableArray alloc] init];
 
-                for (NSString *repo in [listResults filteredArrayUsingPredicate:noEmptyStrings]) {
+                for (NSString *repo in [listResults removeEmptyStrings]) {
                     NSArray *splitArray = [repo componentsSeparatedByString:@"(http"];
 
                     NSString *repoURL = [[@"http" stringByAppendingString:[splitArray lastObject]] stringByReplacingOccurrencesOfString:@")" withString:@""];
@@ -645,7 +644,7 @@ typedef void (^AutoPkgRepoyErrorBlock)(NSError *error);
 
             } else if (_verb == kLGAutoPkgRecipeList) {
                 NSArray *listResults = [resultString componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-                _results = [listResults filteredArrayUsingPredicate:noEmptyStrings];
+                _results = [listResults removeEmptyStrings];
             }
         }
     }
