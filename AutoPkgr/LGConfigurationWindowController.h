@@ -77,6 +77,9 @@
 
 // Progress panel
 @property (weak) IBOutlet NSPanel *progressPanel;
+@property (weak) IBOutlet NSPanel *autoPkgRunProgressPanel;
+@property (strong) IBOutlet NSTextView *autoPkgRunTextView;
+
 @property (weak) IBOutlet NSProgressIndicator *progressIndicator;
 @property (weak) IBOutlet NSTextField *progressMessage;
 @property (weak) IBOutlet NSTextField *progressDetailsMessage;

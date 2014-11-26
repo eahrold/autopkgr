@@ -131,7 +131,7 @@
         [_gitStatusLabel setStringValue:kLGGitNotInstalledLabel];
         [_gitStatusIcon setImage:[NSImage LGStatusUnavailable]];
     }
-    
+
     NSOperationQueue *bgQueue = [[NSOperationQueue alloc] init];
     [bgQueue addOperationWithBlock:^{
         // Since checking for an update can take some time, run it in the background
@@ -589,18 +589,19 @@
         _taskManager = [[LGAutoPkgTaskManager alloc] init];
     }
 
-    _taskManager.progressDelegate = _progressDelegate;
+    _taskManager.progressDelegate = self;
 
     [_cancelAutoPkgRunButton setHidden:NO];
     [_progressDetailsMessage setHidden:NO];
-    [_progressDelegate startProgressWithMessage:@"Running selected AutoPkg recipes."];
-
+    //    [_progressDelegate startProgressWithMessage:@"Running selected AutoPkg recipes."];
+    [self startRunProgressPanel];
     [_taskManager runRecipeList:recipeList
                      updateRepo:NO
                           reply:^(NSDictionary *report, NSError *error) {
                               NSAssert([NSThread isMainThread], @"reply not on manin thread!!");
+                              [self updateRunProgressTextView:@"\n### Completed AutoPkg Run ###"];
+//                                [_progressDelegate stopProgress:error];
 
-                                [_progressDelegate stopProgress:error];
                                 if (report.count || error) {
                                     LGEmailer *emailer = [LGEmailer new];
                                     [emailer sendEmailForReport:report error:error];
@@ -613,6 +614,7 @@
     if (_taskManager) {
         [_taskManager cancel];
     }
+    [self stopRunProgressPanel];
 }
 
 #pragma mark - State Actions
@@ -821,6 +823,31 @@
     }
 }
 
+#pragma mark - AutoPkg Run Progress
+- (void)startRunProgressPanel
+{
+    [self.autoPkgRunTextView setString:@"### Starting AutoPkg run ###\n"];
+    [NSApp beginSheet:self.autoPkgRunProgressPanel modalForWindow:self.window modalDelegate:self didEndSelector:nil contextInfo:NULL];
+}
+
+- (void)stopRunProgressPanel
+{
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [NSApp endSheet:self.autoPkgRunProgressPanel returnCode:0];
+        [self.autoPkgRunProgressPanel orderOut:self];
+        [self.autoPkgRunTextView setString:@""];
+    }];
+}
+
+- (void)updateRunProgressTextView:(NSString *)message
+{
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        NSAttributedString* attr = [[NSAttributedString alloc] initWithString:message];
+        [[_autoPkgRunTextView textStorage] appendAttributedString:attr];
+        [_autoPkgRunTextView scrollRangeToVisible:NSMakeRange([[_autoPkgRunTextView string] length], 0)];
+    }];
+}
+
 #pragma mark - LGProgressDelegate
 - (void)startProgressWithMessage:(NSString *)message
 {
@@ -871,13 +898,15 @@
 
 - (void)updateProgress:(NSString *)message progress:(double)progress
 {
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+
     if (message.length < 100) {
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             [self.progressIndicator setIndeterminate:NO];
             [self.progressDetailsMessage setStringValue:message];
             [self.progressIndicator setDoubleValue:progress > 5.0 ? progress:5.0 ];
-        }];
-    }
+    };
+        [self updateRunProgressTextView:message];
+    }];
 }
 
 #pragma mark - Notifications

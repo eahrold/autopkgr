@@ -395,7 +395,7 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
             NSPredicate *progressPredicate;
 
             if (_verb == kLGAutoPkgRun) {
-                progressPredicate = [NSPredicate predicateWithFormat:@"SELF CONTAINS[cd] 'Processing'"];
+                progressPredicate = [NSPredicate predicateWithFormat:@"SELF CONTAINS[cd] ' '"];
                 total = [self recipeListCount];
             } else if (_verb == kLGAutoPkgRepoUpdate) {
                 progressPredicate = [NSPredicate predicateWithFormat:@"SELF CONTAINS[cd] '.git'"];
@@ -413,6 +413,7 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
                         int cntStr = (int)round(count) + 1;
                         int totStr = (int)round(total);
                         fullMessage = [[NSString stringWithFormat:@"(%d/%d) %@", cntStr, totStr, message] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+                        fullMessage = [@"\n" stringByAppendingString:message];
                     }
 
                     double progress = ((count/total) * 100);
