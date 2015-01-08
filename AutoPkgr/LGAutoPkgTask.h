@@ -268,7 +268,7 @@ extern NSString *const kLGAutoPkgRepoURLKey;
 
 #pragma mark-- Convenience Initializers --
 + (LGAutoPkgTask *)runRecipeTask:(NSArray *)recipes;
-+ (LGAutoPkgTask *)runRecipeListTask;
++ (LGAutoPkgTask *)runRecipeListTask:(NSString *)recipeList;
 + (LGAutoPkgTask *)searchTask:(NSString *)recipe;
 + (LGAutoPkgTask *)repoUpdateTask;
 + (LGAutoPkgTask *)addRepoTask:(NSString *)repo;

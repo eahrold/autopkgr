@@ -24,6 +24,14 @@
 #import "LGHostInfo.h"
 #import "LGVersioner.h"
 
+#import <util.h>
+
+void DDLog(LGAutoPkgVerb verb, NSString *action){
+    if (verb == kLGAutoPkgRun) {
+        NSLog(@"Run Task Setting %@",action);
+    }
+}
+
 NSString *const kLGAutoPkgTaskLock = @"com.lindegroup.autopkg.task.lock";
 
 NSString *const kLGAutoPkgRecipeNameKey = @"Name";
@@ -47,6 +55,9 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
 
 #pragma mark - AutoPkg Task (Internal Extensions)
 @interface LGAutoPkgTask ()
+
+@property (strong, atomic) NSFileHandle *masterFileHandle;
+
 
 @property (nonatomic, assign) LGAutoPkgVerb verb;
 @property (strong, atomic) NSTask *task;
@@ -122,7 +133,7 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
 - (void)runRecipes:(NSArray *)recipes
              reply:(void (^)(NSDictionary *, NSError *))reply
 {
-    LGAutoPkgTask *task = [LGAutoPkgTask runRecipeListTask];
+    LGAutoPkgTask *task = [LGAutoPkgTask runRecipeTask:recipes];
     task.replyReportBlock = reply;
     [self addOperation:task];
 }
@@ -131,7 +142,7 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
            updateRepo:(BOOL)updateRepo
                 reply:(void (^)(NSDictionary *, NSError *))reply
 {
-    LGAutoPkgTask *runTask = [LGAutoPkgTask runRecipeListTask];
+    LGAutoPkgTask *runTask = [LGAutoPkgTask runRecipeListTask:recipeList];
     runTask.replyReportBlock = reply;
 
     if (updateRepo) {
@@ -182,7 +193,8 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
 {
     self = [super init];
     if (self) {
-        self.internalArgs = [@[ autopkg() ] mutableCopy];
+//        self.internalArgs = [@[ @"-i386", @"/usr/bin/python2.7", autopkg() ] mutableCopy];
+        self.internalArgs = [@[ @"-x86_64", @"/usr/bin/python2.7", autopkg() ] mutableCopy];
         _taskLock = [[NSRecursiveLock alloc] init];
         _taskLock.name = kLGAutoPkgTaskLock;
         _taskStatusDelegate = self;
@@ -236,9 +248,13 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
     {
         NSTask *task = [[NSTask alloc] init];
 
+        DDLog(self.verb, @"Initialized");
         self.task = task;
-        self.task.launchPath = @"/usr/bin/python";
+        self.task.launchPath = @"/usr/bin/arch";
+
+        DDLog(self.verb, @"Launch Args");
         self.task.arguments = [self.internalArgs copy];
+        DDLog(self.verb, @"Launch Args Done");
 
         // If an instance of autopkg is running,
         // and we're trying to do a run, exit
@@ -248,26 +264,36 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
             return;
         }
 
+        DDLog(self.verb, @"File Handles");
         [self configureFileHandles];
-        [self configureEnvironment];
+        DDLog(self.verb, @"File Handles Done!");
 
+        DDLog(self.verb, @"Environment");
+        [self configureEnvironment];
         if (self.internalEnvironment) {
+            DDLog(self.verb, @"Updated Environment");
             self.task.environment = [self.internalEnvironment copy];
         }
+        DDLog(self.verb, @"Environment Done!");
+
 
         // This is the one place we refer back to the allocated task
         // to avoid retain cycles
+        DDLog(self.verb, @"Termination Handler");
         [task setTerminationHandler:^(NSTask *task) {
             [self didCompleteTaskExecution];
         }];
+        DDLog(self.verb, @"Termination Handler Done");
+
 
         // Since NSTask can raise for unexpected reasons,
         // put it in a try-catch block
         @try {
+            DDLog(self.verb, @"Launching!!!");
             [self.task launch];
+            DDLog(self.verb, @"Launching Done!!!");
         }
-        @catch (NSException *exception)
-        {
+        @catch (NSException *exception) {
             NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"A fatal error occured when trying to run AutoPkg",
                                         NSLocalizedRecoverySuggestionErrorKey : @"If you repeatedly see this message please report it. The full scope of the error is in the system.log, make sure to include that in the report"
             };
@@ -315,6 +341,7 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
         [self.task.standardError fileHandleForReading].readabilityHandler = nil;
     }
 
+
     if (!_error) {
         [self.taskLock lock];
         self.error = [LGError errorWithTaskError:self.task verb:_verb];
@@ -331,6 +358,7 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
     [self setIsExecuting:NO];
     [self setIsFinished:YES];
 
+    self.masterFileHandle = nil;
     self.task.terminationHandler = nil;
 }
 
@@ -397,16 +425,28 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
 }
 
 #pragma mark - Task config helpers
-#pragma mark - Task config helpers
 - (void)configureFileHandles
 {
-    NSPipe *standardOutput = [NSPipe pipe];
-    self.task.standardOutput = standardOutput;
-
     NSPipe *standardError = [NSPipe pipe];
     self.task.standardError = standardError;
 
     if (_verb == kLGAutoPkgRun || _verb == kLGAutoPkgRepoUpdate) {
+        int fdMaster, fdSlave;
+
+        NSFileHandle *slaveHandle = nil;
+        NSFileHandle *masterHandle = nil;
+
+        if (openpty(&fdMaster, &fdSlave, NULL, NULL, NULL) == 0) {
+            fcntl(fdMaster, F_SETFD, FD_CLOEXEC);
+            fcntl(fdSlave, F_SETFD, FD_CLOEXEC);
+            slaveHandle = [[NSFileHandle alloc] initWithFileDescriptor:fdSlave closeOnDealloc:YES];
+            masterHandle = [[NSFileHandle alloc] initWithFileDescriptor:fdMaster closeOnDealloc:YES];
+        }
+
+        self.task.standardOutput = slaveHandle;
+        self.task.standardInput = slaveHandle;
+        self.masterFileHandle = masterHandle;
+
         if (self.AUTOPKG_VERSION_0_4_0) {
             __block double count = 0.0;
             __block double total;
@@ -422,7 +462,7 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
             }
 
             BOOL verbose = [[NSUserDefaults standardUserDefaults] boolForKey:@"verboseAutoPkgRun"];
-            [[standardOutput fileHandleForReading] setReadabilityHandler:^(NSFileHandle *handle) {
+            [masterHandle setReadabilityHandler:^(NSFileHandle *handle) {
                 NSString *message = [[NSString alloc]initWithData:[handle availableData] encoding:NSUTF8StringEncoding];
                 
                 [_versioner parseString:message];
@@ -457,6 +497,9 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
             }];
         }
     } else {
+        NSPipe *standardOutput = [NSPipe pipe];
+        self.task.standardOutput = standardOutput;
+
         [[standardOutput fileHandleForReading] setReadabilityHandler:^(NSFileHandle *fh) {
             NSData *data = [fh availableData];
             if ([data length]) {
@@ -509,7 +552,7 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
     if (_verb == kLGAutoPkgRun || _verb == kLGAutoPkgRepoUpdate) {
         // To get status from autopkg set NSUnbufferedIO environment key to YES
         // Thanks to help from -- http://stackoverflow.com/questions/8251010
-        [self addEnvironmentVariable:@"YES" forKey:@"NSUnbufferedIO"];
+//        [self addEnvironmentVariable:@"YES" forKey:@"NSUnbufferedIO"];
     }
 }
 
@@ -760,7 +803,7 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
           progress:(void (^)(NSString *, double))progress
              reply:(void (^)(NSDictionary *, NSError *))reply
 {
-    LGAutoPkgTask *task = [LGAutoPkgTask runRecipeListTask];
+    LGAutoPkgTask *task = [LGAutoPkgTask runRecipeTask:recipes];
     task.progressUpdateBlock = progress;
 
     __weak LGAutoPkgTask *weakTask = task;
@@ -773,7 +816,7 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
              progress:(void (^)(NSString *, double))progress
                 reply:(void (^)(NSDictionary *, NSError *))reply
 {
-    LGAutoPkgTask *task = [LGAutoPkgTask runRecipeListTask];
+    LGAutoPkgTask *task = [LGAutoPkgTask runRecipeListTask:recipeList];
     task.progressUpdateBlock = progress;
 
     __weak LGAutoPkgTask *weakTask = task;
@@ -888,10 +931,10 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
     return task;
 }
 
-+ (LGAutoPkgTask *)runRecipeListTask
++ (LGAutoPkgTask *)runRecipeListTask:(NSString *)recipeList
 {
     LGAutoPkgTask *task = [[LGAutoPkgTask alloc] init];
-    task.arguments = @[ @"run", @"--recipe-list", [LGRecipes recipeList], @"--report-plist" ];
+    task.arguments = @[ @"run", @"--recipe-list", recipeList, @"--report-plist" ];
     return task;
 }
 
