@@ -41,6 +41,11 @@
         smtpSession.hostname = defaults.SMTPServer ?: @"";
         smtpSession.port = (int)defaults.SMTPPort;
 
+        NSNumber *authType = [defaults objectForKey:@"MCOAuthType"];
+        if (authType) {
+            smtpSession.authType = [authType integerValue];
+        }
+
         if (defaults.SMTPTLSEnabled) {
             DLog(@"SSL/TLS is enabled for %@.", defaults.SMTPServer);
             // If the SMTP port is 465, use MCOConnectionTypeTLS.
