@@ -39,6 +39,7 @@
     _descriptionTF.stringValue = _recipe.Description ?: @"";
     _minimumVersionTF.stringValue = _recipe.MinimumVersion ?: @"";
     _filePathTF.stringValue = [_recipe.FilePath stringByAbbreviatingWithTildeInPath];
+
     _hasCheckPhaseTF.stringValue = [self stringForBool:_recipe.hasCheckPhase];
     _buildsPackageTF.stringValue = [self stringForBool:_recipe.buildsPackage];
 }

@@ -77,7 +77,15 @@ static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
 
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
-    return [[_searchedRecipes objectAtIndex:row] valueForKey:tableColumn.identifier];
+    if ([tableColumn.identifier isEqualToString:@"isMissingParent"]) {
+        if ([[[_searchedRecipes objectAtIndex:row] valueForKey:tableColumn.identifier] boolValue]) {
+            return [NSImage LGCaution];
+        } else {
+            return [NSImage LGNoImage];
+        }
+    } else {
+        return [[_searchedRecipes objectAtIndex:row] valueForKey:tableColumn.identifier];
+    }
 }
 
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row

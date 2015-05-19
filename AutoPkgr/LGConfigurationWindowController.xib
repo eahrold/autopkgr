@@ -383,7 +383,6 @@
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         <subviews>
                                                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" headerView="G9x-hV-Xkq" id="HAz-3M-Rgt" customClass="LGTableView">
-                                                                <rect key="frame" x="0.0" y="0.0" width="581" height="19"/>
                                                                 <autoresizingMask key="autoresizingMask"/>
                                                                 <size key="intercellSpacing" width="3" height="2"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -415,7 +414,7 @@
                                                                         <sortDescriptor key="sortDescriptorPrototype" selector="localizedStandardCompare:" sortKey="Name"/>
                                                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                                     </tableColumn>
-                                                                    <tableColumn identifier="Identifier" editable="NO" width="381" minWidth="10" maxWidth="3.4028234663852886e+38" id="Uhk-Q9-hWI">
+                                                                    <tableColumn identifier="Identifier" editable="NO" width="352" minWidth="10" maxWidth="3.4028234663852886e+38" id="Uhk-Q9-hWI">
                                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                                             <font key="font" metaFont="smallSystem"/>
                                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -428,6 +427,15 @@
                                                                         </textFieldCell>
                                                                         <sortDescriptor key="sortDescriptorPrototype" selector="localizedStandardCompare:" sortKey="Identifier"/>
                                                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
+                                                                    </tableColumn>
+                                                                    <tableColumn identifier="isMissingParent" editable="NO" width="26" minWidth="10" maxWidth="3.4028234663852886e+38" id="XTp-YI-Hx6">
+                                                                        <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
+                                                                            <font key="font" metaFont="smallSystem"/>
+                                                                            <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                            <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                                        </tableHeaderCell>
+                                                                        <imageCell key="dataCell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="fQT-6Z-xoE"/>
+                                                                        <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                     </tableColumn>
                                                                 </tableColumns>
                                                                 <connections>
