@@ -24,8 +24,9 @@
 #import "LGAutoPkgRecipe.h"
 
 #import "LGRecipeOverrides.h"
+#import "LGRecipeInfoView.h"
 
-@interface LGRecipeController ()
+@interface LGRecipeController ()<NSWindowDelegate, NSPopoverDelegate>
 
 @property (copy, nonatomic) NSMutableArray *recipes;
 @property (copy, nonatomic) NSMutableArray *searchedRecipes;
@@ -38,6 +39,8 @@
 @implementation LGRecipeController {
     LGAutoPkgTask *_runTask;
     NSString *_currentRunningRecipe;
+    NSPopover *_infoPopover;
+    LGRecipeInfoView *_infoView;
 }
 
 static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
@@ -87,6 +90,7 @@ static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
         if (recipe.isMissingParent) {
             return [LGError presentErrorWithCode:kLGErrorMissingParentRecipe];
         }
+        
         // Setting the recipe.enabled property will add/remove the recipe to the recipe_list.txt
         recipe.enabled = [object boolValue];
     }
@@ -94,7 +98,8 @@ static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
     return;
 }
 
--(void)tableView:(NSTableView *)tableView sortDescriptorsDidChange:(NSArray *)oldDescriptors {
+- (void)tableView:(NSTableView *)tableView sortDescriptorsDidChange:(NSArray *)oldDescriptors
+{
     [_searchedRecipes sortUsingDescriptors:tableView.sortDescriptors];
     [tableView reloadData];
 }
@@ -121,7 +126,6 @@ static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
     [_recipeTableView endUpdates];
 }
 
-
 #pragma mark - Accessors
 - (NSMutableArray *)recipes
 {
@@ -133,18 +137,20 @@ static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
     return _recipes;
 }
 
-#pragma mark- Run Task Menu Actions
-- (void)cancelTask {
+#pragma mark - Run Task Menu Actions
+- (void)cancelTask
+{
     if (_runTask) {
         [_runTask cancel];
     }
     _runTask = nil;
 }
 
-- (void)runRecipeFromMenu:(NSMenuItem *)item {
+- (void)runRecipeFromMenu:(NSMenuItem *)item
+{
 
-    _runTask = [LGAutoPkgTask runRecipesTask:@[item.representedObject]];
-    _runTask.progressUpdateBlock = ^(NSString *message, double progress){
+    _runTask = [LGAutoPkgTask runRecipesTask:@[ item.representedObject ]];
+    _runTask.progressUpdateBlock = ^(NSString *message, double progress) {
         NSLog(@"%@", message);
     };
 
@@ -155,6 +161,37 @@ static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
     }];
 }
 
+- (void)openInfoPanelFromMenu:(NSMenuItem *)item {
+    [self openInfoPanel:item.representedObject];
+}
+
+- (void)openInfoPanel:(LGAutoPkgRecipe *)recipe
+{
+    _infoView = [[LGRecipeInfoView alloc] initWithRecipe:recipe];
+
+    if (!_infoPopover) {
+        _infoPopover = [[NSPopover alloc] init];
+        _infoPopover.behavior = NSPopoverBehaviorTransient;
+    }
+
+    _infoPopover.contentViewController = _infoView;
+    _infoPopover.delegate = self;
+
+    if (!_infoPopover.isShown) {
+        NSRect rect = [_recipeTableView frameOfCellAtColumn:0 row:[_recipeTableView selectedRow]];
+        [_infoPopover showRelativeToRect:rect
+                              ofView:_recipeTableView
+                       preferredEdge:NSMinYEdge];
+    }
+
+}
+
+- (void)popoverDidClose:(NSNotification *)notification {
+    _infoPopover = nil;
+    _infoView = nil;
+}
+
+
 #pragma mark - Contextual Menu
 - (NSMenu *)contextualMenuForRecipeAtRow:(NSInteger)row
 {
@@ -163,6 +200,11 @@ static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
     LGAutoPkgRecipe *recipe = [_searchedRecipes objectAtIndex:row];
 
     menu = [[NSMenu alloc] init];
+
+    NSMenuItem *infoItem = [[NSMenuItem alloc] initWithTitle:@"Get Info" action:@selector(openInfoPanelFromMenu:) keyEquivalent:@""];
+    infoItem.representedObject = recipe;
+    infoItem.target = self;
+    [menu addItem:infoItem];
 
     NSMenuItem *runMenuItem;
     if (_runTask.isExecuting) {

@@ -31,7 +31,7 @@
  * a symlink from the autopkg binary to /usr/local/bin/autopkg_dev
  * and set off set AUTOPKG_DEV_MODE 1
  */
-#define AUTOPKG_DEV_MODE 0
+#define AUTOPKG_DEV_MODE 1
 #endif
 
 static NSString *const autopkg()
