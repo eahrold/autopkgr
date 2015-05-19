@@ -10,12 +10,15 @@
 #import "LGAutoPkgRecipe.h"
 
 @interface LGRecipeInfoView ()
-@property (strong) IBOutlet NSTextField *nameTF;
-@property (strong) IBOutlet NSTextField *identifierTF;
-@property (strong) IBOutlet NSTextField *descriptionTF;
-@property (strong) IBOutlet NSTextField *parentRecipesTF;
-@property (strong) IBOutlet NSTextField *filePathTF;
-@property (strong) IBOutlet NSTextField *minimumVersionTF;
+@property (weak) IBOutlet NSTextField *nameTF;
+@property (weak) IBOutlet NSTextField *identifierTF;
+@property (weak) IBOutlet NSTextField *descriptionTF;
+@property (weak) IBOutlet NSTextField *parentRecipesTF;
+@property (weak) IBOutlet NSTextField *filePathTF;
+@property (weak) IBOutlet NSTextField *hasCheckPhaseTF;
+@property (weak) IBOutlet NSTextField *buildsPackageTF;
+
+@property (weak) IBOutlet NSTextField *minimumVersionTF;
 @end
 
 @implementation LGRecipeInfoView {
@@ -37,12 +40,12 @@
     _descriptionTF.stringValue = _recipe.Description ?: @"";
     _minimumVersionTF.stringValue = _recipe.MinimumVersion;
     _filePathTF.stringValue = [_recipe.FilePath stringByAbbreviatingWithTildeInPath];
+    _hasCheckPhaseTF.stringValue = [self stringForBool:_recipe.hasCheckPhase];
+    _buildsPackageTF.stringValue = [self stringForBool:_recipe.buildsPackage];
 }
 
 -(void)viewWillAppear{
-    NSLog(@"getting ready!!!!!!");
 }
-
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -50,4 +53,7 @@
 
 }
 
+- (NSString *)stringForBool:(BOOL)value{
+    return value ? @"True":@"False";
+}
 @end
