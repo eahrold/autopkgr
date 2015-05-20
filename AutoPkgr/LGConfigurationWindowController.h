@@ -27,6 +27,7 @@
 @interface LGConfigurationWindowController : NSWindowController <NSTextDelegate, NSTokenFieldDelegate, NSWindowDelegate, NSTabViewDelegate, LGProgressDelegate>
 
 // Text/token fields
+
 @property (weak) IBOutlet NSTokenField *smtpTo;
 @property (weak) IBOutlet NSTextField *smtpFrom;
 @property (weak) IBOutlet NSTextField *smtpServer;
@@ -46,7 +47,6 @@
 @property (weak) IBOutlet NSButton *checkForNewVersionsOfAppsAutomaticallyButton;
 @property (weak) IBOutlet NSButton *checkForRepoUpdatesAutomaticallyButton;
 @property (weak) IBOutlet NSButton *sendEmailNotificationsWhenNewVersionsAreFoundButton;
-@property (weak) IBOutlet NSButton *launchAtLoginButton;
 
 // Buttons
 @property (weak) IBOutlet NSButton *openLocalMunkiRepoFolderButton;
@@ -54,24 +54,15 @@
 @property (weak) IBOutlet NSButton *openAutoPkgCacheFolderButton;
 @property (weak) IBOutlet NSButton *openAutoPkgRecipeOverridesFolderButton;
 @property (weak) IBOutlet NSButton *sendTestEmailButton;
-@property (weak) IBOutlet NSButton *installGitButton;
-@property (weak) IBOutlet NSButton *installAutoPkgButton;
 @property (weak) IBOutlet NSButton *checkAppsNowButton;
 @property (weak) IBOutlet NSButton *cancelAutoPkgRunButton;
 @property (weak) IBOutlet NSButton *updateRepoNowButton;
 
-// Display Mode settings
-@property (weak) IBOutlet NSButton *hideInDock;
-@property (weak) IBOutlet NSButton *showInMenuButton;
-@property (weak) IBOutlet NSTextField *restartRequiredLabel;
 
-// Labels
-@property (weak) IBOutlet NSTextField *gitStatusLabel;
-@property (weak) IBOutlet NSTextField *autoPkgStatusLabel;
+
+
 
 // Status icons
-@property (weak) IBOutlet NSImageView *gitStatusIcon;
-@property (weak) IBOutlet NSImageView *autoPkgStatusIcon;
 @property (weak) IBOutlet NSImageView *sendTestEmailStatus;
 @property (weak) IBOutlet NSImageView *testSmtpServerStatus;
 
@@ -94,8 +85,6 @@
 
 // IBActions
 - (IBAction)sendTestEmail:(id)sender;
-- (IBAction)installGit:(id)sender;
-- (IBAction)installAutoPkg:(id)sender;
 
 - (IBAction)openLocalMunkiRepoFolder:(id)sender;
 - (IBAction)openAutoPkgRecipeReposFolder:(id)sender;

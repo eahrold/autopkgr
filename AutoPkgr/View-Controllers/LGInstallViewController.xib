@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6250" systemVersion="13F1077" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6250"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="LGInstallViewController">
+            <connections>
+                <outlet property="autoPkgStatusIcon" destination="f8q-xY-QUg" id="Gpl-iK-dye"/>
+                <outlet property="autoPkgStatusLabel" destination="Pbf-A7-T4b" id="Ybz-Ne-W9k"/>
+                <outlet property="gitStatusIcon" destination="KkE-qM-Hy6" id="UcB-gn-k4g"/>
+                <outlet property="gitStatusLabel" destination="OPb-IV-o9L" id="DHw-VI-4fF"/>
+                <outlet property="hideInDock" destination="2vH-Ks-iBq" id="co0-5U-IIS"/>
+                <outlet property="installAutoPkgButton" destination="x1S-bd-tl3" id="INf-W7-Sdz"/>
+                <outlet property="installGitButton" destination="ClY-1a-e2c" id="YuB-Au-zVG"/>
+                <outlet property="launchAtLoginButton" destination="gCc-Bk-Xo8" id="qim-oX-B7S"/>
+                <outlet property="restartRequiredLabel" destination="Esk-cg-7GW" id="Bbw-Q2-mwa"/>
+                <outlet property="showInMenuButton" destination="D8f-jS-Mfo" id="izD-cq-ILU"/>
+                <outlet property="view" destination="Hz6-mo-xeY" id="0bl-1N-x8E"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <customView id="Hz6-mo-xeY">
+            <rect key="frame" x="10" y="33" width="617" height="412"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView placeholderIntrinsicWidth="135" placeholderIntrinsicHeight="135" translatesAutoresizingMaskIntoConstraints="NO" id="geX-ws-F4Z">
+                    <rect key="frame" x="238" y="250" width="135" height="137"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="135" id="A8V-ia-C6v"/>
+                        <constraint firstAttribute="height" constant="137" id="SM4-cY-7wk"/>
+                    </constraints>
+                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="AutoPkgrIcon" id="bdC-Ay-5Db"/>
+                </imageView>
+                <button verticalHuggingPriority="750" placeholderIntrinsicWidth="194" placeholderIntrinsicHeight="21" translatesAutoresizingMaskIntoConstraints="NO" id="ClY-1a-e2c">
+                    <rect key="frame" x="89" y="188" width="206" height="32"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="194" id="qku-kO-K05"/>
+                    </constraints>
+                    <buttonCell key="cell" type="push" title="Install Git" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="SeD-0I-N1O">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="installGit:" target="-2" id="45W-uW-KIS"/>
+                    </connections>
+                </button>
+                <button verticalHuggingPriority="750" placeholderIntrinsicWidth="194" placeholderIntrinsicHeight="21" translatesAutoresizingMaskIntoConstraints="NO" id="x1S-bd-tl3">
+                    <rect key="frame" x="89" y="147" width="206" height="32"/>
+                    <buttonCell key="cell" type="push" title="Install AutoPkg" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="fT8-Dd-41f">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="installAutoPkg:" target="-2" id="pMz-Z6-gJd"/>
+                    </connections>
+                </button>
+                <button verticalHuggingPriority="750" placeholderIntrinsicWidth="194" placeholderIntrinsicHeight="21" translatesAutoresizingMaskIntoConstraints="NO" id="uPW-I4-WKp">
+                    <rect key="frame" x="89" y="106" width="206" height="32"/>
+                    <buttonCell key="cell" type="push" title="Update JSSImporter" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Hlu-sh-iQg">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                </button>
+                <imageView translatesAutoresizingMaskIntoConstraints="NO" id="KkE-qM-Hy6">
+                    <rect key="frame" x="297" y="197" width="16" height="16"/>
+                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="NSStatusUnavailable" id="Syx-8J-ERB"/>
+                </imageView>
+                <imageView translatesAutoresizingMaskIntoConstraints="NO" id="f8q-xY-QUg">
+                    <rect key="frame" x="297" y="156" width="16" height="16"/>
+                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="NSStatusUnavailable" id="e1g-5e-fLi"/>
+                </imageView>
+                <imageView translatesAutoresizingMaskIntoConstraints="NO" id="kGA-EW-Dsj">
+                    <rect key="frame" x="297" y="115" width="16" height="16"/>
+                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="NSStatusAvailable" id="R1Z-YS-Ixy"/>
+                </imageView>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="OPb-IV-o9L">
+                    <rect key="frame" x="319" y="197" width="240" height="17"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="236" id="Bdl-xw-Djd"/>
+                    </constraints>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Git is not installed." id="c7N-WP-Kn2">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Pbf-A7-T4b">
+                    <rect key="frame" x="319" y="156" width="240" height="17"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="236" id="V0b-B2-ODV"/>
+                    </constraints>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="AutoPkg is not installed." id="Jh6-Qb-lwm">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="0VQ-id-jlf">
+                    <rect key="frame" x="319" y="115" width="240" height="17"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="236" id="Oo1-BC-da0"/>
+                    </constraints>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="JSSImporter is up to date." id="Y67-Kv-gNs">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <button autoresizesSubviews="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gCc-Bk-Xo8">
+                    <rect key="frame" x="222" y="55" width="203" height="18"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="199" id="66I-uZ-Byq"/>
+                        <constraint firstAttribute="height" constant="14" id="YfE-gV-yqn"/>
+                    </constraints>
+                    <buttonCell key="cell" type="check" title="Launch AutoPkgr at login" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="FsQ-sy-cGX">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="launchAtLogin:" target="-2" id="sgX-Be-rnI"/>
+                    </connections>
+                </button>
+                <button translatesAutoresizingMaskIntoConstraints="NO" id="D8f-jS-Mfo">
+                    <rect key="frame" x="222" y="36" width="203" height="16"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="199" id="37M-x2-a1S"/>
+                        <constraint firstAttribute="height" constant="12" id="Da4-DF-3hh"/>
+                    </constraints>
+                    <buttonCell key="cell" type="check" title="Show AutoPkgr menu icon" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="bif-9b-TSQ">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="changeDisplayMode:" target="-2" id="KIz-gx-u83"/>
+                    </connections>
+                </button>
+                <button translatesAutoresizingMaskIntoConstraints="NO" id="2vH-Ks-iBq">
+                    <rect key="frame" x="222" y="15" width="203" height="16"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="199" id="bAc-S3-GLW"/>
+                        <constraint firstAttribute="height" constant="12" id="h89-dX-xUE"/>
+                    </constraints>
+                    <buttonCell key="cell" type="check" title="Hide AutoPkgr in Dock" bezelStyle="regularSquare" imagePosition="left" inset="2" id="BN7-80-SnJ">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="changeDisplayMode:" target="-2" id="6Zm-Vl-dXP"/>
+                    </connections>
+                </button>
+                <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Esk-cg-7GW">
+                    <rect key="frame" x="389" y="15" width="194" height="14"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="190" id="1FQ-lu-PYR"/>
+                        <constraint firstAttribute="height" constant="14" id="f5j-QL-Ttv"/>
+                    </constraints>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Relaunch required to take effect." id="TzN-FL-hol">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" red="1" green="0.0" blue="0.01176470588" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+            </subviews>
+            <constraints>
+                <constraint firstItem="x1S-bd-tl3" firstAttribute="width" secondItem="ClY-1a-e2c" secondAttribute="width" id="0Rl-Lx-Jc3"/>
+                <constraint firstAttribute="centerX" secondItem="Esk-cg-7GW" secondAttribute="centerX" constant="-177.5" id="5zs-Kd-WAQ"/>
+                <constraint firstAttribute="centerY" secondItem="D8f-jS-Mfo" secondAttribute="centerY" constant="-162" id="8mH-mY-p6g"/>
+                <constraint firstAttribute="centerY" secondItem="gCc-Bk-Xo8" secondAttribute="centerY" constant="-142" id="9kM-Dh-8oR"/>
+                <constraint firstAttribute="centerY" secondItem="0VQ-id-jlf" secondAttribute="centerY" constant="-82.5" id="ETF-Ck-fcB"/>
+                <constraint firstAttribute="centerX" secondItem="gCc-Bk-Xo8" secondAttribute="centerX" constant="-15" id="Gdz-7G-7Ff"/>
+                <constraint firstAttribute="centerY" secondItem="OPb-IV-o9L" secondAttribute="centerY" constant="-0.5" id="HJB-aJ-VZc"/>
+                <constraint firstItem="0VQ-id-jlf" firstAttribute="leading" secondItem="kGA-EW-Dsj" secondAttribute="trailing" constant="8" id="Ilm-j4-FZk"/>
+                <constraint firstAttribute="centerX" secondItem="uPW-I4-WKp" secondAttribute="centerX" constant="116.5" id="J1E-T8-eTe"/>
+                <constraint firstAttribute="centerY" secondItem="uPW-I4-WKp" secondAttribute="centerY" constant="-82.5" id="LFC-Jf-Wb6"/>
+                <constraint firstItem="kGA-EW-Dsj" firstAttribute="leading" secondItem="uPW-I4-WKp" secondAttribute="trailing" constant="8" id="Lth-EM-SPJ"/>
+                <constraint firstAttribute="centerY" secondItem="ClY-1a-e2c" secondAttribute="centerY" constant="-0.5" id="N8x-Zq-eZh"/>
+                <constraint firstItem="ClY-1a-e2c" firstAttribute="top" secondItem="geX-ws-F4Z" secondAttribute="bottom" constant="34" id="RQL-OF-L3T"/>
+                <constraint firstAttribute="centerX" secondItem="geX-ws-F4Z" secondAttribute="centerX" constant="3" id="Reb-Xt-jOv"/>
+                <constraint firstAttribute="centerX" secondItem="2vH-Ks-iBq" secondAttribute="centerX" constant="-15" id="TA3-CW-F4Y"/>
+                <constraint firstAttribute="centerX" secondItem="D8f-jS-Mfo" secondAttribute="centerX" constant="-15" id="TQX-ts-XGs"/>
+                <constraint firstItem="OPb-IV-o9L" firstAttribute="leading" secondItem="KkE-qM-Hy6" secondAttribute="trailing" constant="8" id="UnX-zf-qdl"/>
+                <constraint firstAttribute="centerX" secondItem="x1S-bd-tl3" secondAttribute="centerX" constant="116.5" id="XUL-CE-c2g"/>
+                <constraint firstAttribute="centerY" secondItem="geX-ws-F4Z" secondAttribute="centerY" constant="112.5" id="Z08-sL-Osx"/>
+                <constraint firstAttribute="centerY" secondItem="x1S-bd-tl3" secondAttribute="centerY" constant="-41.5" id="ZOr-1h-lJO"/>
+                <constraint firstAttribute="centerY" secondItem="KkE-qM-Hy6" secondAttribute="centerY" constant="-1" id="ZYd-MU-r2r"/>
+                <constraint firstAttribute="centerY" secondItem="Esk-cg-7GW" secondAttribute="centerY" constant="-184" id="cpo-id-6aH"/>
+                <constraint firstItem="f8q-xY-QUg" firstAttribute="leading" secondItem="x1S-bd-tl3" secondAttribute="trailing" constant="8" id="cra-8T-RjN"/>
+                <constraint firstAttribute="centerX" secondItem="ClY-1a-e2c" secondAttribute="centerX" constant="116.5" id="g7p-PG-fiZ"/>
+                <constraint firstItem="Pbf-A7-T4b" firstAttribute="leading" secondItem="f8q-xY-QUg" secondAttribute="trailing" constant="8" id="jqJ-1g-M7m"/>
+                <constraint firstAttribute="centerY" secondItem="kGA-EW-Dsj" secondAttribute="centerY" constant="-83" id="keY-ao-C57"/>
+                <constraint firstItem="KkE-qM-Hy6" firstAttribute="leading" secondItem="ClY-1a-e2c" secondAttribute="trailing" constant="8" id="oHr-K9-shF"/>
+                <constraint firstAttribute="centerY" secondItem="f8q-xY-QUg" secondAttribute="centerY" constant="-42" id="poa-PN-pTo"/>
+                <constraint firstAttribute="centerY" secondItem="Pbf-A7-T4b" secondAttribute="centerY" constant="-41.5" id="sK0-IT-bXJ"/>
+                <constraint firstAttribute="centerY" secondItem="2vH-Ks-iBq" secondAttribute="centerY" constant="-183" id="vkM-fW-c1w"/>
+                <constraint firstItem="uPW-I4-WKp" firstAttribute="width" secondItem="x1S-bd-tl3" secondAttribute="width" id="yyb-LM-xIe"/>
+            </constraints>
+        </customView>
+    </objects>
+    <resources>
+        <image name="AutoPkgrIcon" width="512" height="512"/>
+        <image name="NSStatusAvailable" width="16" height="16"/>
+        <image name="NSStatusUnavailable" width="16" height="16"/>
+    </resources>
+</document>

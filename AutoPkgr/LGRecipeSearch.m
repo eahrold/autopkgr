@@ -19,6 +19,7 @@
 #import "LGRecipeSearch.h"
 #import "LGAutoPkgr.h"
 #import "LGAutoPkgTask.h"
+#import "LGAutoPkgRecipe.h"
 #import "LGRecipeController.h"
 
 @interface LGRecipeSearch () <NSTextViewDelegate>

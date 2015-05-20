@@ -35,6 +35,9 @@
 @property (copy, nonatomic, readonly) NSString *Description;
 @property (copy, nonatomic, readonly) NSString *ParentRecipe;
 
+@property (copy, nonatomic, readonly) NSString *recipeRepo;
+@property (copy, nonatomic, readonly) NSURL *recipeRepoURL;
+
 /**
  *  An array of strings of the parent recipe identifiers
  */
