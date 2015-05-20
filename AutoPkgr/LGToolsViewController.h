@@ -7,7 +7,8 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "LGBaseViewController.h"
 
-@interface LGToolsViewController : NSViewController
+@interface LGToolsViewController : LGBaseViewController
 
 @end

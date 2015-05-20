@@ -21,17 +21,6 @@
 
 @implementation LGInstallViewController
 
-- (instancetype)init {
-    return (self = [super initWithNibName:NSStringFromClass([self class]) bundle:nil]);
-}
-
--(instancetype)initWithProgressDelegate:(id<LGProgressDelegate>)progressDelegate {
-    if (self = [self init]) {
-        _progressDelegate = progressDelegate;
-    }
-    return self;
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do view setup here.
@@ -87,7 +76,7 @@
 {
     if (!_autoPkgTool) {
         _autoPkgTool = [[LGAutoPkgTool alloc] init];
-        _autoPkgTool.progressDelegate = _progressDelegate;
+        _autoPkgTool.progressDelegate = self.progressDelegate;
         _installAutoPkgButton.target = _autoPkgTool;
     }
 
@@ -101,7 +90,7 @@
 
     if (!_gitTool) {
         _gitTool = [[LGGitTool alloc] init];
-        _gitTool.progressDelegate = _progressDelegate;
+        _gitTool.progressDelegate = self.progressDelegate;
         _installGitButton.target = _gitTool;
     }
 

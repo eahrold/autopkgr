@@ -30,18 +30,20 @@
 #import "LGProgressDelegate.h"
 #import "LGDisplayStatusDelegate.h"
 #import "LGPasswords.h"
-#import "LGPopularRepositories.h"
-#import "LGRecipeController.h"
 #import "LGTestPort.h"
 #import "LGAutoPkgRecipe.h"
 #import "LGToolStatus.h"
 
 // Tab Views.
 #import "LGInstallViewController.h"
+#import "LGRecipeReposViewController.h"
 
 @interface LGConfigurationWindowController () {
     LGDefaults *_defaults;
     LGAutoPkgTaskManager *_taskManager;
+
+    LGRecipeReposViewController *_rrc;
+    LGInstallViewController *_inc;
 }
 
 @property (weak) IBOutlet NSTabView *_tabViews;
@@ -66,10 +68,23 @@
 {
     [super windowDidLoad];
 
-    LGInstallViewController *instCont = [[LGInstallViewController alloc] initWithNibName:NSStringFromClass([LGInstallViewController class]) bundle:nil];
+    // Set up Progress Delegates
+    if ([[[NSApplication sharedApplication] delegate] conformsToProtocol:@protocol(LGProgressDelegate)]) {
+        _progressDelegate = (id)[[NSApplication sharedApplication] delegate];
+    }
+
+    // Install view
+    _inc = [[LGInstallViewController alloc] initWithProgressDelegate:_progressDelegate];
 
     NSTabViewItem *installItem = __tabViews.tabViewItems.firstObject;
-    installItem.view = instCont.view;
+    installItem.view = _inc.view;
+
+    // Recipe & Repos view
+    _rrc = [[LGRecipeReposViewController alloc] initWithProgressDelegate:_progressDelegate];
+
+    NSTabViewItem *rrItem = __tabViews.tabViewItems[1];
+    rrItem.view = _rrc.view;
+
 
     [LGPasswords migrateKeychainIfNeeded:^(NSString *password, NSError *error) {
         if (error) {
@@ -90,12 +105,9 @@
         _progressDelegate = (id)[[NSApplication sharedApplication] delegate];
     }
 
-    _popRepoTableViewHandler.progressDelegate = _progressDelegate;
-
     // -- Set up the IBOutlets -- //
 
     // Modal Windows
-    _popRepoTableViewHandler.modalWindow = self.window;
 
     // AutoPkg settings
     _localMunkiRepo.safeStringValue = _defaults.munkiRepo;
@@ -441,7 +453,6 @@
                     _defaults.autoPkgRecipeRepoDir = urlPath;
 
                     // Since we changed the repo directory reload the table accordingly
-                    [_popRepoTableViewHandler reload];
                 }
             }
         }
@@ -509,20 +520,6 @@
 }
 
 #pragma mark - AutoPkg actions
-- (IBAction)addAutoPkgRepoURL:(id)sender
-{
-    NSString *repo = [_repoURLToAdd stringValue];
-    [self startProgressWithMessage:[NSString stringWithFormat:@"Adding %@", repo]];
-
-    [LGAutoPkgTask repoAdd:repo reply:^(NSError *error) {
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [self stopProgress:error];
-            [_popRepoTableViewHandler reload];
-            [_recipeTableViewHandler reload];
-        }];
-    }];
-    [_repoURLToAdd setStringValue:@""];
-}
 
 - (IBAction)updateReposNow:(id)sender
 {
@@ -541,7 +538,6 @@
         NSAssert([NSThread isMainThread], @"Reply not on main thread!");
         [_progressDelegate stopProgress:error];
         [_updateRepoNowButton setEnabled:YES];
-        [_recipeTableViewHandler reload];
     }];
 }
 

@@ -34,7 +34,6 @@
 @property (weak) IBOutlet NSTextField *smtpUsername;
 @property (weak) IBOutlet NSSecureTextField *smtpPassword;
 @property (weak) IBOutlet NSTextField *smtpPort;
-@property (weak) IBOutlet NSTextField *repoURLToAdd;
 @property (weak) IBOutlet NSTextField *autoPkgRunInterval;
 @property (weak) IBOutlet NSTextField *localMunkiRepo;
 @property (weak) IBOutlet NSTextField *autoPkgRecipeRepoDir;
@@ -63,8 +62,8 @@
 
 
 // Status icons
-@property (weak) IBOutlet NSImageView *sendTestEmailStatus;
 @property (weak) IBOutlet NSImageView *testSmtpServerStatus;
+@property (weak) IBOutlet NSImageView *sendTestEmailStatus;
 
 // Spinners
 @property (weak) IBOutlet NSProgressIndicator *sendTestEmailSpinner;
@@ -79,9 +78,6 @@
 // Progress delegate (object used to send updates to status menu item)
 @property (weak) id<LGProgressDelegate> progressDelegate;
 
-// Objects
-@property (strong) IBOutlet LGPopularRepositories *popRepoTableViewHandler;
-@property (strong) IBOutlet LGRecipeController *recipeTableViewHandler;
 
 // IBActions
 - (IBAction)sendTestEmail:(id)sender;
@@ -95,7 +91,6 @@
 - (IBAction)chooseAutoPkgCacheDir:(id)sender;
 - (IBAction)chooseAutoPkgRecipeOverridesDir:(id)sender;
 
-- (IBAction)addAutoPkgRepoURL:(id)sender;
 - (IBAction)updateReposNow:(id)sender;
 - (IBAction)checkAppsNow:(id)sender;
 - (IBAction)cancelAutoPkgRun:(id)sender;

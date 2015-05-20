@@ -7,6 +7,9 @@
 //
 
 #import "LGRecipeReposViewController.h"
+#import "LGAutoPkgTask.h"
+#import "LGRecipeController.h"
+#import "LGPopularRepositories.h"
 
 @interface LGRecipeReposViewController ()
 
@@ -14,9 +17,31 @@
 
 @implementation LGRecipeReposViewController
 
+- (instancetype)init {
+    return (self = [super initWithNibName:NSStringFromClass([self class]) bundle:nil]);
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do view setup here.
+}
+
+- (void)awakeFromNib {
+    NSLog(@"waking up.");
+    _popRepoTableViewHandler.progressDelegate = self.progressDelegate;
+}
+
+- (IBAction)addAutoPkgRepoURL:(id)sender
+{
+    NSString *repo = [_repoURLToAdd stringValue];
+    [self.progressDelegate startProgressWithMessage:[NSString stringWithFormat:@"Adding %@", repo]];
+
+    [LGAutoPkgTask repoAdd:repo reply:^(NSError *error) {
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [self.progressDelegate stopProgress:error];
+        }];
+    }];
+    [_repoURLToAdd setStringValue:@""];
 }
 
 @end

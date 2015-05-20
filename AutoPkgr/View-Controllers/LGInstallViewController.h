@@ -7,12 +7,9 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "LGProgressDelegate.h"
+#import "LGBaseViewController.h"
 
-@interface LGInstallViewController : NSViewController
-
-- (instancetype)initWithProgressDelegate:(id<LGProgressDelegate>)progressDelegate;
-@property (weak) id<LGProgressDelegate>progressDelegate;
+@interface LGInstallViewController : LGBaseViewController
 
 @property (weak) IBOutlet NSButton *installGitButton;
 @property (weak) IBOutlet NSButton *installAutoPkgButton;

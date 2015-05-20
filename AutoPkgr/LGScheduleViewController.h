@@ -7,7 +7,8 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "LGBaseViewController.h"
 
-@interface LGScheduleViewController : NSViewController
+@interface LGScheduleViewController : LGBaseViewController
 
 @end

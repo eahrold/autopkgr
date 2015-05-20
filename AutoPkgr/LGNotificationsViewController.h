@@ -7,7 +7,8 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "LGBaseViewController.h"
 
-@interface LGNotificationsViewController : NSViewController
+@interface LGNotificationsViewController : LGBaseViewController
 
 @end

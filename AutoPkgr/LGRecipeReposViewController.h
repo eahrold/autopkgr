@@ -7,7 +7,17 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "LGBaseViewController.h"
+@class LGPopularRepositories, LGRecipeController;
 
-@interface LGRecipeReposViewController : NSViewController
+@interface LGRecipeReposViewController : LGBaseViewController
+
+@property (weak) IBOutlet NSTextField *repoURLToAdd;
+
+// Objects
+@property (strong) IBOutlet LGPopularRepositories *popRepoTableViewHandler;
+@property (strong) IBOutlet LGRecipeController *recipeTableViewHandler;
+
+- (IBAction)addAutoPkgRepoURL:(id)sender;
 
 @end
