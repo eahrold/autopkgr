@@ -27,11 +27,11 @@
 #import "NSData+taskData.h"
 
 #if DEBUG
-/* For development using a custom version of autopkg cretae
+/* For development using a custom version of autopkg, create
  * a symlink from the autopkg binary to /usr/local/bin/autopkg_dev
- * and set off set AUTOPKG_DEV_MODE 1
+ * and set as AUTOPKG_DEV_MODE 1
  */
-#define AUTOPKG_DEV_MODE 1
+#define AUTOPKG_DEV_MODE 0
 #endif
 
 static NSString *const autopkg()
