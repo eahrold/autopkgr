@@ -28,7 +28,6 @@
 -(instancetype)initWithRecipe:(LGAutoPkgRecipe *)recipe {
     if (self = [self initWithNibName:NSStringFromClass([self class]) bundle:[NSBundle mainBundle]]){
         _recipe = recipe;
-
     }
     return self;
 }
@@ -42,9 +41,6 @@
     _filePathTF.stringValue = [_recipe.FilePath stringByAbbreviatingWithTildeInPath];
     _hasCheckPhaseTF.stringValue = [self stringForBool:_recipe.hasCheckPhase];
     _buildsPackageTF.stringValue = [self stringForBool:_recipe.buildsPackage];
-}
-
--(void)viewWillAppear{
 }
 
 - (void)viewDidLoad {

@@ -39,8 +39,6 @@
 @implementation LGRecipeController {
     LGAutoPkgTask *_runTask;
     NSString *_currentRunningRecipe;
-    NSPopover *_infoPopover;
-    LGRecipeInfoView *_infoView;
 }
 
 static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
@@ -167,19 +165,16 @@ static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
 
 - (void)openInfoPanel:(LGAutoPkgRecipe *)recipe
 {
-    _infoView = [[LGRecipeInfoView alloc] initWithRecipe:recipe];
+    LGRecipeInfoView *infoView = [[LGRecipeInfoView alloc] initWithRecipe:recipe];
+    NSPopover *infoPopover = infoPopover = [[NSPopover alloc] init];
+    infoPopover.behavior = NSPopoverBehaviorTransient;
 
-    if (!_infoPopover) {
-        _infoPopover = [[NSPopover alloc] init];
-        _infoPopover.behavior = NSPopoverBehaviorTransient;
-    }
+    infoPopover.contentViewController = infoView;
+    infoPopover.delegate = self;
 
-    _infoPopover.contentViewController = _infoView;
-    _infoPopover.delegate = self;
-
-    if (!_infoPopover.isShown) {
+    if (!infoPopover.isShown) {
         NSRect rect = [_recipeTableView frameOfCellAtColumn:0 row:[_recipeTableView selectedRow]];
-        [_infoPopover showRelativeToRect:rect
+        [infoPopover showRelativeToRect:rect
                               ofView:_recipeTableView
                        preferredEdge:NSMinYEdge];
     }
@@ -187,8 +182,9 @@ static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
 }
 
 - (void)popoverDidClose:(NSNotification *)notification {
-    _infoPopover = nil;
-    _infoView = nil;
+    NSPopover *infoPopover = notification.object;
+    infoPopover.contentViewController = nil;
+    infoPopover = nil;
 }
 
 
