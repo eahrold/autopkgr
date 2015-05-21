@@ -490,6 +490,7 @@
 				BE40CB7819D4444D00A1DABD /* Utility Classes */,
 				BE05CE8419DAF63D0089068B /* Helper Tool Communication */,
 				BE39FE5419DFBB2900C1B4A1 /* Custom Categories */,
+				BE38EAB21B0D1C2D009FCBEB /* Tab Views */,
 				BEEFE6BF1AEA873800882C89 /* XIBs */,
 				1AC98423195DF6270071CAB3 /* Resources */,
 				1AC69557195B59ED00D2BD81 /* Supporting Files */,
@@ -629,7 +630,6 @@
 		BE38EAB21B0D1C2D009FCBEB /* Tab Views */ = {
 			isa = PBXGroup;
 			children = (
-				BE38EA761B0B8DF7009FCBEB /* LGRecipeInfoView.xib */,
 				BE38EA8B1B0CFE68009FCBEB /* LGInstallViewController.h */,
 				BE38EA8C1B0CFE68009FCBEB /* LGInstallViewController.m */,
 				BE38EA8D1B0CFE68009FCBEB /* LGInstallViewController.xib */,
@@ -639,12 +639,12 @@
 				BE38EA991B0CFEA6009FCBEB /* LGScheduleViewController.h */,
 				BE38EA9A1B0CFEA6009FCBEB /* LGScheduleViewController.m */,
 				BE38EA9B1B0CFEA6009FCBEB /* LGScheduleViewController.xib */,
-				BE38EAA01B0CFEBB009FCBEB /* LGToolsViewController.h */,
-				BE38EAA11B0CFEBB009FCBEB /* LGToolsViewController.m */,
-				BE38EAA21B0CFEBB009FCBEB /* LGToolsViewController.xib */,
 				BE38EAA71B0CFECE009FCBEB /* LGNotificationsViewController.h */,
 				BE38EAA81B0CFECE009FCBEB /* LGNotificationsViewController.m */,
 				BE38EAA91B0CFECE009FCBEB /* LGNotificationsViewController.xib */,
+				BE38EAA01B0CFEBB009FCBEB /* LGToolsViewController.h */,
+				BE38EAA11B0CFEBB009FCBEB /* LGToolsViewController.m */,
+				BE38EAA21B0CFEBB009FCBEB /* LGToolsViewController.xib */,
 			);
 			name = "Tab Views";
 			sourceTree = "<group>";
@@ -758,9 +758,9 @@
 				1AC9841E195CEC360071CAB3 /* LGConfigurationWindowController.xib */,
 				BE0BACD01A2560AE00554989 /* LGJSSDistributionPointsPrefPanel.xib */,
 				BE67E8741A44E10500484151 /* LGRecipeSearchPanel.xib */,
+				BE38EA761B0B8DF7009FCBEB /* LGRecipeInfoView.xib */,
 				BE38EAAE1B0D0CF1009FCBEB /* LGBaseViewController.h */,
 				BE38EAAF1B0D0CF1009FCBEB /* LGBaseViewController.m */,
-				BE38EAB21B0D1C2D009FCBEB /* Tab Views */,
 			);
 			name = XIBs;
 			sourceTree = "<group>";

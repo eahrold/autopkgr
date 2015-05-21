@@ -251,8 +251,9 @@
         }
     }
 
-    if (!self->_configurationWindowController) {
-        self->_configurationWindowController = [[LGConfigurationWindowController alloc] initWithWindowNibName:@"LGConfigurationWindowController"];
+    if (!_configurationWindowController) {
+        _configurationWindowController = [[LGConfigurationWindowController alloc] initWithProgressDelegate:self];
+        _configurationWindowController.scheduleView.scheduleMenuItem = _autoCheckForUpdatesMenuItem;
     }
 
     [NSApp activateIgnoringOtherApps:YES];
@@ -348,57 +349,6 @@
     if (!([[LGDefaults standardUserDefaults] applicationDisplayStyle] & kLGDisplayStyleShowDock)) {
         [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateAllWindows | NSApplicationActivateIgnoringOtherApps];
     }
-}
-
-- (IBAction)changeCheckForNewVersionsOfAppsAutomatically:(id)sender
-{
-    if ([sender isEqualTo:_autoCheckForUpdatesMenuItem]) {
-        _autoCheckForUpdatesMenuItem.state = !_autoCheckForUpdatesMenuItem.state;
-    }
-
-    NSInteger scheduledInterval;
-    BOOL currentlyScheduled = [LGAutoPkgSchedule updateAppsIsScheduled:&scheduledInterval];
-
-    BOOL start = currentlyScheduled;
-    if (![sender isEqualTo:_configurationWindowController.autoPkgRunInterval]) {
-        start = [sender state];
-    }
-
-    BOOL force = NO;
-    NSInteger interval = _configurationWindowController.autoPkgRunInterval.integerValue;
-
-    if ([sender isEqualTo:_configurationWindowController.autoPkgRunInterval]) {
-        if (!start || scheduledInterval == _configurationWindowController.autoPkgRunInterval.integerValue) {
-            return;
-        }
-        // We set force here so it will reload the schedule
-        // if it is currently enabled
-        force = YES;
-    }
-
-    NSLog(@"%@ autopkg run schedule.", currentlyScheduled ? @"Enabling" : @"Disabling");
-    [LGAutoPkgSchedule startAutoPkgSchedule:start interval:interval isForced:force reply:^(NSError *error) {
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            NSInteger timer;
-            BOOL currentlyScheduled = [LGAutoPkgSchedule updateAppsIsScheduled:&timer];
-            _autoCheckForUpdatesMenuItem.state = currentlyScheduled;
-            _configurationWindowController.checkForNewVersionsOfAppsAutomaticallyButton.state = currentlyScheduled;
-
-            if (error) {
-                    // If error, reset the state to modified status
-                    _configurationWindowController.autoPkgRunInterval.stringValue = [@(timer) stringValue];
-
-                    // If the authorization was canceled by user, don't present error.
-                    if (error.code != kLGErrorAuthChallenge) {
-                        [self stopProgress:error];
-                    }
-            } else {
-                // Otherwise update our defaults
-                NSString *menuItemTitle = [NSString stringWithFormat:@"Run AutoPkg Every %ld Hours", interval];
-                [_autoCheckForUpdatesMenuItem setTitle:menuItemTitle];
-            }
-        }];
-    }];
 }
 
 #pragma mark - Menu Delegate

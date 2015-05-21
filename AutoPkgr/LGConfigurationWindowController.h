@@ -22,53 +22,41 @@
 #import <Cocoa/Cocoa.h>
 #import "LGProgressDelegate.h"
 
+// Tab Views.
+#import "LGInstallViewController.h"
+#import "LGRecipeReposViewController.h"
+#import "LGScheduleViewController.h"
+#import "LGNotificationsViewController.h"
+#import "LGToolsViewController.h"
+
 @class LGPopularRepositories, LGRecipeController;
 
 @interface LGConfigurationWindowController : NSWindowController <NSTextDelegate, NSTokenFieldDelegate, NSWindowDelegate, NSTabViewDelegate, LGProgressDelegate>
 
-// Text/token fields
+-(instancetype)initWithProgressDelegate:(id<LGProgressDelegate>)progressDelegate;
 
-@property (weak) IBOutlet NSTokenField *smtpTo;
-@property (weak) IBOutlet NSTextField *smtpFrom;
-@property (weak) IBOutlet NSTextField *smtpServer;
-@property (weak) IBOutlet NSTextField *smtpUsername;
-@property (weak) IBOutlet NSSecureTextField *smtpPassword;
-@property (weak) IBOutlet NSTextField *smtpPort;
-@property (weak) IBOutlet NSTextField *autoPkgRunInterval;
+
+@property (strong, nonatomic) LGInstallViewController *installView;
+@property (strong, nonatomic) LGRecipeReposViewController *recipeRepoView;
+@property (strong, nonatomic) LGScheduleViewController *scheduleView;
+@property (strong, nonatomic) LGNotificationsViewController *notificationView;
+@property (strong, nonatomic) LGToolsViewController *toolsView;
+
+
+
 @property (weak) IBOutlet NSTextField *localMunkiRepo;
 @property (weak) IBOutlet NSTextField *autoPkgRecipeRepoDir;
 @property (weak) IBOutlet NSTextField *autoPkgCacheDir;
 @property (weak) IBOutlet NSTextField *autoPkgRecipeOverridesDir;
 
-// Checkboxes
-@property (weak) IBOutlet NSButton *smtpAuthenticationEnabledButton;
-@property (weak) IBOutlet NSButton *smtpTLSEnabledButton;
-@property (weak) IBOutlet NSButton *checkForNewVersionsOfAppsAutomaticallyButton;
-@property (weak) IBOutlet NSButton *checkForRepoUpdatesAutomaticallyButton;
-@property (weak) IBOutlet NSButton *sendEmailNotificationsWhenNewVersionsAreFoundButton;
+
 
 // Buttons
 @property (weak) IBOutlet NSButton *openLocalMunkiRepoFolderButton;
 @property (weak) IBOutlet NSButton *openAutoPkgRecipeReposFolderButton;
 @property (weak) IBOutlet NSButton *openAutoPkgCacheFolderButton;
 @property (weak) IBOutlet NSButton *openAutoPkgRecipeOverridesFolderButton;
-@property (weak) IBOutlet NSButton *sendTestEmailButton;
-@property (weak) IBOutlet NSButton *checkAppsNowButton;
 @property (weak) IBOutlet NSButton *cancelAutoPkgRunButton;
-@property (weak) IBOutlet NSButton *updateRepoNowButton;
-
-
-
-
-
-// Status icons
-@property (weak) IBOutlet NSImageView *testSmtpServerStatus;
-@property (weak) IBOutlet NSImageView *sendTestEmailStatus;
-
-// Spinners
-@property (weak) IBOutlet NSProgressIndicator *sendTestEmailSpinner;
-@property (weak) IBOutlet NSProgressIndicator *testSmtpServerSpinner;
-
 // Progress panel
 @property (weak) IBOutlet NSPanel *progressPanel;
 @property (weak) IBOutlet NSProgressIndicator *progressIndicator;
@@ -80,7 +68,6 @@
 
 
 // IBActions
-- (IBAction)sendTestEmail:(id)sender;
 
 - (IBAction)openLocalMunkiRepoFolder:(id)sender;
 - (IBAction)openAutoPkgRecipeReposFolder:(id)sender;
@@ -91,7 +78,6 @@
 - (IBAction)chooseAutoPkgCacheDir:(id)sender;
 - (IBAction)chooseAutoPkgRecipeOverridesDir:(id)sender;
 
-- (IBAction)updateReposNow:(id)sender;
-- (IBAction)checkAppsNow:(id)sender;
+
 - (IBAction)cancelAutoPkgRun:(id)sender;
 @end

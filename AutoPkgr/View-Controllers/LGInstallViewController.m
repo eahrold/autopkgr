@@ -102,4 +102,12 @@
         _installGitButton.action = info.targetAction;
     }];
 }
+
+- (IBAction)launchAtLogin:(NSButton *)sender
+{
+    if (![LGAutoPkgSchedule launchAtLogin:sender.state]) {
+        sender.state = !sender.state;
+    }
+}
+
 @end

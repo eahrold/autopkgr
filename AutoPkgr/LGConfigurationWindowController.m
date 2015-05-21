@@ -34,16 +34,9 @@
 #import "LGAutoPkgRecipe.h"
 #import "LGToolStatus.h"
 
-// Tab Views.
-#import "LGInstallViewController.h"
-#import "LGRecipeReposViewController.h"
-
 @interface LGConfigurationWindowController () {
     LGDefaults *_defaults;
     LGAutoPkgTaskManager *_taskManager;
-
-    LGRecipeReposViewController *_rrc;
-    LGInstallViewController *_inc;
 }
 
 @property (weak) IBOutlet NSTabView *_tabViews;
@@ -53,59 +46,51 @@
 
 #pragma mark - init/dealloc/nib
 
-- (id)initWithWindow:(NSWindow *)window
-{
-    self = [super initWithWindow:window];
-    if (self) {
+- (instancetype)init {
+    if (self = [super initWithWindowNibName:NSStringFromClass([self class])]) {
         // Initialization code here.
-        _defaults = [LGDefaults new];
+        _defaults = [LGDefaults standardUserDefaults];
+
+        _recipeRepoView = [[LGRecipeReposViewController alloc] initWithProgressDelegate:_progressDelegate];
+        _installView = [[LGInstallViewController alloc] initWithProgressDelegate:_progressDelegate];
+
+        _scheduleView = [[LGScheduleViewController alloc] initWithProgressDelegate:self];
+        _notificationView = [[LGNotificationsViewController alloc] initWithProgressDelegate:self];
     }
     return self;
 }
-
+- (instancetype)initWithProgressDelegate:(id<LGProgressDelegate>)progressDelegate {
+    if (self = [self init]) {
+        _progressDelegate = progressDelegate;
+    }
+    return self;
+}
 #pragma mark - NSWindowDelegate
 - (void)windowDidLoad
 {
     [super windowDidLoad];
 
-    // Set up Progress Delegates
-    if ([[[NSApplication sharedApplication] delegate] conformsToProtocol:@protocol(LGProgressDelegate)]) {
-        _progressDelegate = (id)[[NSApplication sharedApplication] delegate];
-    }
-
     // Install view
-    _inc = [[LGInstallViewController alloc] initWithProgressDelegate:_progressDelegate];
 
     NSTabViewItem *installItem = __tabViews.tabViewItems.firstObject;
-    installItem.view = _inc.view;
+    installItem.view = _installView.view;
 
     // Recipe & Repos view
-    _rrc = [[LGRecipeReposViewController alloc] initWithProgressDelegate:_progressDelegate];
 
     NSTabViewItem *rrItem = __tabViews.tabViewItems[1];
-    rrItem.view = _rrc.view;
+    rrItem.view = _recipeRepoView.view;
 
+    // Schedule view
+    [__tabViews.tabViewItems[2] setView:_scheduleView.view];
+    _scheduleView.cancelButton = _cancelAutoPkgRunButton;
 
-    [LGPasswords migrateKeychainIfNeeded:^(NSString *password, NSError *error) {
-        if (error) {
-            [NSApp presentError:error];
-        }
+    // Notification View
+    [__tabViews.tabViewItems[3] setView:_notificationView.view];
 
-        if (password) {
-            _smtpPassword.stringValue = password;
-        }
-    }];
-
-
+   
     // Populate the preference values from the user defaults, if they exist
     DLog(@"Populating configuration window settings based on user defaults, if they exist.");
 
-    // Set up Progress Delegates
-    if ([[[NSApplication sharedApplication] delegate] conformsToProtocol:@protocol(LGProgressDelegate)]) {
-        _progressDelegate = (id)[[NSApplication sharedApplication] delegate];
-    }
-
-    // -- Set up the IBOutlets -- //
 
     // Modal Windows
 
@@ -115,45 +100,6 @@
     _autoPkgRecipeRepoDir.safeStringValue = _defaults.autoPkgRecipeRepoDir;
     _autoPkgRecipeOverridesDir.safeStringValue = _defaults.autoPkgRecipeOverridesDir;
 
-    // AutoPkgr Settings
-    _smtpServer.safeStringValue = _defaults.SMTPServer;
-    _smtpFrom.safeStringValue = _defaults.SMTPFrom;
-
-    BOOL state;
-    // A number of IBOutlets are enabled/disabled based on this value so we use a method
-    state = _defaults.SMTPAuthenticationEnabled;
-    _smtpAuthenticationEnabledButton.state = state;
-    [self changeSmtpAuthentication:@(state)];
-
-    state = _defaults.sendEmailNotificationsWhenNewVersionsAreFoundEnabled;
-    _sendEmailNotificationsWhenNewVersionsAreFoundButton.state = state;
-    [self changeSendEmailNotificationsWhenNewVersionsAreFound:@(state)];
-
-    _smtpTLSEnabledButton.state = _defaults.SMTPTLSEnabled;
-
-    // Set up schedule settings
-    NSInteger timer;
-    _checkForNewVersionsOfAppsAutomaticallyButton.state = [LGAutoPkgSchedule updateAppsIsScheduled:&timer];
-    [_autoPkgRunInterval setIntegerValue:timer];
-
-    [_checkForNewVersionsOfAppsAutomaticallyButton setTarget:_progressDelegate];
-    [_checkForNewVersionsOfAppsAutomaticallyButton setAction:@selector(changeCheckForNewVersionsOfAppsAutomatically:)];
-
-    _checkForRepoUpdatesAutomaticallyButton.state = _defaults.checkForRepoUpdatesAutomaticallyEnabled;
-
-    NSString *userName = _defaults.SMTPUsername;
-    if (userName) {
-        _smtpUsername.safeStringValue = userName;
-        [self getKeychainPassword:_smtpPassword];
-    }
-
-    // removeEmptyStrings is an NSArray category extension
-    [_smtpTo setObjectValue:[_defaults.SMTPTo removeEmptyStrings]];
-
-    if (_defaults.SMTPPort) {
-        [_smtpPort setIntegerValue:_defaults.SMTPPort];
-    }
-
 }
 
 - (BOOL)windowShouldClose:(id)sender
@@ -162,140 +108,12 @@
     return YES;
 }
 
-#pragma mark - Display Mode
+#pragma mark - Forwarding Actions
 
-
-#pragma mark - Launch At Login
-- (IBAction)launchAtLogin:(NSButton *)sender
-{
-    if (![LGAutoPkgSchedule launchAtLogin:sender.state]) {
-        sender.state = !sender.state;
-    }
+- (IBAction)cancelAutoPkgRun:(id)sender {
+    [_scheduleView cancelAutoPkgRun:nil];
 }
 
-#pragma mark - Email
-- (IBAction)sendTestEmail:(id)sender
-{
-    // Send a test email notification when the user
-    // clicks "Send Test Email"
-
-    DLog(@"'Send Test Email' button clicked.");
-
-    // Handle UI
-    [_sendTestEmailButton setEnabled:NO]; // disable button
-    [_sendTestEmailSpinner setHidden:NO]; // show spinner
-    [_sendTestEmailSpinner startAnimation:self]; // animate spinner
-
-    // Setup a completion block
-    void (^didComplete)() = ^void(NSError *error){
-        [_sendTestEmailButton setEnabled:YES]; // enable button
-        [_sendTestEmailSpinner setHidden:YES]; // hide spinner
-        [_sendTestEmailSpinner stopAnimation:self]; // stop animation
-
-        [self stopProgress:error];
-    };
-
-    [self savePassword:^(NSError *error) {
-        // If the save password method has an error stop emailing,
-        // The emailer would get the same error.
-        if (error) {
-            return didComplete(error);
-        }
-
-        // Create an instance of the LGEmailer class
-        LGEmailer *emailer = [[LGEmailer alloc] init];
-
-        // Set the reply block
-        emailer.replyBlock = didComplete;
-
-        // Send the test email.
-        [emailer sendTestEmail];
-    }];
-}
-
-- (void)testSmtpServerPort:(id)sender
-{
-    if (![[_smtpServer stringValue] isEqualToString:@""] && [_smtpPort integerValue] > 0) {
-
-        DLog(@"Testing SMTP server and port settings.");
-        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-
-        // Set up the UI
-        [_testSmtpServerStatus setHidden:YES];
-        [_testSmtpServerSpinner setHidden:NO];
-        [_testSmtpServerSpinner startAnimation:self];
-
-        LGTestPort *tester = [[LGTestPort alloc] init];
-
-        [center addObserver:self
-                   selector:@selector(testSmtpServerPortNotificationReceived:)
-                       name:kLGNotificationTestSmtpServerPort
-                     object:nil];
-
-        [tester testHost:[NSHost hostWithName:[_smtpServer stringValue]]
-                withPort:[_smtpPort integerValue]];
-    } else {
-        NSLog(@"Cannot test SMTP. Either host is blank or port is unreadable.");
-    }
-}
-
-#pragma mark - Keychain Actions
-- (void)getKeychainPassword:(NSTextField *)sender
-{
-    NSString *account = _smtpUsername.stringValue;
-    if (account.length) {
-        [LGPasswords getPasswordForAccount:account reply:^(NSString *password, NSError *error) {
-            if (error) {
-                NSLog(@"Error getting password for %@ [%ld]: %@", account, error.code, error.localizedDescription);
-            } else {
-                sender.safeStringValue = password;
-            }
-        }];
-    }
-}
-
-- (IBAction)updateKeychainPassword:(id)sender
-{
-    [self savePassword:nil];
-}
-
-- (void)savePassword:(void(^)(NSError *error))reply
-{
-    NSString *account = _smtpUsername.safeStringValue;
-    NSString *password = _smtpPassword.safeStringValue;
-
-    if (account && password) {
-        [LGPasswords savePassword:password forAccount:account reply:^(NSError *error) {
-            if (reply) {
-                reply(error);
-            }
-
-            if (error) {
-                if (error.code == errSecAuthFailed || error.code == errSecDuplicateKeychain) {
-                    [LGPasswords resetKeychainPrompt:^(NSError *error) {
-                        if (!error) {
-                            [self updateKeychainPassword:nil];
-                        } else {
-                            NSLog(@"%@", error.localizedDescription);
-                        }
-                    }];
-                } else {
-                    NSLog(@"Error setting password [%ld]: %@", error.code, error.localizedDescription);
-                }
-            }
-        }];
-    }
-}
-
-#pragma mark - Tools
-
-- (IBAction)installGit:(id)sender
-{
-}
-
-- (IBAction)installAutoPkg:(id)sender
-{
-}
 
 #pragma mark - Open Folder Actions
 - (IBAction)openLocalMunkiRepoFolder:(id)sender
@@ -519,194 +337,61 @@
     }];
 }
 
-#pragma mark - AutoPkg actions
-
-- (IBAction)updateReposNow:(id)sender
-{
-    [_cancelAutoPkgRunButton setHidden:NO];
-    [_progressDetailsMessage setHidden:NO];
-    [_progressDelegate startProgressWithMessage:@"Updating AutoPkg recipe repos."];
-
-    [_updateRepoNowButton setEnabled:NO];
-    if (!_taskManager) {
-        _taskManager = [[LGAutoPkgTaskManager alloc] init];
-    }
-
-    _taskManager.progressDelegate = _progressDelegate;
-
-    [_taskManager repoUpdate:^(NSError *error) {
-        NSAssert([NSThread isMainThread], @"Reply not on main thread!");
-        [_progressDelegate stopProgress:error];
-        [_updateRepoNowButton setEnabled:YES];
-    }];
-}
-
-- (IBAction)checkAppsNow:(id)sender
-{
-    NSString *recipeList = [LGAutoPkgRecipe defaultRecipeList];
-    
-    if (!_taskManager) {
-        _taskManager = [[LGAutoPkgTaskManager alloc] init];
-    }
-
-    _taskManager.progressDelegate = _progressDelegate;
-
-    [_cancelAutoPkgRunButton setHidden:NO];
-    [_progressDetailsMessage setHidden:NO];
-    [_progressDelegate startProgressWithMessage:@"Running selected AutoPkg recipes..."];
-
-    [_taskManager runRecipeList:recipeList
-                     updateRepo:NO
-                          reply:^(NSDictionary *report, NSError *error) {
-                              NSAssert([NSThread isMainThread], @"Reply not on main thread!");
-
-                                [_progressDelegate stopProgress:error];
-                                if (report.count || error) {
-                                    LGEmailer *emailer = [LGEmailer new];
-
-                                    emailer.replyBlock = ^(NSError *error){
-                                        [self stopProgress:error];
-                                    };
-
-                                    [emailer sendEmailForReport:report error:error];
-                                }
-                          }];
-}
-
-- (IBAction)cancelAutoPkgRun:(id)sender
-{
-    if (_taskManager) {
-        [_taskManager cancel];
-    }
-}
-
-#pragma mark - State Actions
-- (IBAction)changeCheckForNewVersionsOfAppsAutomatically:(id)sender
-{
-    [_progressDelegate changeCheckForNewVersionsOfAppsAutomatically:sender];
-}
-
-- (IBAction)changeCheckForRepoUpdatesAutomatically:(NSButton *)sender
-{
-    _defaults.checkForRepoUpdatesAutomaticallyEnabled = sender.state;
-    NSLog(@"%@ updating repos automatically before scheduled run.", _defaults.checkForRepoUpdatesAutomaticallyEnabled ? @"Enabling" : @"Disabling");
-}
-
-- (IBAction)changeSendEmailNotificationsWhenNewVersionsAreFound:(id)sender
-{
-    // Internally
-    BOOL enabled = YES;
-    if ([sender isKindOfClass:[NSButton class]]) {
-        enabled = [sender state];
-        _defaults.sendEmailNotificationsWhenNewVersionsAreFoundEnabled = enabled;
-        NSLog(@"%@ email notifications.", enabled ? @"Enabling" : @"Disabling");
-    } else if ([sender isKindOfClass:[NSNumber class]]) {
-        enabled = [sender boolValue];
-    }
-
-    [_smtpTo setEnabled:enabled];
-    [_smtpServer setEnabled:enabled];
-
-    [_smtpPort setEnabled:enabled];
-    [_sendTestEmailButton setEnabled:enabled];
-    [_smtpFrom setEnabled:enabled];
-    [_smtpAuthenticationEnabledButton setEnabled:enabled];
-
-    BOOL authEnabled = _defaults.SMTPAuthenticationEnabled && enabled;
-
-    [_smtpUsername setEnabled:authEnabled];
-    [_smtpPassword setEnabled:authEnabled];
-}
-
-- (IBAction)changeSmtpAuthentication:(id)sender
-{
-    BOOL enabled = YES;
-    if ([sender isKindOfClass:[NSButton class]]) {
-        enabled = [sender state];
-        _defaults.SMTPAuthenticationEnabled = enabled;
-        NSLog(@"%@ SMTP authentication.", enabled ? @"Enabling" : @"Disabling");
-    } else if ([sender isKindOfClass:[NSNumber class]]) {
-        enabled = [sender boolValue];
-    }
-
-    [_smtpUsername setEnabled:enabled];
-    [_smtpPassword setEnabled:enabled];
-}
-
-- (IBAction)changeTLSButtonState:(NSButton *)sender;
-{
-    if (sender.state) {
-        // The user wants to enable TLS for this SMTP configuration
-        NSLog(@"Enabling TLS.");
-        [_defaults setBool:YES forKey:kLGSMTPTLSEnabled];
-    } else {
-        // The user wants to disable TLS for this SMTP configuration
-        NSLog(@"Disabling TLS.");
-        [_defaults setBool:NO forKey:kLGSMTPTLSEnabled];
-    }
-}
-
 #pragma mark - NSTextDelegate
-- (void)controlTextDidChange:(NSNotification *)notification {
-    id object = [notification object];
-    if ([object isEqual:_smtpUsername]) {
-        _defaults.SMTPUsername = _smtpUsername.safeStringValue;
-    }
-}
+//- (void)controlTextDidChange:(NSNotification *)notification {
+//    id object = [notification object];
+//    if ([object isEqual:_smtpUsername]) {
+//        _defaults.SMTPUsername = _smtpUsername.safeStringValue;
+//    }
+//}
 
-- (void)controlTextDidEndEditing:(NSNotification *)notification
-{
-    id object = [notification object];
-
-    if ([object isEqual:_smtpServer]) {
-        _defaults.SMTPServer = [_smtpServer stringValue];
-        [self testSmtpServerPort:self];
-    } else if ([object isEqual:_smtpPort]) {
-        _defaults.SMTPPort = [_smtpPort integerValue];
-        [self testSmtpServerPort:self];
-    } else if ([object isEqual:_smtpUsername]) {
-        [self getKeychainPassword:_smtpPassword];
-    } else if ([object isEqual:_smtpFrom]) {
-        _defaults.SMTPFrom = [_smtpFrom stringValue];
-    } else if ([object isEqual:_localMunkiRepo]) {
-        // Pass nil here if string is "" so it removes the key from the defaults
-        NSString *value = [[_localMunkiRepo stringValue] isEqualToString:@""] ? nil : [_localMunkiRepo stringValue];
-        _defaults.munkiRepo = value;
-        [self enableOpenInFinderButtons];
-    } else if ([object isEqual:_autoPkgRecipeOverridesDir]) {
-        // Pass nil here if string is "" so it removes the key from the defaults
-        NSString *value = [[_autoPkgRecipeOverridesDir stringValue] isEqualToString:@""] ? nil : [_autoPkgRecipeOverridesDir stringValue];
-        _defaults.autoPkgRecipeOverridesDir = value;
-        [self enableOpenInFinderButtons];
-    } else if ([object isEqual:_autoPkgRecipeRepoDir]) {
-        // Pass nil here if string is "" so it removes the key from the defaults
-        NSString *value = [[_autoPkgRecipeRepoDir stringValue] isEqualToString:@""] ? nil : [_autoPkgRecipeRepoDir stringValue];
-        _defaults.autoPkgRecipeRepoDir = value;
-        [self enableOpenInFinderButtons];
-    } else if ([object isEqual:_autoPkgCacheDir]) {
-        // Pass nil here if string is "" so it removes the key from the defaults
-        NSString *value = [[_autoPkgCacheDir stringValue] isEqualToString:@""] ? nil : [_autoPkgCacheDir stringValue];
-        _defaults.autoPkgCacheDir = value;
-        [self enableOpenInFinderButtons];
-    } else if ([object isEqual:_smtpTo]) {
-        // We use objectValue here because objectValue returns an
-        // array of strings if the field contains a series of strings
-        _defaults.SMTPTo = [_smtpTo objectValue];
-    } else if ([object isEqual:_autoPkgRunInterval]) {
-        [_progressDelegate changeCheckForNewVersionsOfAppsAutomatically:_autoPkgRunInterval];
-    } else if ([object isEqual:_smtpPassword]) {
-        // This is now handled with an IBAction
-    }
-}
+//- (void)controlTextDidEndEditing:(NSNotification *)notification
+//{
+//    id object = [notification object];
+//
+//    if ([object isEqual:_smtpServer]) {
+//        _defaults.SMTPServer = [_smtpServer stringValue];
+//        [self testSmtpServerPort:self];
+//    } else if ([object isEqual:_smtpPort]) {
+//        _defaults.SMTPPort = [_smtpPort integerValue];
+//        [self testSmtpServerPort:self];
+//    } else if ([object isEqual:_smtpUsername]) {
+//        [self getKeychainPassword:_smtpPassword];
+//    } else if ([object isEqual:_smtpFrom]) {
+//        _defaults.SMTPFrom = [_smtpFrom stringValue];
+//    } else if ([object isEqual:_localMunkiRepo]) {
+//        // Pass nil here if string is "" so it removes the key from the defaults
+//        NSString *value = [[_localMunkiRepo stringValue] isEqualToString:@""] ? nil : [_localMunkiRepo stringValue];
+//        _defaults.munkiRepo = value;
+//        [self enableOpenInFinderButtons];
+//    } else if ([object isEqual:_autoPkgRecipeOverridesDir]) {
+//        // Pass nil here if string is "" so it removes the key from the defaults
+//        NSString *value = [[_autoPkgRecipeOverridesDir stringValue] isEqualToString:@""] ? nil : [_autoPkgRecipeOverridesDir stringValue];
+//        _defaults.autoPkgRecipeOverridesDir = value;
+//        [self enableOpenInFinderButtons];
+//    } else if ([object isEqual:_autoPkgRecipeRepoDir]) {
+//        // Pass nil here if string is "" so it removes the key from the defaults
+//        NSString *value = [[_autoPkgRecipeRepoDir stringValue] isEqualToString:@""] ? nil : [_autoPkgRecipeRepoDir stringValue];
+//        _defaults.autoPkgRecipeRepoDir = value;
+//        [self enableOpenInFinderButtons];
+//    } else if ([object isEqual:_autoPkgCacheDir]) {
+//        // Pass nil here if string is "" so it removes the key from the defaults
+//        NSString *value = [[_autoPkgCacheDir stringValue] isEqualToString:@""] ? nil : [_autoPkgCacheDir stringValue];
+//        _defaults.autoPkgCacheDir = value;
+//        [self enableOpenInFinderButtons];
+//    } else if ([object isEqual:_smtpTo]) {
+//        // We use objectValue here because objectValue returns an
+//        // array of strings if the field contains a series of strings
+//        _defaults.SMTPTo = [_smtpTo objectValue];
+//    } else if ([object isEqual:_autoPkgRunInterval]) {
+//        [_progressDelegate changeCheckForNewVersionsOfAppsAutomatically:_autoPkgRunInterval];
+//    } else if ([object isEqual:_smtpPassword]) {
+//        // This is now handled with an IBAction
+//    }
+//}
 
 #pragma mark - NSTokenFieldDelegate
-- (NSArray *)tokenField:(NSTokenField *)tokenField shouldAddObjects:(NSArray *)tokens atIndex:(NSUInteger)index
-{
-    if ([tokenField isEqual:_smtpTo]) {
-        _defaults.SMTPTo = [tokenField objectValue];
-    }
-    return tokens;
-}
+
 
 #pragma mark - Tab View Delegate
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
@@ -831,29 +516,7 @@
     }];
 }
 
-#pragma mark - Notifications
 
-- (void)testSmtpServerPortNotificationReceived:(NSNotification *)notification
-{
-    // Set up the spinner and show the status image
-    [_testSmtpServerSpinner setHidden:YES];
-    [_testSmtpServerSpinner stopAnimation:self];
-    [_testSmtpServerStatus setHidden:NO];
-
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:kLGNotificationTestSmtpServerPort
-                                                  object:nil];
-
-    NSString *status = notification.userInfo[kLGNotificationUserInfoSuccess];
-    if ([status isEqualTo:@NO]) {
-        [_testSmtpServerStatus setImage:[NSImage LGStatusUnavailable]];
-    } else if ([status isEqualTo:@YES]) {
-        [_testSmtpServerStatus setImage:[NSImage LGStatusAvailable]];
-    } else {
-        NSLog(@"Unexpected result for received from port test.");
-        [_testSmtpServerStatus setImage:[NSImage LGStatusPartiallyAvailable]];
-    }
-}
 
 #pragma mark - NSAlert didEndWith selectors
 - (void)didEndWithPreferenceRepairRequest:(NSAlert *)alert returnCode:(NSInteger)returnCode
