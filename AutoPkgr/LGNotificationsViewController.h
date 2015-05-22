@@ -21,10 +21,8 @@
 @property (weak) IBOutlet NSSecureTextField *smtpPassword;
 
 
-
 // Status icons
 @property (weak) IBOutlet NSImageView *testSmtpServerStatus;
-@property (weak) IBOutlet NSImageView *sendTestEmailStatus;
 
 // Spinners
 @property (weak) IBOutlet NSProgressIndicator *sendTestEmailSpinner;

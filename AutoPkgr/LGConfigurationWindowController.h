@@ -44,19 +44,8 @@
 
 
 
-@property (weak) IBOutlet NSTextField *localMunkiRepo;
-@property (weak) IBOutlet NSTextField *autoPkgRecipeRepoDir;
-@property (weak) IBOutlet NSTextField *autoPkgCacheDir;
-@property (weak) IBOutlet NSTextField *autoPkgRecipeOverridesDir;
-
-
-
-// Buttons
-@property (weak) IBOutlet NSButton *openLocalMunkiRepoFolderButton;
-@property (weak) IBOutlet NSButton *openAutoPkgRecipeReposFolderButton;
-@property (weak) IBOutlet NSButton *openAutoPkgCacheFolderButton;
-@property (weak) IBOutlet NSButton *openAutoPkgRecipeOverridesFolderButton;
 @property (weak) IBOutlet NSButton *cancelAutoPkgRunButton;
+
 // Progress panel
 @property (weak) IBOutlet NSPanel *progressPanel;
 @property (weak) IBOutlet NSProgressIndicator *progressIndicator;
@@ -69,14 +58,7 @@
 
 // IBActions
 
-- (IBAction)openLocalMunkiRepoFolder:(id)sender;
-- (IBAction)openAutoPkgRecipeReposFolder:(id)sender;
-- (IBAction)openAutoPkgCacheFolder:(id)sender;
-- (IBAction)openAutoPkgRecipeOverridesFolder:(id)sender;
 
-- (IBAction)chooseLocalMunkiRepo:(id)sender;
-- (IBAction)chooseAutoPkgCacheDir:(id)sender;
-- (IBAction)chooseAutoPkgRecipeOverridesDir:(id)sender;
 
 
 - (IBAction)cancelAutoPkgRun:(id)sender;

@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "LGProgressDelegate.h"
+#import "LGAutoPkgr.h"
 
 @interface LGBaseViewController : NSViewController
 
