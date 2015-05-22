@@ -173,8 +173,7 @@ static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
     infoPopover.delegate = self;
 
     if (!infoPopover.isShown) {
-        NSRect rect = [_recipeTableView frameOfCellAtColumn:0 row:[_recipeTableView selectedRow]];
-        [infoPopover showRelativeToRect:rect
+        [infoPopover showRelativeToRect:_recipeTableView.contextualMenuMouseLocal
                               ofView:_recipeTableView
                        preferredEdge:NSMinYEdge];
     }

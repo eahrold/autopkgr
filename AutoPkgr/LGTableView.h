@@ -22,4 +22,6 @@
 
 @interface LGTableView : NSTableView
 
+@property (nonatomic, readonly) NSRect contextualMenuMouseLocal;
+
 @end

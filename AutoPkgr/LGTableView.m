@@ -27,6 +27,8 @@
 - (NSMenu *)menuForEvent:(NSEvent *)theEvent
 {
     NSPoint mousePoint = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+    _contextualMenuMouseLocal = NSMakeRect(mousePoint.x, mousePoint.y, 1, 1);
+    
     NSInteger row = [self rowAtPoint:mousePoint];
     NSString *classString = NSStringFromClass([[self dataSource] class]);
 
@@ -41,12 +43,6 @@
     return nil;
 }
 
-- (NSString *)recipeFromRow:(NSInteger)row
-{
-    NSTableColumn *column = [[NSTableColumn alloc] initWithIdentifier:@"recipeName"];
-    NSString *recipe = [[self dataSource] tableView:self objectValueForTableColumn:column row:row];
-    return recipe;
-}
 
 - (NSString *)repoFromRow:(NSInteger)row
 {
