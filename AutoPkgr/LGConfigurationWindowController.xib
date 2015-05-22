@@ -7,12 +7,12 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="LGConfigurationWindowController">
             <connections>
-                <outlet property="_tabViews" destination="Dvq-fn-q18" id="6my-wO-hSg"/>
                 <outlet property="cancelAutoPkgRunButton" destination="xEr-jr-9qR" id="Emk-lI-q0t"/>
                 <outlet property="progressDetailsMessage" destination="KHL-zp-6jp" id="KP6-bW-tIZ"/>
                 <outlet property="progressIndicator" destination="qol-Go-AJd" id="L2u-sJ-XVZ"/>
                 <outlet property="progressMessage" destination="u7l-Fz-3uc" id="bfC-89-DgO"/>
                 <outlet property="progressPanel" destination="043-gL-HLj" id="EfU-ER-kYK"/>
+                <outlet property="tabViews" destination="Dvq-fn-q18" id="3Lg-Ht-EZA"/>
                 <outlet property="window" destination="F0z-JX-Cv5" id="gIp-Ho-8D9"/>
             </connections>
         </customObject>
@@ -30,41 +30,10 @@
                     <view translatesAutoresizingMaskIntoConstraints="NO" id="wtX-Sr-awJ">
                         <rect key="frame" x="0.0" y="0.0" width="657" height="478"/>
                         <subviews>
-                            <tabView initialItem="P8W-IS-m5j" translatesAutoresizingMaskIntoConstraints="NO" id="Dvq-fn-q18">
+                            <tabView translatesAutoresizingMaskIntoConstraints="NO" id="Dvq-fn-q18">
                                 <rect key="frame" x="10" y="10" width="637" height="458"/>
                                 <font key="font" metaFont="system"/>
-                                <tabViewItems>
-                                    <tabViewItem label="Install" identifier="install" id="P8W-IS-m5j">
-                                        <view key="view" id="pCK-5F-Geg">
-                                            <rect key="frame" x="10" y="33" width="617" height="412"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        </view>
-                                    </tabViewItem>
-                                    <tabViewItem label="Repos &amp; Recipes" identifier="recipeRepos" id="hvS-35-Bas">
-                                        <view key="view" id="Kzw-up-jZN">
-                                            <rect key="frame" x="10" y="33" width="617" height="412"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        </view>
-                                    </tabViewItem>
-                                    <tabViewItem label="Schedule" identifier="schedule" id="d2p-2u-klh">
-                                        <view key="view" id="UEQ-1H-UNY">
-                                            <rect key="frame" x="10" y="33" width="617" height="412"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        </view>
-                                    </tabViewItem>
-                                    <tabViewItem label="Notifications" identifier="notifications" id="tvM-u5-QVT" userLabel="Notifications">
-                                        <view key="view" id="yfp-ba-sNM">
-                                            <rect key="frame" x="10" y="33" width="617" height="412"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        </view>
-                                    </tabViewItem>
-                                    <tabViewItem label="Folders &amp; Integration" identifier="tools" id="YLD-8L-uk6">
-                                        <view key="view" id="EXk-0U-hHL">
-                                            <rect key="frame" x="10" y="33" width="617" height="412"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        </view>
-                                    </tabViewItem>
-                                </tabViewItems>
+                                <tabViewItems/>
                                 <connections>
                                     <outlet property="delegate" destination="-2" id="lJ7-YI-39X"/>
                                 </connections>
@@ -131,9 +100,6 @@
 Gw
 </string>
                         </buttonCell>
-                        <connections>
-                            <action selector="cancelAutoPkgRun:" target="-2" id="SOY-Ah-jVK"/>
-                        </connections>
                     </button>
                 </subviews>
                 <constraints>
@@ -151,10 +117,5 @@ Gw
                 </constraints>
             </view>
         </window>
-        <customObject id="0iG-YL-fA3" userLabel="JSSImporter" customClass="LGJSSImporter">
-            <connections>
-                <outlet property="modalWindow" destination="F0z-JX-Cv5" id="dcE-Mx-cM8"/>
-            </connections>
-        </customObject>
     </objects>
 </document>

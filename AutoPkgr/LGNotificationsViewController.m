@@ -38,6 +38,10 @@
     [self getKeychainPassword:_smtpPassword];
 }
 
+- (NSString *)tabLabel {
+    return @"Alerts & Notifications";
+}
+
 #pragma mark - Keychain Actions
 - (void)getKeychainPassword:(NSTextField *)sender
 {

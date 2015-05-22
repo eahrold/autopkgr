@@ -31,6 +31,10 @@
     _popRepoTableViewHandler.progressDelegate = self.progressDelegate;
 }
 
+- (NSString *)tabLabel {
+    return @"Repos & Recipes";
+}
+
 - (IBAction)addAutoPkgRepoURL:(id)sender
 {
     NSString *repo = [_repoURLToAdd stringValue];

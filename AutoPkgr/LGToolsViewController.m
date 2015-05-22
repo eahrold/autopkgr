@@ -32,6 +32,10 @@
 
 }
 
+- (NSString *)tabLabel {
+    return @"Folders & Integration";
+}
+
 #pragma mark - Open Folder Actions
 - (IBAction)openLocalMunkiRepoFolder:(id)sender
 {

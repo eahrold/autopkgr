@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 #import "LGBaseViewController.h"
 
+@class LGAutoPkgTaskManager;
 @interface LGScheduleViewController : LGBaseViewController
 
 #pragma mark - Schedule
@@ -22,7 +23,6 @@
 // These are set externally and not part of the LGScheduleViewController.xib
 @property (weak, nonatomic) NSButton *cancelButton;
 @property (weak, nonatomic) NSMenuItem *scheduleMenuItem;
-
 
 #pragma mark -- IBActions --
 - (IBAction)changeSchedule:(id)sender;

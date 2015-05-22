@@ -43,9 +43,6 @@
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
-                    <connections>
-                        <action selector="installGit:" target="-2" id="45W-uW-KIS"/>
-                    </connections>
                 </button>
                 <button verticalHuggingPriority="750" placeholderIntrinsicWidth="194" placeholderIntrinsicHeight="21" translatesAutoresizingMaskIntoConstraints="NO" id="x1S-bd-tl3">
                     <rect key="frame" x="89" y="147" width="206" height="32"/>
@@ -53,9 +50,6 @@
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
-                    <connections>
-                        <action selector="installAutoPkg:" target="-2" id="pMz-Z6-gJd"/>
-                    </connections>
                 </button>
                 <button verticalHuggingPriority="750" placeholderIntrinsicWidth="194" placeholderIntrinsicHeight="21" translatesAutoresizingMaskIntoConstraints="NO" id="uPW-I4-WKp">
                     <rect key="frame" x="89" y="106" width="206" height="32"/>

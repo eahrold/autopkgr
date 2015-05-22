@@ -630,6 +630,8 @@
 		BE38EAB21B0D1C2D009FCBEB /* Tab Views */ = {
 			isa = PBXGroup;
 			children = (
+				BE38EAAE1B0D0CF1009FCBEB /* LGBaseViewController.h */,
+				BE38EAAF1B0D0CF1009FCBEB /* LGBaseViewController.m */,
 				BE38EA8B1B0CFE68009FCBEB /* LGInstallViewController.h */,
 				BE38EA8C1B0CFE68009FCBEB /* LGInstallViewController.m */,
 				BE38EA8D1B0CFE68009FCBEB /* LGInstallViewController.xib */,
@@ -759,8 +761,6 @@
 				BE0BACD01A2560AE00554989 /* LGJSSDistributionPointsPrefPanel.xib */,
 				BE67E8741A44E10500484151 /* LGRecipeSearchPanel.xib */,
 				BE38EA761B0B8DF7009FCBEB /* LGRecipeInfoView.xib */,
-				BE38EAAE1B0D0CF1009FCBEB /* LGBaseViewController.h */,
-				BE38EAAF1B0D0CF1009FCBEB /* LGBaseViewController.m */,
 			);
 			name = XIBs;
 			sourceTree = "<group>";

@@ -17,8 +17,9 @@
 
 @interface LGScheduleViewController () {
     LGDefaults *_defaults;
-    LGAutoPkgTaskManager *_taskManager;
 }
+
+@property (strong, nonatomic) LGAutoPkgTaskManager *taskManager;
 
 @end
 
@@ -35,6 +36,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do view setup here.
+}
+
+- (NSString *)tabLabel {
+    return @"Schedule";
 }
 
 #pragma mark - Accessors
@@ -117,8 +122,8 @@
     if (!_taskManager) {
         _taskManager = [[LGAutoPkgTaskManager alloc] init];
     }
-
     _taskManager.progressDelegate = self.progressDelegate;
+
 
     [_taskManager repoUpdate:^(NSError *error) {
         NSAssert([NSThread isMainThread], @"Reply not on main thread!");
@@ -134,12 +139,11 @@
     if (!_taskManager) {
         _taskManager = [[LGAutoPkgTaskManager alloc] init];
     }
-
     _taskManager.progressDelegate = self.progressDelegate;
 
     [self.progressDelegate startProgressWithMessage:@"Running selected AutoPkg recipes..."];
 
-    [_taskManager runRecipeList:recipeList
+    [self.taskManager runRecipeList:recipeList
                      updateRepo:NO
                           reply:^(NSDictionary *report, NSError *error) {
                               NSAssert([NSThread isMainThread], @"Reply not on main thread!");

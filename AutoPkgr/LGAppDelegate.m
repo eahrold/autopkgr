@@ -47,7 +47,7 @@
 }
 
 #pragma mark - NSApplication Delegate
-
+#pragma mark -- Launching --
 - (void)applicationWillFinishLaunching:(NSNotification *)notification
 {
     // Setup activation policy. By default set as menubar only.
@@ -57,18 +57,6 @@
     if (([[LGDefaults standardUserDefaults] applicationDisplayStyle] & kLGDisplayStyleShowDock)) {
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     }
-}
-
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
-{
-    // If this set to run as dock only with no menu item, quit it after the last window is closed.
-    BOOL quitOnClose = YES;
-
-    if ([[LGDefaults standardUserDefaults] applicationDisplayStyle] & kLGDisplayStyleShowMenu) {
-        quitOnClose = NO;
-    }
-
-    return quitOnClose;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
@@ -121,20 +109,21 @@
     // calling stopProgress: here is an easy way to get the
     // menu reset to its default configuration
     [self stopProgress:nil];
-
+    
     [self showConfigurationWindow:self];
 }
 
-- (void)applicationWillTerminate:(NSNotification *)notification
+#pragma mark -- Termination --
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
 {
-    // Stop observing...
-    [[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:kLGNotificationProgressMessageUpdate object:nil];
-}
+    // If this set to run as dock only with no menu item, quit it after the last window is closed.
+    BOOL quitOnClose = YES;
 
-- (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag
-{
-    [self showConfigurationWindow:self];
-    return YES;
+    if ([[LGDefaults standardUserDefaults] applicationDisplayStyle] & kLGDisplayStyleShowMenu) {
+        quitOnClose = NO;
+    }
+
+    return quitOnClose;
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
@@ -153,6 +142,19 @@
         return NSTerminateLater;
     }
     return NSTerminateNow;
+}
+
+- (void)applicationWillTerminate:(NSNotification *)notification
+{
+    // Stop observing...
+    [[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:kLGNotificationProgressMessageUpdate object:nil];
+}
+
+#pragma mark -- Resigning --
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag
+{
+    [self showConfigurationWindow:self];
+    return YES;
 }
 
 - (void)applicationWillResignActive:(NSNotification *)notification
@@ -218,8 +220,8 @@
 
     if (!_taskManager) {
         _taskManager = [[LGAutoPkgTaskManager alloc] init];
-        _taskManager.progressDelegate = self;
     }
+    _taskManager.progressDelegate = self;
 
     [_taskManager runRecipeList:recipeList
                      updateRepo:updateRepos

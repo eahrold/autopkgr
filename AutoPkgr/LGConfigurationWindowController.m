@@ -39,7 +39,7 @@
     LGAutoPkgTaskManager *_taskManager;
 }
 
-@property (weak) IBOutlet NSTabView *_tabViews;
+@property (weak) IBOutlet NSTabView *tabViews;
 @end
 
 @implementation LGConfigurationWindowController
@@ -48,74 +48,46 @@
 
 - (instancetype)init {
     if (self = [super initWithWindowNibName:NSStringFromClass([self class])]) {
-        // Initialization code here.
         _defaults = [LGDefaults standardUserDefaults];
-
-        _recipeRepoView = [[LGRecipeReposViewController alloc] initWithProgressDelegate:_progressDelegate];
-        _installView = [[LGInstallViewController alloc] initWithProgressDelegate:_progressDelegate];
-
+        _installView = [[LGInstallViewController alloc] initWithProgressDelegate:self];
         _scheduleView = [[LGScheduleViewController alloc] initWithProgressDelegate:self];
-        _notificationView = [[LGNotificationsViewController alloc] initWithProgressDelegate:self];
 
+        _recipeRepoView = [[LGRecipeReposViewController alloc] initWithProgressDelegate:self];
+        _notificationView = [[LGNotificationsViewController alloc] initWithProgressDelegate:self];
         _toolsView = [[LGToolsViewController alloc] initWithProgressDelegate:self];
     }
     return self;
 }
 - (instancetype)initWithProgressDelegate:(id<LGProgressDelegate>)progressDelegate {
     if (self = [self init]) {
-        _progressDelegate = progressDelegate;
+        _installView.progressDelegate = progressDelegate;
+        _scheduleView.progressDelegate = progressDelegate;
     }
     return self;
 }
-#pragma mark - NSWindowDelegate
-- (void)windowDidLoad
-{
+
+- (void)awakeFromNib {
     [super windowDidLoad];
 
-    // Install view
+    /* Set up all of the tabs. */
+    NSArray *tabs = @[_installView,
+                      _recipeRepoView,
+                      _scheduleView,
+                      _notificationView,
+                      _toolsView];
 
-    NSTabViewItem *installItem = __tabViews.tabViewItems.firstObject;
-    installItem.view = _installView.view;
+    for (LGBaseViewController *viewController in tabs) {
+        NSTabViewItem *tabItem = [[NSTabViewItem alloc] init];
+        tabItem.identifier = NSStringFromClass([viewController class]);
+        tabItem.label = viewController.tabLabel;
+        tabItem.view = viewController.view;
+        [_tabViews addTabViewItem:tabItem];
+    }
 
-    // Recipe & Repos view
-
-    NSTabViewItem *rrItem = __tabViews.tabViewItems[1];
-    rrItem.view = _recipeRepoView.view;
-
-    // Schedule view
-    [__tabViews.tabViewItems[2] setView:_scheduleView.view];
+    /* Make any modifications needed for specific tools*/
     _scheduleView.cancelButton = _cancelAutoPkgRunButton;
 
-    // Notification View
-    [__tabViews.tabViewItems[3] setView:_notificationView.view];
-
-    // Tools View
-    [__tabViews.tabViewItems[4] setView:_toolsView.view];
-    _toolsView.modalWindow = self.window;
-    
-    // Populate the preference values from the user defaults, if they exist
-    DLog(@"Populating configuration window settings based on user defaults, if they exist.");
-
-
-    // Modal Windows
-
-    
 }
-
-- (BOOL)windowShouldClose:(id)sender
-{
-    DLog(@"Close command received. Configuration window is saving and closing.");
-    return YES;
-}
-
-
-
-
-#pragma mark - NSTextDelegate
-
-
-#pragma mark - NSTokenFieldDelegate
-
 
 #pragma mark - Tab View Delegate
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
@@ -127,7 +99,7 @@
         return;
     }
 
-    if ([tabViewItem.identifier isEqualToString:@"tools"]) {
+    if ([tabViewItem.identifier isEqualToString:NSStringFromClass([LGToolsViewController class])]) {
         [_toolsView enableFolders];
     }
 }
@@ -150,8 +122,8 @@
 
 - (void)stopProgress:(NSError *)error
 {
-    // Stop the progress panel, and if and error was sent in
-    // do a sheet modal
+    /* Stop the progress panel, and if an error was sent do a sheet modal */
+
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         // Give the progress panel a second to got to 100%
         [self.progressIndicator setDoubleValue:100.0];

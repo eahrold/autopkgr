@@ -16,4 +16,6 @@
 @property (weak) id<LGProgressDelegate>progressDelegate;
 @property (unsafe_unretained) NSWindow *modalWindow;
 
+@property (copy, readonly) NSString *tabLabel;
+
 @end

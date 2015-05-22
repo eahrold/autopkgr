@@ -42,6 +42,10 @@
 
 }
 
+- (NSString *)tabLabel {
+    return @"Install";
+}
+
 - (IBAction)changeDisplayMode:(NSButton *)sender
 {
     NSApplication *app = [NSApplication sharedApplication];

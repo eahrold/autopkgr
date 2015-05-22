@@ -31,7 +31,7 @@
 
 @class LGPopularRepositories, LGRecipeController;
 
-@interface LGConfigurationWindowController : NSWindowController <NSTextDelegate, NSTokenFieldDelegate, NSWindowDelegate, NSTabViewDelegate, LGProgressDelegate>
+@interface LGConfigurationWindowController : NSWindowController <NSWindowDelegate, NSTabViewDelegate, LGProgressDelegate>
 
 -(instancetype)initWithProgressDelegate:(id<LGProgressDelegate>)progressDelegate;
 
@@ -43,7 +43,6 @@
 @property (strong, nonatomic) LGToolsViewController *toolsView;
 
 
-
 @property (weak) IBOutlet NSButton *cancelAutoPkgRunButton;
 
 // Progress panel
@@ -52,14 +51,5 @@
 @property (weak) IBOutlet NSTextField *progressMessage;
 @property (weak) IBOutlet NSTextField *progressDetailsMessage;
 
-// Progress delegate (object used to send updates to status menu item)
-@property (weak) id<LGProgressDelegate> progressDelegate;
 
-
-// IBActions
-
-
-
-
-- (IBAction)cancelAutoPkgRun:(id)sender;
 @end
