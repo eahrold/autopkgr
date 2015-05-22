@@ -11,6 +11,7 @@
                 <outlet property="autoPkgCacheDir" destination="fAS-2t-NJR" id="qHq-Or-NzO"/>
                 <outlet property="autoPkgRecipeOverridesDir" destination="KC4-Ks-uGR" id="soi-Aa-YMU"/>
                 <outlet property="autoPkgRecipeRepoDir" destination="Tl2-iz-Ard" id="mmV-9x-F5a"/>
+                <outlet property="jssImporter" destination="fzS-rQ-d9w" id="oht-G7-8TF"/>
                 <outlet property="localMunkiRepo" destination="ME9-rG-Y8o" id="MOD-TQ-6z0"/>
                 <outlet property="openAutoPkgCacheFolderButton" destination="TYE-36-bIi" id="Tav-UZ-1OF"/>
                 <outlet property="openAutoPkgRecipeOverridesFolderButton" destination="SPx-dH-wAP" id="oKA-wh-bzL"/>
@@ -582,7 +583,7 @@
                 <constraint firstAttribute="trailing" secondItem="QM0-hF-4j5" secondAttribute="trailing" constant="9" id="hST-B0-Yvh"/>
             </constraints>
         </customView>
-        <customObject id="fzS-rQ-d9w" customClass="LGJSSImporter">
+        <customObject id="fzS-rQ-d9w" userLabel="JSSImporter" customClass="LGJSSImporter">
             <connections>
                 <outlet property="jssAPIPasswordTF" destination="9lJ-vz-FvC" id="0wa-OJ-i9Q"/>
                 <outlet property="jssAPIUsernameTF" destination="6Ki-wr-8K2" id="V2o-9b-SP6"/>

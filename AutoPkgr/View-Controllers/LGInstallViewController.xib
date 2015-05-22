@@ -14,6 +14,9 @@
                 <outlet property="hideInDock" destination="2vH-Ks-iBq" id="co0-5U-IIS"/>
                 <outlet property="installAutoPkgButton" destination="x1S-bd-tl3" id="INf-W7-Sdz"/>
                 <outlet property="installGitButton" destination="ClY-1a-e2c" id="YuB-Au-zVG"/>
+                <outlet property="installJSSImporterButton" destination="uPW-I4-WKp" id="OIY-xi-yq8"/>
+                <outlet property="jssImporterStatusIcon" destination="kGA-EW-Dsj" id="470-tn-1d1"/>
+                <outlet property="jssImporterStatusLabel" destination="0VQ-id-jlf" id="FQ5-te-hBS"/>
                 <outlet property="launchAtLoginButton" destination="gCc-Bk-Xo8" id="qim-oX-B7S"/>
                 <outlet property="restartRequiredLabel" destination="Esk-cg-7GW" id="Bbw-Q2-mwa"/>
                 <outlet property="showInMenuButton" destination="D8f-jS-Mfo" id="izD-cq-ILU"/>

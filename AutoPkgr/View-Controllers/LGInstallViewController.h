@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "LGBaseViewController.h"
+@class LGJSSImporter;
 
 @interface LGInstallViewController : LGBaseViewController
 
@@ -28,5 +29,9 @@
 // Status icons
 @property (weak) IBOutlet NSImageView *gitStatusIcon;
 @property (weak) IBOutlet NSImageView *autoPkgStatusIcon;
+
+@property (weak) IBOutlet NSButton *installJSSImporterButton;
+@property (weak) IBOutlet NSTextField *jssImporterStatusLabel;
+@property (weak) IBOutlet NSImageView *jssImporterStatusIcon;
 
 @end

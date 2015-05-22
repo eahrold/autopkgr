@@ -35,9 +35,9 @@
 @property (weak) IBOutlet NSProgressIndicator *jssStatusSpinner;
 @property (weak) IBOutlet NSImageView *jssStatusLight;
 
-@property (weak) IBOutlet NSButton *jssInstallButton;
-@property (weak) IBOutlet NSImageView *jssInstallStatusLight;
-@property (weak) IBOutlet NSTextField *jssInstallStatusTF;
+@property (weak, nonatomic) IBOutlet NSButton *jssInstallButton;
+@property (weak, nonatomic) IBOutlet NSImageView *jssInstallStatusLight;
+@property (weak, nonatomic) IBOutlet NSTextField *jssInstallStatusTF;
 
 @property (weak) IBOutlet NSButton *jssEditDistPointBT;
 @property (weak) IBOutlet NSButton *jssRemoveDistPointBT;
@@ -54,4 +54,11 @@
 - (IBAction)enableMasterJDS:(NSButton *)sender;
 
 - (NSMenu *)contextualMenuForDistributionPoint:(NSDictionary *)distPoint;
+
+/**
+ *  Connect the LGJSSimporterTool and have it assume responsibility for the IBOutlets that it manages.
+ *  @note This is required since it needs to be executed after all of the NIBs have been loaded.
+ */
+- (void)connectToTool;
+
 @end

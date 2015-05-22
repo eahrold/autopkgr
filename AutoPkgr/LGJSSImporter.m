@@ -67,56 +67,6 @@ NSPredicate *jdsFilterPredicate()
     _jssReloadServerBT.title = @"Verify";
     _jssStatusLight.hidden = YES;
 
-    BOOL isInstalled = [LGJSSImporterTool isInstalled];
-
-    // Show installer status
-    _jssInstallStatusLight.hidden = !isInstalled;
-    _jssInstallStatusTF.hidden = !isInstalled;
-    _jssInstallButton.hidden = !isInstalled;
-
-    // Setup the JSSImporterTool
-    if (!_jssImporterTool) {
-        _jssImporterTool = [[LGJSSImporterTool alloc] init];
-        if (_progressDelegate) {
-            _jssImporterTool.progressDelegate = _progressDelegate;
-        }
-
-        _jssInstallButton.target = _jssImporterTool;
-
-        __weak typeof(self) w_self = self;
-        [_jssImporterTool setInfoUpdateHandler:^(LGToolInfo *info) {
-            // Update the button.
-            w_self.jssInstallButton.enabled = YES; // Enabled
-            w_self.jssInstallButton.action = info.targetAction; // Selector
-            w_self.jssInstallButton.title = info.installButtonTitle; // Title
-            w_self.jssInstallButton.hidden = (info.status == kLGToolNotInstalled);
-
-            w_self.jssInstallStatusLight.image = info.statusImage;
-            w_self.jssInstallStatusLight.hidden = (info.status == kLGToolNotInstalled);
-
-            w_self.jssInstallStatusTF.stringValue = info.statusString;
-            w_self.jssInstallStatusTF.hidden = (info.status == kLGToolNotInstalled);
-
-            if (info.status == kLGToolNotInstalled){
-                w_self.jssReloadServerBT.title = @"Install";
-                w_self.jssReloadServerBT.target = w_self.jssImporterTool;
-                w_self.jssReloadServerBT.action = @selector(install:);
-            } else {
-                w_self.jssReloadServerBT.title = @"Verify";
-                w_self.jssReloadServerBT.target = w_self;
-                w_self.jssReloadServerBT.action = @selector(testCredentials:);
-            }
-        }];
-    }
-
-    if (isInstalled) {
-        [_jssImporterTool refresh];
-    } else {
-        // have the tool take over controll of the "verify / connect" button on the F&I tab.
-        _jssReloadServerBT.title = @"Install";
-        _jssReloadServerBT.target = _jssImporterTool;
-        _jssReloadServerBT.action = @selector(install:);
-    }
 
     // Disable the Add / Remove distPoint buttons
     // until a row is selected
@@ -131,6 +81,61 @@ NSPredicate *jdsFilterPredicate()
     _jssURLTF.safeStringValue = _defaults.JSSURL;
 
     [_jssDistributionPointTableView reloadData];
+}
+
+- (void)connectToTool {
+    BOOL isInstalled = [LGJSSImporterTool isInstalled];
+
+    // Show installer status
+    _jssInstallStatusLight.hidden = !isInstalled;
+    _jssInstallStatusTF.hidden = !isInstalled;
+    _jssInstallButton.hidden = !isInstalled;
+
+    // Setup the JSSImporterTool
+    if (!_jssImporterTool) {
+        _jssImporterTool = [[LGJSSImporterTool alloc] init];
+        if (_progressDelegate) {
+            _jssImporterTool.progressDelegate = _progressDelegate;
+        }
+
+        __weak typeof(self) __weak_self = self;
+        [_jssImporterTool setInfoUpdateHandler:^(LGToolInfo *info) {
+            // Update the button.
+            __weak_self.jssInstallButton.enabled = YES; // Enabled
+            __weak_self.jssInstallButton.action = info.targetAction; // Selector
+            __weak_self.jssInstallButton.title = info.installButtonTitle; // Title
+            __weak_self.jssInstallButton.hidden = (info.status == kLGToolNotInstalled);
+
+            __weak_self.jssInstallStatusLight.image = info.statusImage;
+            __weak_self.jssInstallStatusLight.hidden = (info.status == kLGToolNotInstalled);
+
+            __weak_self.jssInstallStatusTF.stringValue = info.statusString;
+            __weak_self.jssInstallStatusTF.hidden = (info.status == kLGToolNotInstalled);
+
+            if (info.status == kLGToolNotInstalled){
+                __weak_self.jssReloadServerBT.title = @"Install";
+                __weak_self.jssReloadServerBT.target = __weak_self.jssImporterTool;
+                __weak_self.jssReloadServerBT.action = @selector(install:);
+            } else {
+                __weak_self.jssReloadServerBT.title = @"Verify";
+                __weak_self.jssReloadServerBT.target = __weak_self;
+                __weak_self.jssReloadServerBT.action = @selector(testCredentials:);
+            }
+        }];
+    }
+
+    if (isInstalled) {
+        [_jssImporterTool refresh];
+    } else {
+        // have the tool take over controll of the "verify / connect" button on the F&I tab.
+        _jssReloadServerBT.title = @"Install";
+        _jssReloadServerBT.target = _jssImporterTool;
+        _jssReloadServerBT.action = @selector(install:);
+
+        _jssInstallButton.title = @"Install";
+        _jssInstallButton.target = _jssImporterTool;
+        _jssInstallButton.action = @selector(install:);
+    }
 }
 
 #pragma mark - IBActions

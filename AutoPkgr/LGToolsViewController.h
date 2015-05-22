@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "LGBaseViewController.h"
+#import "LGJSSImporter.h"
 
 @interface LGToolsViewController : LGBaseViewController
 
@@ -16,7 +17,6 @@
 @property (weak) IBOutlet NSTextField *autoPkgCacheDir;
 @property (weak) IBOutlet NSTextField *autoPkgRecipeOverridesDir;
 
-
 - (void)enableFolders;
 
 // Buttons
@@ -24,6 +24,8 @@
 @property (weak) IBOutlet NSButton *openAutoPkgRecipeReposFolderButton;
 @property (weak) IBOutlet NSButton *openAutoPkgCacheFolderButton;
 @property (weak) IBOutlet NSButton *openAutoPkgRecipeOverridesFolderButton;
+
+@property (weak) IBOutlet LGJSSImporter *jssImporter;
 
 - (IBAction)openLocalMunkiRepoFolder:(id)sender;
 - (IBAction)openAutoPkgRecipeReposFolder:(id)sender;
