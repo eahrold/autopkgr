@@ -86,7 +86,9 @@
 
     /* Make any modifications needed for specific tools*/
     _scheduleView.cancelButton = _cancelAutoPkgRunButton;
-    
+
+    _toolsView.modalWindow = self.window;
+
     _toolsView.jssImporter.jssInstallButton = _installView.installJSSImporterButton;
     _toolsView.jssImporter.jssInstallStatusLight = _installView.jssImporterStatusIcon;
     _toolsView.jssImporter.jssInstallStatusTF = _installView.jssImporterStatusLabel;
