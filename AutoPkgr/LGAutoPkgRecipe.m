@@ -17,6 +17,7 @@
 
 #import "LGAutoPkgRecipe.h"
 #import "LGAutoPkgTask.h"
+#import <glob.h>
 
 // MakeCatalogs recipe identifier string
 static NSString *const kLGMakeCatalogsIdentifier = @"com.github.autopkg.munki.makecatalogs";
@@ -32,7 +33,6 @@ static dispatch_queue_t autopkgr_recipe_write_queue()
 
     return autopkgr_recipe_write_queue;
 }
-
 
 #pragma mark - Recipe Store
 /**
@@ -97,28 +97,29 @@ static dispatch_queue_t autopkgr_recipe_write_queue()
     return nil;
 }
 
-
 - (BOOL)reload
 {
-    NSFileManager *manager = [[NSFileManager alloc] init];
     NSMutableDictionary *recipes = [[NSMutableDictionary alloc] init];
-
     NSArray *searchDirs = [[LGDefaults standardUserDefaults] autoPkgRecipeSearchDirs];
 
-    for (NSString *dir in searchDirs) {
-        NSArray *files = [manager subpathsOfDirectoryAtPath:dir.stringByExpandingTildeInPath error:nil];
+    for (NSString *path in searchDirs) {
+        if ((access(path.UTF8String, F_OK) == 0)) {
 
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"pathExtension == 'recipe'"];
+            NSString *matches = [NSString stringWithFormat:@"{%@/{*.recipe,*/*.recipe}}", path];
 
-        for (NSString *recipe in [files filteredArrayUsingPredicate:predicate]) {
-            NSURL *fileURL = [NSURL fileURLWithPathComponents:@[dir, recipe]];
-            NSDictionary *dict = [NSDictionary dictionaryWithContentsOfURL:fileURL];
-            if (dict) {
-                NSString *identifier = dict[kLGAutoPkgRecipeIdentifierKey] ?: dict[@"Input"][@"IDENTIFIER"];
-                if (identifier && !recipes[identifier]) {
-                    [recipes setObject:fileURL forKey:identifier];
+            glob_t results;
+            glob(matches.UTF8String, GLOB_BRACE | GLOB_NOSORT, NULL, &results);
+            for (int i = 0; i < results.gl_matchc; i++) {
+                NSURL *fileURL = [NSURL fileURLWithFileSystemRepresentation:results.gl_pathv[i] isDirectory:NO relativeToURL:nil];
+                NSDictionary *dict = [NSDictionary dictionaryWithContentsOfURL:fileURL];
+                if (dict) {
+                    NSString *identifier = dict[kLGAutoPkgRecipeIdentifierKey] ?: dict[@"Input"][@"IDENTIFIER"];
+                    if (identifier && !recipes[identifier]) {
+                        [recipes setObject:fileURL forKey:identifier];
+                    }
                 }
             }
+            globfree(&results);
         }
     }
 
@@ -290,7 +291,8 @@ static dispatch_queue_t autopkgr_recipe_write_queue()
 }
 
 #pragma mark - Checks
-- (BOOL)hasStepProcessor:(NSString *)step {
+- (BOOL)hasStepProcessor:(NSString *)step
+{
     NSMutableArray *considered = [NSMutableArray arrayWithObject:_recipePlist];
 
     for (NSString *identifier in self.ParentRecipes) {
@@ -301,11 +303,11 @@ static dispatch_queue_t autopkgr_recipe_write_queue()
     }
 
     for (NSDictionary *plist in considered) {
-        NSArray *processes =  plist[kLGAutoPkgRecipeProcessKey];
+        NSArray *processes = plist[kLGAutoPkgRecipeProcessKey];
         if (processes) {
             if ([processes indexOfObjectPassingTest:^BOOL(NSDictionary *obj, NSUInteger idx, BOOL *stop) {
                 return [obj[@"Processor"] isEqualToString:step];
-            }] != NSNotFound){
+                }] != NSNotFound) {
                 return YES;
             }
         }
@@ -319,7 +321,8 @@ static dispatch_queue_t autopkgr_recipe_write_queue()
     return [self hasStepProcessor:@"EndOfCheckPhase"];
 }
 
-- (BOOL)buildsPackage {
+- (BOOL)buildsPackage
+{
     return [self hasStepProcessor:@"PkgCreator"];
 }
 
@@ -386,16 +389,15 @@ static dispatch_queue_t autopkgr_recipe_write_queue()
 
 + (NSArray *)findRecipesRecursivelyAtPath:(NSString *)path isOverride:(BOOL)isOverride activeRecipes:(NSSet *)activeRecipes
 {
-    NSFileManager *manager = [NSFileManager defaultManager];
     NSMutableArray *recipes = [[NSMutableArray alloc] init];
 
-    if (path && [manager fileExistsAtPath:path]) {
-        NSArray *files = [manager subpathsOfDirectoryAtPath:path error:nil];
+    if (path && (access(path.UTF8String, F_OK) == 0)) {
+        NSString *matches = [NSString stringWithFormat:@"{%@/{*.recipe,*/*.recipe}}", path];
 
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"pathExtension == 'recipe'"];
-
-        for (NSString *recipe in [files filteredArrayUsingPredicate:predicate]) {
-            NSURL *fileURL = [NSURL fileURLWithPathComponents:@[path, recipe]];
+        glob_t results;
+        glob(matches.UTF8String, GLOB_BRACE | GLOB_NOSORT, NULL, &results);
+        for (int i = 0; i < results.gl_matchc; i++) {
+            NSURL *fileURL = [NSURL fileURLWithFileSystemRepresentation:results.gl_pathv[i] isDirectory:NO relativeToURL:nil];
             if (fileURL) {
                 LGAutoPkgRecipe *recipe = [[LGAutoPkgRecipe alloc] initWithRecipeFile:fileURL isOverride:isOverride];
                 if (recipe) {
@@ -409,11 +411,10 @@ static dispatch_queue_t autopkgr_recipe_write_queue()
                         }
                     }
                 }
-
             }
         }
+        globfree(&results);
     }
-
 
     return [recipes copy];
 }
