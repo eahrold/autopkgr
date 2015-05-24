@@ -99,13 +99,7 @@
     // Setup User Notification Delegate
     _notificationDelegate = [[LGUserNotifications alloc] init];
     [NSUserNotificationCenter defaultUserNotificationCenter].delegate = _notificationDelegate;
-
-    NSInteger timer;
-    [_autoCheckForUpdatesMenuItem setState:[LGAutoPkgSchedule updateAppsIsScheduled:&timer]];
-
-    NSString *menuItemTitle = [NSString stringWithFormat:@"Run AutoPkg Every %ld Hours", timer];
-
-    [_autoCheckForUpdatesMenuItem setTitle:menuItemTitle];
+    
     // calling stopProgress: here is an easy way to get the
     // menu reset to its default configuration
     [self stopProgress:nil];

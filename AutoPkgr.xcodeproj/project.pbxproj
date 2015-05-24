@@ -87,6 +87,8 @@
 		BE4DD53C1B11740900854FD8 /* LGMunkiTool.h in Resources */ = {isa = PBXBuildFile; fileRef = BE4DD53A1B11740900854FD8 /* LGMunkiTool.h */; };
 		BE4DD53E1B11743700854FD8 /* LGMunkiTool.m in Sources */ = {isa = PBXBuildFile; fileRef = BE4DD53D1B11743700854FD8 /* LGMunkiTool.m */; };
 		BE4DD53F1B11743700854FD8 /* LGMunkiTool.m in Sources */ = {isa = PBXBuildFile; fileRef = BE4DD53D1B11743700854FD8 /* LGMunkiTool.m */; };
+		BE4DD5471B126E2800854FD8 /* LGSchedulePickerMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = BE4DD5461B126E2800854FD8 /* LGSchedulePickerMenu.m */; };
+		BE4DD5481B126E2800854FD8 /* LGSchedulePickerMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = BE4DD5461B126E2800854FD8 /* LGSchedulePickerMenu.m */; };
 		BE57AC2A19BA3BBC00BB17B1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BE57AC2C19BA3BBC00BB17B1 /* Localizable.strings */; };
 		BE67E8751A44E10500484151 /* LGRecipeSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = BE67E8731A44E10500484151 /* LGRecipeSearch.m */; };
 		BE67E8761A44E10500484151 /* LGRecipeSearchPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = BE67E8741A44E10500484151 /* LGRecipeSearchPanel.xib */; };
@@ -323,6 +325,8 @@
 		BE4985371AFE61C1006E5EDA /* LGServerCredentials.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGServerCredentials.m; sourceTree = "<group>"; };
 		BE4DD53A1B11740900854FD8 /* LGMunkiTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGMunkiTool.h; sourceTree = "<group>"; };
 		BE4DD53D1B11743700854FD8 /* LGMunkiTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGMunkiTool.m; sourceTree = "<group>"; };
+		BE4DD5451B126E2800854FD8 /* LGSchedulePickerMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGSchedulePickerMenu.h; sourceTree = "<group>"; };
+		BE4DD5461B126E2800854FD8 /* LGSchedulePickerMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGSchedulePickerMenu.m; sourceTree = "<group>"; };
 		BE57733619D519E400D872A4 /* LGJSSImporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGJSSImporter.h; sourceTree = "<group>"; };
 		BE57733719D519E400D872A4 /* LGJSSImporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGJSSImporter.m; sourceTree = "<group>"; };
 		BE57AC2B19BA3BBC00BB17B1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -492,9 +496,9 @@
 			children = (
 				1AC86D36195E0972006FDD2B /* Models */,
 				BE40CB7719D4441600A1DABD /* Views / Controllers / XIB */,
-				BE40CB7819D4444D00A1DABD /* Utility Classes */,
+				BE40CB7819D4444D00A1DABD /* Utility */,
 				BE978FA61B102588000079D0 /* Protocols-Delegates */,
-				BE05CE8419DAF63D0089068B /* Helper Tool Communication */,
+				BE05CE8419DAF63D0089068B /* Privileged Helper Communication */,
 				BE39FE5419DFBB2900C1B4A1 /* Custom Categories */,
 				1AC98423195DF6270071CAB3 /* Resources */,
 				1AC69557195B59ED00D2BD81 /* Supporting Files */,
@@ -541,28 +545,12 @@
 		1AC86D36195E0972006FDD2B /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				BEEFE6BE1AEA82CD00882C89 /* AutoPkg Task Classes */,
-				BEEFE6C41AEBEA6A00882C89 /* Associated Tools Classes */,
-				BE32178919ED9ACA00A92E5A /* LGRecipeOverrides.h */,
-				BE32178A19ED9ACA00A92E5A /* LGRecipeOverrides.m */,
-				BE344F531ABFBEAB00500AAE /* LGAutoPkgReport.h */,
-				BE344F541ABFBEAB00500AAE /* LGAutoPkgReport.m */,
-				BE025CFC19BAEF8800D36345 /* LGAutoPkgSchedule.h */,
-				BE025CFD19BAEF8800D36345 /* LGAutoPkgSchedule.m */,
-				1AC98410195CE8510071CAB3 /* LGEmailer.h */,
-				1AC98411195CE8520071CAB3 /* LGEmailer.m */,
-				1A1BAD9C197A4133008192A7 /* LGGitHubJSONLoader.h */,
-				1A1BAD9D197A4133008192A7 /* LGGitHubJSONLoader.m */,
-				BEAA76CA19BFD635002D73EE /* LGInstaller.h */,
-				BEAA76CB19BFD635002D73EE /* LGInstaller.m */,
-				BEE211241AF9DCBB00A3C2E1 /* LGUninstaller.h */,
-				BEE211251AF9DCBB00A3C2E1 /* LGUninstaller.m */,
-				6A53625B1988BE59008A949C /* LGTestPort.h */,
-				6A53625C1988BE59008A949C /* LGTestPort.m */,
-				BEBF7B151A4894AC00E9967F /* LGVersioner.h */,
-				BEBF7B161A4894AC00E9967F /* LGVersioner.m */,
-				BE4985361AFE61C1006E5EDA /* LGServerCredentials.h */,
-				BE4985371AFE61C1006E5EDA /* LGServerCredentials.m */,
+				BEEFE6BE1AEA82CD00882C89 /* AutoPkg Task */,
+				BEEFE6C41AEBEA6A00882C89 /* Associated Tools */,
+				BE4DD5431B12385C00854FD8 /* Email & Notifications */,
+				BE4DD5411B1237D400854FD8 /* Install / Uninstall */,
+				BE4DD5421B12382600854FD8 /* Passwords / Credentials */,
+				BE4DD5401B1237AE00854FD8 /* Recipes & Repos Controller */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -620,7 +608,7 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		BE05CE8419DAF63D0089068B /* Helper Tool Communication */ = {
+		BE05CE8419DAF63D0089068B /* Privileged Helper Communication */ = {
 			isa = PBXGroup;
 			children = (
 				BE05CE7E19DAF6320089068B /* LGAutoPkgrAuthorizer.h */,
@@ -628,7 +616,7 @@
 				BE05CE8019DAF6320089068B /* LGAutoPkgrHelperConnection.h */,
 				BE05CE8119DAF6320089068B /* LGAutoPkgrHelperConnection.m */,
 			);
-			name = "Helper Tool Communication";
+			name = "Privileged Helper Communication";
 			sourceTree = "<group>";
 		};
 		BE38EAB21B0D1C2D009FCBEB /* Tab Views */ = {
@@ -680,6 +668,7 @@
 		BE40CB7719D4441600A1DABD /* Views / Controllers / XIB */ = {
 			isa = PBXGroup;
 			children = (
+				BE6B1CF71B1286BD00578F97 /* UI Subclasses */,
 				BE38EAB21B0D1C2D009FCBEB /* Tab Views */,
 				1AC69562195B59EE00D2BD81 /* LGAppDelegate.h */,
 				1AC69563195B59EE00D2BD81 /* LGAppDelegate.m */,
@@ -696,43 +685,107 @@
 				BE38EA741B0B8DF7009FCBEB /* LGRecipeInfoView.h */,
 				BE38EA751B0B8DF7009FCBEB /* LGRecipeInfoView.m */,
 				BE38EA761B0B8DF7009FCBEB /* LGRecipeInfoView.xib */,
-				6A0ACE32196FB349002C7FE4 /* LGRecipeController.h */,
-				6A0ACE33196FB349002C7FE4 /* LGRecipeController.m */,
-				6A0BABE7196E560000A136BB /* LGPopularRepositories.h */,
-				6A0BABE8196E560000A136BB /* LGPopularRepositories.m */,
-				BE32178C19EDA15400A92E5A /* LGTableView.h */,
-				BE32178D19EDA15400A92E5A /* LGTableView.m */,
 				BE57733619D519E400D872A4 /* LGJSSImporter.h */,
 				BE57733719D519E400D872A4 /* LGJSSImporter.m */,
 			);
 			name = "Views / Controllers / XIB";
 			sourceTree = "<group>";
 		};
-		BE40CB7819D4444D00A1DABD /* Utility Classes */ = {
+		BE40CB7819D4444D00A1DABD /* Utility */ = {
 			isa = PBXGroup;
 			children = (
+				BE025CFC19BAEF8800D36345 /* LGAutoPkgSchedule.h */,
+				BE025CFD19BAEF8800D36345 /* LGAutoPkgSchedule.m */,
 				1AC98408195CE7D60071CAB3 /* LGConstants.h */,
 				1AC98409195CE7D60071CAB3 /* LGConstants.m */,
 				BE8799491995BA410082472B /* LGDefaults.h */,
 				BE87994A1995BA410082472B /* LGDefaults.m */,
 				BEFC931B1995F0710074C938 /* LGError.h */,
 				BEFC931C1995F0710074C938 /* LGError.m */,
+				1A1BAD9C197A4133008192A7 /* LGGitHubJSONLoader.h */,
+				1A1BAD9D197A4133008192A7 /* LGGitHubJSONLoader.m */,
 				1AC86D3B195E0AC6006FDD2B /* LGHostInfo.h */,
 				1AC86D3C195E0AC6006FDD2B /* LGHostInfo.m */,
-				BEEFE6BA1AE9E8A600882C89 /* LGLogger.h */,
-				BEEFE6B91AE9E8A600882C89 /* LGLogger.m */,
 				BE0E857719D668F600B25B5E /* LGHTTPRequest.h */,
 				BE0E857819D668F600B25B5E /* LGHTTPRequest.m */,
+				BEEFE6BA1AE9E8A600882C89 /* LGLogger.h */,
+				BEEFE6B91AE9E8A600882C89 /* LGLogger.m */,
+				6A53625B1988BE59008A949C /* LGTestPort.h */,
+				6A53625C1988BE59008A949C /* LGTestPort.m */,
+				BEBF7B151A4894AC00E9967F /* LGVersioner.h */,
+				BEBF7B161A4894AC00E9967F /* LGVersioner.m */,
+			);
+			name = Utility;
+			sourceTree = "<group>";
+		};
+		BE4DD5401B1237AE00854FD8 /* Recipes & Repos Controller */ = {
+			isa = PBXGroup;
+			children = (
+				6A0ACE32196FB349002C7FE4 /* LGRecipeController.h */,
+				6A0ACE33196FB349002C7FE4 /* LGRecipeController.m */,
+				6A0BABE7196E560000A136BB /* LGPopularRepositories.h */,
+				6A0BABE8196E560000A136BB /* LGPopularRepositories.m */,
+				BE32178919ED9ACA00A92E5A /* LGRecipeOverrides.h */,
+				BE32178A19ED9ACA00A92E5A /* LGRecipeOverrides.m */,
+			);
+			name = "Recipes & Repos Controller";
+			sourceTree = "<group>";
+		};
+		BE4DD5411B1237D400854FD8 /* Install / Uninstall */ = {
+			isa = PBXGroup;
+			children = (
+				BEAA76CA19BFD635002D73EE /* LGInstaller.h */,
+				BEAA76CB19BFD635002D73EE /* LGInstaller.m */,
+				BEE211241AF9DCBB00A3C2E1 /* LGUninstaller.h */,
+				BEE211251AF9DCBB00A3C2E1 /* LGUninstaller.m */,
 				BE8A06B61AF8F961006C2571 /* LGPackageRemover.h */,
 				BE8A06B71AF8F961006C2571 /* LGPackageRemover.m */,
+			);
+			name = "Install / Uninstall";
+			sourceTree = "<group>";
+		};
+		BE4DD5421B12382600854FD8 /* Passwords / Credentials */ = {
+			isa = PBXGroup;
+			children = (
 				BE053D131A8F90920021D97B /* LGPasswords.h */,
 				BE053D141A8F90920021D97B /* LGPasswords.m */,
-				BEEFE6C01AEBCC7C00882C89 /* LGToolStatus.h */,
-				BEEFE6C11AEBCC7C00882C89 /* LGToolStatus.m */,
+				BE4985361AFE61C1006E5EDA /* LGServerCredentials.h */,
+				BE4985371AFE61C1006E5EDA /* LGServerCredentials.m */,
+			);
+			name = "Passwords / Credentials";
+			sourceTree = "<group>";
+		};
+		BE4DD5431B12385C00854FD8 /* Email & Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				BE344F531ABFBEAB00500AAE /* LGAutoPkgReport.h */,
+				BE344F541ABFBEAB00500AAE /* LGAutoPkgReport.m */,
+				1AC98410195CE8510071CAB3 /* LGEmailer.h */,
+				1AC98411195CE8520071CAB3 /* LGEmailer.m */,
 				BE6815D31A0B18DE004AD310 /* LGUserNotifications.h */,
 				BE6815D41A0B18DE004AD310 /* LGUserNotifications.m */,
 			);
-			name = "Utility Classes";
+			name = "Email & Notifications";
+			sourceTree = "<group>";
+		};
+		BE4DD5441B1239A300854FD8 /* Tool Status */ = {
+			isa = PBXGroup;
+			children = (
+				BEEFE6C01AEBCC7C00882C89 /* LGToolStatus.h */,
+				BEEFE6C11AEBCC7C00882C89 /* LGToolStatus.m */,
+			);
+			name = "Tool Status";
+			sourceTree = "<group>";
+		};
+		BE6B1CF71B1286BD00578F97 /* UI Subclasses */ = {
+			isa = PBXGroup;
+			children = (
+				BE32178C19EDA15400A92E5A /* LGTableView.h */,
+				BE32178D19EDA15400A92E5A /* LGTableView.m */,
+				BE4DD5451B126E2800854FD8 /* LGSchedulePickerMenu.h */,
+				BE4DD5461B126E2800854FD8 /* LGSchedulePickerMenu.m */,
+			);
+			name = "UI Subclasses";
 			sourceTree = "<group>";
 		};
 		BE978FA61B102588000079D0 /* Protocols-Delegates */ = {
@@ -756,7 +809,7 @@
 			name = "Html Categories";
 			sourceTree = "<group>";
 		};
-		BEEFE6BE1AEA82CD00882C89 /* AutoPkg Task Classes */ = {
+		BEEFE6BE1AEA82CD00882C89 /* AutoPkg Task */ = {
 			isa = PBXGroup;
 			children = (
 				BE025CF419BAE93400D36345 /* LGAutoPkgTask.h */,
@@ -768,12 +821,13 @@
 				BEFA4DBB1B08F57800764BF0 /* LGAutoPkgRecipe.h */,
 				BEFA4DBC1B08F57800764BF0 /* LGAutoPkgRecipe.m */,
 			);
-			name = "AutoPkg Task Classes";
+			name = "AutoPkg Task";
 			sourceTree = "<group>";
 		};
-		BEEFE6C41AEBEA6A00882C89 /* Associated Tools Classes */ = {
+		BEEFE6C41AEBEA6A00882C89 /* Associated Tools */ = {
 			isa = PBXGroup;
 			children = (
+				BE4DD5441B1239A300854FD8 /* Tool Status */,
 				BEEFE6D21AF008A200882C89 /* LGTool Base */,
 				BEEFE6C81AEC760700882C89 /* LGAutoPkgTool.h */,
 				BEEFE6C91AEC760700882C89 /* LGAutoPkgTool.m */,
@@ -784,7 +838,7 @@
 				BEEFE6CC1AEC761F00882C89 /* LGJSSImporterTool.h */,
 				BEEFE6CD1AEC761F00882C89 /* LGJSSImporterTool.m */,
 			);
-			name = "Associated Tools Classes";
+			name = "Associated Tools";
 			sourceTree = "<group>";
 		};
 		BEEFE6D21AF008A200882C89 /* LGTool Base */ = {
@@ -1138,6 +1192,7 @@
 				BEC1258B19F04703006696C4 /* LGPopularRepositories.m in Sources */,
 				BEBF7B171A4894AC00E9967F /* LGVersioner.m in Sources */,
 				BEC1258819F046C5006696C4 /* LGJSSImporter.m in Sources */,
+				BE4DD5471B126E2800854FD8 /* LGSchedulePickerMenu.m in Sources */,
 				BE38EA9C1B0CFEA6009FCBEB /* LGScheduleViewController.m in Sources */,
 				BE0E857919D668F600B25B5E /* LGHTTPRequest.m in Sources */,
 				BED136B11AC262CB003EBF0F /* NSString+html_report.m in Sources */,
@@ -1174,6 +1229,7 @@
 				BED136AD1AC0F993003EBF0F /* LGPasswords.m in Sources */,
 				BED136AB1AC05B1D003EBF0F /* LGAutoPkgReport.m in Sources */,
 				BEFC3C781A3DF16700C789E9 /* LGInstaller.m in Sources */,
+				BE4DD5481B126E2800854FD8 /* LGSchedulePickerMenu.m in Sources */,
 				BE8A06BE1AF8FAFD006C2571 /* NSData+taskData.m in Sources */,
 				BEFC3C791A3DF16700C789E9 /* LGTestPort.m in Sources */,
 				BEEFE6C31AEBCE1F00882C89 /* LGToolStatus.m in Sources */,

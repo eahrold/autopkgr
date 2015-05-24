@@ -1,10 +1,6 @@
-//
-//  LGAutoPkgSchedule.h
-//  AutoPkgr
-//
-//  Created by Eldon on 9/6/14.
-//
-//  Copyright 2014-2015 The Linde Group, Inc.
+// LGHourPickerMenu.h
+// 
+// Copyright 2015 The Linde Group, Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,19 +15,10 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-#import "LGProgressDelegate.h"
+#import <Cocoa/Cocoa.h>
 
-@class AHLaunchJobSchedule;
+@interface LGHourPickerMenu : NSMenu
+@end
 
-extern NSString *const kLGLaunchedAtLogin;
-
-@interface LGAutoPkgSchedule : NSObject
-
-+ (void)startAutoPkgSchedule:(BOOL)start scheduleOrInterval:(id)scheduleOrInterval isForced:(BOOL)forced reply:(void (^)(NSError *error))reply;
-
-+ (BOOL)updateAppsIsScheduled:(id *)scheduleInterval;
-
-+ (BOOL)launchAtLogin:(BOOL)launch;
-+ (BOOL)willLaunchAtLogin;
+@interface LGDayPickerMenu : NSMenu
 @end
