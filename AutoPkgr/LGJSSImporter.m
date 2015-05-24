@@ -94,6 +94,8 @@ NSPredicate *jdsFilterPredicate()
     // Setup the JSSImporterTool
     if (!_jssImporterTool) {
         _jssImporterTool = [[LGJSSImporterTool alloc] init];
+        _jssInstallButton.target = _jssImporterTool;
+
         if (_progressDelegate) {
             _jssImporterTool.progressDelegate = _progressDelegate;
         }
@@ -133,7 +135,6 @@ NSPredicate *jdsFilterPredicate()
         _jssReloadServerBT.action = @selector(install:);
 
         _jssInstallButton.title = @"Install";
-        _jssInstallButton.target = _jssImporterTool;
         _jssInstallButton.action = @selector(install:);
     }
 }

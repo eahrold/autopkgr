@@ -58,6 +58,11 @@ NSString *const kLGToolJSSImporter = @"JSSImporter";
             [tools addObject:jssImporterTool];
         }
 
+        LGTool *munkiTool = nil;
+        if ((munkiTool = [LGMunkiTool new])) {
+            [tools addObject:munkiTool];
+        }
+        
         complete([tools copy]);
     }];
 }

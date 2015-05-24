@@ -20,6 +20,7 @@
 #import "LGAutoPkgTool.h"
 #import "LGGitTool.h"
 #import "LGJSSImporterTool.h"
+#import "LGMunkiTool.h"
 
 @class LGTool;
 
