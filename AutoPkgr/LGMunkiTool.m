@@ -20,7 +20,7 @@
 
 static NSString *const kLGMunkiimportDomain = @"com.googlecode.munki.munkiimport";
 // Define the protocols you intend to conform to...
-@interface LGMunkiTool ()<LGToolPackagInstaller, LGToolSharedProcessor>
+@interface LGMunkiTool ()<LGToolPackageInstaller, LGToolSharedProcessor>
 @end
 
 #pragma mark - Tool overrides

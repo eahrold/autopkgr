@@ -76,7 +76,7 @@ void subclassMustConformToProtocol(id className)
 
         // The subclasses must conform to at least one of the protocols
         if (([self conformsToProtocol:@protocol(LGToolSharedProcessor)] ||
-             [self conformsToProtocol:@protocol(LGToolPackagInstaller)]) == NO)
+             [self conformsToProtocol:@protocol(LGToolPackageInstaller)]) == NO)
         {
             subclassMustConformToProtocol(self);
         }
@@ -145,7 +145,7 @@ void subclassMustConformToProtocol(id className)
         flags += kLGToolTypeAutoPkgSharedProcessor;
     }
 
-    if ([self conformsToProtocol:@protocol(LGToolPackagInstaller)]) {
+    if ([self conformsToProtocol:@protocol(LGToolPackageInstaller)]) {
         flags += kLGToolTypeInstalledPackage;
     }
 
@@ -246,11 +246,11 @@ void subclassMustConformToProtocol(id className)
 
     if (typeFlags & kLGToolTypeInstalledPackage) {
         NSFileManager *fm = [NSFileManager defaultManager];
-        NSString *packageReciept = [[@"/private/var/db/receipts/" stringByAppendingPathComponent:[[[self class] packageIdentifiers] firstObject]] stringByAppendingPathExtension:@"plist"];
+        NSString *packageReceipt = [[@"/private/var/db/receipts/" stringByAppendingPathComponent:[[[self class] packageIdentifiers] firstObject]] stringByAppendingPathExtension:@"plist"];
 
         if ([[self class] isInstalled]) {
-            if ([fm fileExistsAtPath:packageReciept]) {
-                NSDictionary *receiptDict = [NSDictionary dictionaryWithContentsOfFile:packageReciept];
+            if ([fm fileExistsAtPath:packageReceipt]) {
+                NSDictionary *receiptDict = [NSDictionary dictionaryWithContentsOfFile:packageReceipt];
                 _installedVersion = receiptDict[@"PackageVersion"];
             }
         }

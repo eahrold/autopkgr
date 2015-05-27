@@ -26,7 +26,7 @@ NSString *const kLGXcodeGit = @"/Applications/Xcode.app/Contents/Developer/usr/b
 NSString *const kLGHomeBrewGit = @"/usr/local/bin/git";
 NSString *const kLGBoxenBrewGit = @"/opt/boxen/homebrew/bin/git";
 
-@interface LGGitTool ()<LGToolPackagInstaller>
+@interface LGGitTool ()<LGToolPackageInstaller>
 @end
 
 NSArray *knownGitPaths()

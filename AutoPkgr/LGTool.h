@@ -95,7 +95,7 @@ typedef NS_ENUM(OSStatus, LGToolInstallStatus) {
  + (NSString *)gitHubURL
  + (NSString *)packageIdentifier
 
- @endcode Many other methods may need to get overridden for proper functioning. See LGTool.h adn LGTool+Private.h for a comperhensive list.
+ @endcode Many other methods may need to get overridden for proper functioning. See LGTool.h and LGTool+Private.h for a comprehensive list.
  */
 
 @interface LGTool : NSObject
@@ -204,7 +204,7 @@ typedef NS_ENUM(OSStatus, LGToolInstallStatus) {
 // Mapped bool for whether tool needs installed or updated.
 @property (assign, readonly) BOOL needsInstalled;
 
-// Selector to sepcify install / uninstall behavior.
+// Selector to specify install / uninstall behavior.
 @property (assign, readonly) SEL targetAction;
 
 @end

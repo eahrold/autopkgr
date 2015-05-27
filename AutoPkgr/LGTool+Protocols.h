@@ -55,7 +55,7 @@
 /**
  *  If the tool uses an installer package conform to this protocol.
  */
-@protocol LGToolPackagInstaller <NSObject>
+@protocol LGToolPackageInstaller <NSObject>
 @required
 /**
  *  Path to the main executable file for the tool
