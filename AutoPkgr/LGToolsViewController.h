@@ -7,10 +7,10 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "LGBaseViewController.h"
+#import "LGBaseTabViewController.h"
 #import "LGJSSImporter.h"
 
-@interface LGToolsViewController : LGBaseViewController
+@interface LGToolsViewController : LGBaseTabViewController
 
 @property (weak) IBOutlet NSTextField *localMunkiRepo;
 @property (weak) IBOutlet NSTextField *autoPkgRecipeRepoDir;

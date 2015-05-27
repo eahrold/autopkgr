@@ -76,7 +76,7 @@
                       _notificationView,
                       _toolsView];
 
-    for (LGBaseViewController *viewController in tabs) {
+    for (LGBaseTabViewController *viewController in tabs) {
         NSTabViewItem *tabItem = [[NSTabViewItem alloc] init];
         tabItem.identifier = NSStringFromClass([viewController class]);
         tabItem.label = viewController.tabLabel;

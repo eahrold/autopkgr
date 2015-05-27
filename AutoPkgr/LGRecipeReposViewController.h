@@ -7,10 +7,10 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "LGBaseViewController.h"
+#import "LGBaseTabViewController.h"
 @class LGPopularRepositories, LGRecipeController;
 
-@interface LGRecipeReposViewController : LGBaseViewController
+@interface LGRecipeReposViewController : LGBaseTabViewController
 
 @property (weak) IBOutlet NSTextField *repoURLToAdd;
 

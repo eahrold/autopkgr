@@ -7,9 +7,9 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "LGBaseViewController.h"
+#import "LGBaseTabViewController.h"
 
-@interface LGNotificationsViewController : LGBaseViewController
+@interface LGNotificationsViewController : LGBaseTabViewController
 
 #pragma mark - Email
 #pragma mark -- Outlets --

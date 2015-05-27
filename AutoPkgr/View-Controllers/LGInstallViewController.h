@@ -7,10 +7,10 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "LGBaseViewController.h"
+#import "LGBaseTabViewController.h"
 @class LGJSSImporter;
 
-@interface LGInstallViewController : LGBaseViewController
+@interface LGInstallViewController : LGBaseTabViewController
 
 @property (weak) IBOutlet NSButton *installGitButton;
 @property (weak) IBOutlet NSButton *installAutoPkgButton;

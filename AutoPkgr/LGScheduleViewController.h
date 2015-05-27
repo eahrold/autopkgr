@@ -7,10 +7,10 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "LGBaseViewController.h"
+#import "LGBaseTabViewController.h"
 
 @class LGAutoPkgTaskManager;
-@interface LGScheduleViewController : LGBaseViewController
+@interface LGScheduleViewController : LGBaseTabViewController
 
 #pragma mark - Schedule
 #pragma mark-- Outlets --
