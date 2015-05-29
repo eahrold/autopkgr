@@ -1,5 +1,5 @@
 // LGToolsStatus.m
-// 
+//
 // Copyright 2015 The Linde Group, Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,74 +15,67 @@
 //  limitations under the License.
 //
 
-
 #import "LGToolStatus.h"
-#import "LGTool.h"
 
-#import "LGAutoPkgr.h"
-#import "LGGitHubJSONLoader.h"
-
-NSString *const kLGToolAutoPkg = @"AutoPkg";
-NSString *const kLGToolGit = @"Git";
-NSString *const kLGToolJSSImporter = @"JSSImporter";
-
-@interface LGTool ()
-@property (copy, nonatomic, readwrite) NSString *name;
-@property (copy, nonatomic, readwrite) NSString *installedVersion;
-@property (copy, nonatomic, readwrite) NSString *remoteVersion;
-@property (assign, nonatomic, readwrite) LGToolInstallStatus status;
-@end
-
+static NSArray *__toolClasses;
 
 @implementation LGToolStatus
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        // As needed add additional tools to this array.
+        __toolClasses = @[
+                          [LGGitTool class],
+                          [LGAutoPkgTool class],
+                          [LGJSSImporterTool class],
+                          [LGMunkiTool class],
+                          ];
+    });
 
-- (void)allToolsStatus:(void (^)(NSArray *tools))complete
+}
+
++ (NSArray *)allTools {
+    return [self allToolsOnlyIfInstalled:NO];
+}
+
++ (NSArray *)installedTools {
+    return [self allToolsOnlyIfInstalled:YES];
+}
+
++ (NSArray *)allToolsOnlyIfInstalled:(BOOL)onlyIfInstalled
 {
-    [[NSOperationQueue new] addOperationWithBlock:^{
-        NSMutableArray *tools = [NSMutableArray arrayWithCapacity:3];
-        // AutoPkg
-        LGTool *autoPkgTool = nil;
-        if((autoPkgTool = [LGAutoPkgTool new])){
-            [tools addObject:autoPkgTool];
-        }
 
-        // Git
-        LGTool *gitTool = nil;
-        if((gitTool = [LGGitTool new])){
-            [tools addObject:gitTool];
-        }
+    NSMutableArray *initedTools = [NSMutableArray arrayWithCapacity:__toolClasses.count];
 
-        // JSSImporter
-        LGTool *jssImporterTool = nil;
-        if((jssImporterTool = [LGJSSImporterTool new])){
-            [tools addObject:jssImporterTool];
+    for (Class toolClass in __toolClasses) {
+        // Using the class method check determine if the tool is installed
+        // If it's do not add it to the array.
+        if (!onlyIfInstalled || (onlyIfInstalled && [toolClass isInstalled])) {
+            id tool = [[toolClass alloc] init];
+            if (tool) {
+                [initedTools addObject:tool];
+            }
         }
-
-        LGTool *munkiTool = nil;
-        if ((munkiTool = [LGMunkiTool new])) {
-            [tools addObject:munkiTool];
-        }
-        
-        complete([tools copy]);
-    }];
+    }
+    return [initedTools copy];
 }
 
 #pragma mark - Class Methods
-+ (BOOL)requiredItemsInstalled {
++ (BOOL)requiredItemsInstalled
+{
     return ([LGAutoPkgTool isInstalled] &&
             [LGGitTool isInstalled]);
 }
 
 + (void)displayRequirementsAlertOnWindow:(NSWindow *)window
 {
-    NSAlert *alert =[NSAlert alertWithMessageText:@"Required components not installed."
-                                    defaultButton:@"OK"
-                                  alternateButton:nil
-                                      otherButton:nil
-                        informativeTextWithFormat:@"AutoPkgr requires both AutoPkg and Git. Please install both before proceeding."];
+    NSAlert *alert = [NSAlert alertWithMessageText:@"Required components not installed."
+                                     defaultButton:@"OK"
+                                   alternateButton:nil
+                                       otherButton:nil
+                         informativeTextWithFormat:@"AutoPkgr requires both AutoPkg and Git. Please install both before proceeding."];
 
     [alert beginSheetModalForWindow:window modalDelegate:nil didEndSelector:nil contextInfo:nil];
 }
-
 
 @end

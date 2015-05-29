@@ -26,11 +26,25 @@
 
 #pragma mark Tool Status
 /**
- *  Get populated tool objects.
+ *  Get an array of all available tools.
  */
 @interface LGToolStatus : NSObject
 
-- (void)allToolsStatus:(void (^)(NSArray *tools))complete;
+/**
+ *  Get an array of all the associated tools
+ *
+ *  @return Array of subclassed LGTools
+ */
++ (NSArray *)allTools;
+
+/**
+ *  Get an array of all installed associated tools;
+ *  @note if the tools +isInstalled method retruns NO, the tool will not be added to the array.
+ *
+ *  @return Array of installed subclassed LGTools
+
+ */
++ (NSArray *)installedTools;
 
 /**
  *  Check if required items are installed
