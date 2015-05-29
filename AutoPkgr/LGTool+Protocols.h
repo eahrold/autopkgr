@@ -95,7 +95,7 @@
 /**
  *  If the tool is a shared processor conform to this protocol.
  */
-@protocol LGToolSharedProcessor <NSObject>
+@protocol LGToolSharedProcessor <LGToolSubclass>
 @required
 /**
  *  Components of the tool that indicate the tool is successful installed.
