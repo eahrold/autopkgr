@@ -289,6 +289,66 @@
     }];
 }
 
+- (void)testMultipleToolInfoBlocks {
+    XCTestExpectation *expect1 = [self expectationWithDescription:@"AutoPkg Tool Test 1"];
+    XCTestExpectation *expect2 = [self expectationWithDescription:@"AutoPkg Tool Test 2"];
+    XCTestExpectation *expect3 = [self expectationWithDescription:@"AutoPkg Tool Test 3"];
+
+    __block LGToolInfo *info1;
+    __block LGToolInfo *info2;
+    __block LGToolInfo *info3;
+
+    LGAutoPkgTool *tool = [[LGAutoPkgTool alloc] init];
+    [tool addInfoUpdateHandler:^(LGToolInfo *info) {
+        info1 = info;
+        NSLog(@"mainQueue info: %@", info);
+        XCTAssertEqualObjects([NSOperationQueue currentQueue], [NSOperationQueue mainQueue]);
+        [expect1 fulfill];
+    }];
+
+    NSOperationQueue *bg1 = [NSOperationQueue new];
+    [bg1 addOperationWithBlock:^{
+        [tool addInfoUpdateHandler:^(LGToolInfo *info) {
+            info2 = info;
+
+            NSLog(@"bg1 info: %@", info);
+            XCTAssertEqualObjects([NSOperationQueue currentQueue], bg1);
+            XCTAssertNotEqualObjects([NSOperationQueue currentQueue], [NSOperationQueue mainQueue]);
+            [expect2 fulfill];
+        }];
+    }];
+
+    NSOperationQueue *bg2 = [NSOperationQueue new];
+    [ bg2 addOperationWithBlock:^{
+        [tool addInfoUpdateHandler:^(LGToolInfo *info) {
+            info3 = info;
+
+            NSLog(@"bg2 info: %@", info);
+            XCTAssertEqualObjects([NSOperationQueue currentQueue], bg2);
+            XCTAssertNotEqualObjects([NSOperationQueue currentQueue], [NSOperationQueue mainQueue]);
+            [expect3 fulfill];
+        }];
+    }];
+
+    [tool refresh];
+
+    /* Check if everything is deallocate correctly too! */
+    LGAutoPkgTool *t2 = [LGAutoPkgTool new];
+    [t2 addInfoUpdateHandler:^(LGToolInfo *info) {}];
+    [t2 addInfoUpdateHandler:^(LGToolInfo *info) {}];
+    t2 = nil;
+
+    [self waitForExpectationsWithTimeout:300 handler:^(NSError *error) {
+        XCTAssertEqualObjects(info1, info2, @"Should be equal");
+        XCTAssertEqualObjects(info2, info3, @"Should be equal");
+
+        if(error)
+        {
+            XCTFail(@"Expectation Failed with error: %@", error);
+        }
+    }];
+
+}
 - (void)testTool2
 {
     LGAutoPkgTool *tool = [[LGAutoPkgTool alloc] init];

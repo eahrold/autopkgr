@@ -118,6 +118,9 @@ typedef NS_ENUM(OSStatus, LGToolInstallStatus) {
 @property (weak) id<LGProgressDelegate> progressDelegate;
 
 #pragma mark - Implemented in the Abstract class
+// LGToolInfo object with local and remote status information and useful UI mappings.
+@property (copy, nonatomic, readonly) LGToolInfo *info;
+
 /**
  *  Asynchronously get information about the tool.
  *
@@ -126,15 +129,11 @@ typedef NS_ENUM(OSStatus, LGToolInstallStatus) {
  */
 - (void)getInfo:(void (^)(LGToolInfo *toolInfo))complete;
 
-
-// LGToolInfo object with local and remote status information and useful UI mappings.
-@property (copy, nonatomic, readonly) LGToolInfo *info;
-
 /**
- *  Info reply block. This will get send messages when `-refresh` is called.
+ *  Add an info reply block. This will get send messages when `-refresh` is called.
  *  @note this is a passive block, and if you want to immediately get information for a tool use the @code - (void)getInfo:(void (^)(LGToolInfo *toolInfo))complete; @endcode method. You do not need to set both.
  */
-@property (strong, nonatomic) void (^infoUpdateHandler)(LGToolInfo *info);
+- (void)addInfoUpdateHandler:(void (^)(LGToolInfo *info))infoUpdateHandler;
 
 // update the tool.info property and if getInfo has been called execute the completion block.
 - (void)refresh;

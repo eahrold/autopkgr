@@ -101,7 +101,7 @@ NSPredicate *jdsFilterPredicate()
         }
 
         __weak typeof(self) __weak_self = self;
-        [_jssImporterTool setInfoUpdateHandler:^(LGToolInfo *info) {
+        [_jssImporterTool addInfoUpdateHandler:^(LGToolInfo *info) {
             // Update the button.
             __weak_self.jssInstallButton.enabled = YES; // Enabled
             __weak_self.jssInstallButton.action = info.targetAction; // Selector
