@@ -68,7 +68,7 @@ static NSString *const kLGMunkiimportDomain = @"com.googlecode.munki.munkiimport
 
 + (BOOL)isUninstallable {
     // There are just too many parts to try and uninstall munki
-    return YES;
+    return NO;
 }
 
 - (void)customInstallActions {
