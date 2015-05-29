@@ -25,7 +25,7 @@
 #import "LGRecipeController.h"
 #import "LGProgressDelegate.h"
 
-@interface LGPopularRepositories : NSObject <NSApplicationDelegate, NSTableViewDelegate, NSTableViewDataSource> {
+@interface LGPopularRepositories : NSObject <NSApplicationDelegate, NSTableViewDelegate, LGTableViewDataSource> {
 
     NSArray *_popularRepos;
     NSArray *_activeRepos;
@@ -34,7 +34,6 @@
     BOOL _awake;
 }
 
-+ (NSMenu *)contextualMenuForRepo:(NSString *)repo;
 - (void)reload;
 
 @property (weak) IBOutlet NSWindow *modalWindow;

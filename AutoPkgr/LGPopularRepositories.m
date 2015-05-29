@@ -179,8 +179,7 @@
     [_repoSearch setAction:@selector(executeRepoSearch:)];
 }
 
-#pragma mark - Class Methods
-+ (NSMenu *)contextualMenuForRepo:(NSString *)repo
+-(NSMenu *)contextualMenuForRow:(NSInteger)row
 {
     return nil;
 

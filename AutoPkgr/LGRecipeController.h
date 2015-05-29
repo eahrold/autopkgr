@@ -23,7 +23,7 @@
 #import "LGAutoPkgTask.h"
 #import "LGTableView.h"
 
-@interface LGRecipeController : NSObject <NSApplicationDelegate, NSTableViewDataSource, NSTableViewDelegate>
+@interface LGRecipeController : NSObject <NSApplicationDelegate, NSTableViewDelegate, LGTableViewDataSource>
 
 /**
  * Reload the LGRecipe table view and rebuild the recipe array.

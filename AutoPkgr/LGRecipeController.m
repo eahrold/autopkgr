@@ -196,7 +196,7 @@ static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
 
 
 #pragma mark - Contextual Menu
-- (NSMenu *)contextualMenuForRecipeAtRow:(NSInteger)row
+- (NSMenu *)contextualMenuForRow:(NSInteger)row
 {
     NSMenu *menu;
 
