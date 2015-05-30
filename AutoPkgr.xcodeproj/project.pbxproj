@@ -143,8 +143,8 @@
 		BEEFE6BB1AE9E8A600882C89 /* LGLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = BEEFE6B91AE9E8A600882C89 /* LGLogger.m */; };
 		BEEFE6BC1AE9E8A600882C89 /* LGLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = BEEFE6B91AE9E8A600882C89 /* LGLogger.m */; };
 		BEEFE6BD1AE9E9D500882C89 /* LGLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = BEEFE6B91AE9E8A600882C89 /* LGLogger.m */; };
-		BEEFE6C21AEBCC7C00882C89 /* LGToolStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = BEEFE6C11AEBCC7C00882C89 /* LGToolStatus.m */; };
-		BEEFE6C31AEBCE1F00882C89 /* LGToolStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = BEEFE6C11AEBCC7C00882C89 /* LGToolStatus.m */; };
+		BEEFE6C21AEBCC7C00882C89 /* LGToolManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BEEFE6C11AEBCC7C00882C89 /* LGToolManager.m */; };
+		BEEFE6C31AEBCE1F00882C89 /* LGToolManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BEEFE6C11AEBCC7C00882C89 /* LGToolManager.m */; };
 		BEEFE6C71AEBEB1000882C89 /* LGGitTool.m in Sources */ = {isa = PBXBuildFile; fileRef = BEEFE6C61AEBEB1000882C89 /* LGGitTool.m */; };
 		BEEFE6CA1AEC760700882C89 /* LGAutoPkgTool.m in Sources */ = {isa = PBXBuildFile; fileRef = BEEFE6C91AEC760700882C89 /* LGAutoPkgTool.m */; };
 		BEEFE6CB1AEC760900882C89 /* LGAutoPkgTool.m in Sources */ = {isa = PBXBuildFile; fileRef = BEEFE6C91AEC760700882C89 /* LGAutoPkgTool.m */; };
@@ -381,8 +381,8 @@
 		BEEFE6B61AE9D01200882C89 /* LGAutoPkgErrorHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGAutoPkgErrorHandler.m; sourceTree = "<group>"; };
 		BEEFE6B91AE9E8A600882C89 /* LGLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGLogger.m; sourceTree = "<group>"; };
 		BEEFE6BA1AE9E8A600882C89 /* LGLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGLogger.h; sourceTree = "<group>"; };
-		BEEFE6C01AEBCC7C00882C89 /* LGToolStatus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGToolStatus.h; sourceTree = "<group>"; };
-		BEEFE6C11AEBCC7C00882C89 /* LGToolStatus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGToolStatus.m; sourceTree = "<group>"; };
+		BEEFE6C01AEBCC7C00882C89 /* LGToolManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGToolManager.h; sourceTree = "<group>"; };
+		BEEFE6C11AEBCC7C00882C89 /* LGToolManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGToolManager.m; sourceTree = "<group>"; };
 		BEEFE6C51AEBEB1000882C89 /* LGGitTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGGitTool.h; sourceTree = "<group>"; };
 		BEEFE6C61AEBEB1000882C89 /* LGGitTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGGitTool.m; sourceTree = "<group>"; };
 		BEEFE6C81AEC760700882C89 /* LGAutoPkgTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGAutoPkgTool.h; sourceTree = "<group>"; };
@@ -765,13 +765,13 @@
 			name = "Email & Notifications";
 			sourceTree = "<group>";
 		};
-		BE4DD5441B1239A300854FD8 /* Tool Status */ = {
+		BE4DD5441B1239A300854FD8 /* Tool Manager */ = {
 			isa = PBXGroup;
 			children = (
-				BEEFE6C01AEBCC7C00882C89 /* LGToolStatus.h */,
-				BEEFE6C11AEBCC7C00882C89 /* LGToolStatus.m */,
+				BEEFE6C01AEBCC7C00882C89 /* LGToolManager.h */,
+				BEEFE6C11AEBCC7C00882C89 /* LGToolManager.m */,
 			);
-			name = "Tool Status";
+			name = "Tool Manager";
 			sourceTree = "<group>";
 		};
 		BE6B1CF71B1286BD00578F97 /* UI Subclasses */ = {
@@ -851,7 +851,7 @@
 		BEEFE6C41AEBEA6A00882C89 /* Associated Tools */ = {
 			isa = PBXGroup;
 			children = (
-				BE4DD5441B1239A300854FD8 /* Tool Status */,
+				BE4DD5441B1239A300854FD8 /* Tool Manager */,
 				BEEFE6D21AF008A200882C89 /* LGTool Base */,
 				BEEFE6C81AEC760700882C89 /* LGAutoPkgTool.h */,
 				BEEFE6C91AEC760700882C89 /* LGAutoPkgTool.m */,
@@ -1227,7 +1227,7 @@
 				BEC1258C19F049A1006696C4 /* LGTableView.m in Sources */,
 				6A53625D1988BE59008A949C /* LGTestPort.m in Sources */,
 				BEFC931D1995F0710074C938 /* LGError.m in Sources */,
-				BEEFE6C21AEBCC7C00882C89 /* LGToolStatus.m in Sources */,
+				BEEFE6C21AEBCC7C00882C89 /* LGToolManager.m in Sources */,
 				BEEFE6CE1AEC761F00882C89 /* LGJSSImporterTool.m in Sources */,
 				BE05CE8219DAF6320089068B /* LGAutoPkgrAuthorizer.m in Sources */,
 				BE4985381AFE61C1006E5EDA /* LGServerCredentials.m in Sources */,
@@ -1258,7 +1258,7 @@
 				BE8A06BE1AF8FAFD006C2571 /* NSData+taskData.m in Sources */,
 				BEFC3C791A3DF16700C789E9 /* LGTestPort.m in Sources */,
 				BEE346791B15FFBC001526AD /* LGJSSDistributionPointsPrefPanel.m in Sources */,
-				BEEFE6C31AEBCE1F00882C89 /* LGToolStatus.m in Sources */,
+				BEEFE6C31AEBCE1F00882C89 /* LGToolManager.m in Sources */,
 				BE4985391AFE61C1006E5EDA /* LGServerCredentials.m in Sources */,
 				BEEFE6CF1AEC761F00882C89 /* LGJSSImporterTool.m in Sources */,
 				BEFC3C7C1A3DF16700C789E9 /* LGPopularRepositories.m in Sources */,

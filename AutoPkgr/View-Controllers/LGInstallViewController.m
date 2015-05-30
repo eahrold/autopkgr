@@ -21,7 +21,7 @@
 #import "LGAutoPkgr.h"
 
 #import "LGAutoPkgSchedule.h"
-#import "LGToolStatus.h"
+#import "LGToolManager.h"
 #import "LGDisplayStatusDelegate.h"
 #import "LGToolStatusTableCellView.h"
 

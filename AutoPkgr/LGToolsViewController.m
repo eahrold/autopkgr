@@ -18,7 +18,7 @@
 //  limitations under the License.//
 
 #import "LGToolsViewController.h"
-#import "LGToolStatus.h"
+#import "LGToolManager.h"
 
 
 @implementation LGToolsViewController{

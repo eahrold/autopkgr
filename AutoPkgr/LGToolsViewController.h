@@ -21,11 +21,11 @@
 #import "LGBaseTabViewController.h"
 #import "LGJSSImporter.h"
 
-@class LGToolStatus;
+@class LGToolManager;
 
 @interface LGToolsViewController : LGBaseTabViewController
 
-@property (strong) LGToolStatus *toolManager;
+@property (strong) LGToolManager *toolManager;
 
 @property (weak) IBOutlet NSTextField *localMunkiRepo;
 @property (weak) IBOutlet NSTextField *autoPkgRecipeRepoDir;

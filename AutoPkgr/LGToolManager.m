@@ -15,14 +15,14 @@
 //  limitations under the License.
 //
 
-#import "LGToolStatus.h"
+#import "LGToolManager.h"
 #import "NSArray+filtered.h"
 
 static NSArray *__toolClasses;
 static NSArray *__optionalToolsClasses;
 static NSArray *__requiredToolsClasses;
 
-@implementation LGToolStatus
+@implementation LGToolManager
 @synthesize allTools = _allTools, optionalTools = _optionalTools, requiredTools = _requiredTools, installedTools = _installedTools;
 
 

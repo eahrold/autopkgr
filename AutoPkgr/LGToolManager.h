@@ -28,7 +28,7 @@
 /**
  *  Get an array of all available tools.
  */
-@interface LGToolStatus : NSObject
+@interface LGToolManager : NSObject
 
 /**
  *  Get an array of all the associated tools

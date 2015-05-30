@@ -22,10 +22,10 @@
 #import "LGConfigurationWindowController.h"
 #import "LGAutoPkgr.h"
 #import "LGProgressDelegate.h"
-#import "LGToolStatus.h"
+#import "LGToolManager.h"
 
 @interface LGConfigurationWindowController () {
-    LGToolStatus *_toolManager;
+    LGToolManager *_toolManager;
     BOOL _awake;
 }
 
@@ -46,7 +46,7 @@
         _toolsView = [[LGToolsViewController alloc] initWithProgressDelegate:self];
 
         // The toolManager is required for the following views.
-        _toolManager = [[LGToolStatus alloc] init];
+        _toolManager = [[LGToolManager alloc] init];
         _installView.toolManager = _toolManager;
         _toolsView.toolManager = _toolManager;
     }
@@ -100,10 +100,10 @@
 #pragma mark - Tab View Delegate
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-    if (![LGToolStatus requiredItemsInstalled]) {
+    if (![LGToolManager requiredItemsInstalled]) {
         // Reset the tab view back to the install Tab.
         [tabView selectFirstTabViewItem:self];
-        [LGToolStatus displayRequirementsAlertOnWindow:self.window];
+        [LGToolManager displayRequirementsAlertOnWindow:self.window];
         return;
     }
 

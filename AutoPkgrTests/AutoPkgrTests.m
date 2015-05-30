@@ -23,7 +23,7 @@
 #import "LGInstaller.h"
 #import "LGGitHubJSONLoader.h"
 #import "LGAutoPkgr.h"
-#import "LGToolStatus.h"
+#import "LGToolManager.h"
 #import "LGAutoPkgTask.h"
 
 #import "LGAutoPkgReport.h"
@@ -62,7 +62,7 @@
 #pragma mark - LGTools
 - (void)testToolStatus
 {
-    NSArray *toolStatus = [[LGToolStatus new] installedTools];
+    NSArray *toolStatus = [[LGToolManager new] installedTools];
     XCTAssertNotNil(toolStatus, @"Tool array should not be nil");
 }
 
@@ -467,7 +467,7 @@
 
     LGAutoPkgReport *report = [[LGAutoPkgReport alloc] initWithReportDictionary:reportDict];
     report.error = error;
-    report.tools = [[LGToolStatus new] installedTools];
+    report.tools = [[LGToolManager new] installedTools];
 
     report.reportedItemFlags = kLGReportItemsAll;
 

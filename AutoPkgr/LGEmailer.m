@@ -24,7 +24,7 @@
 #import "LGAutoPkgr.h"
 #import "LGHostInfo.h"
 #import "LGPasswords.h"
-#import "LGToolStatus.h"
+#import "LGToolManager.h"
 #import "LGUserNotifications.h"
 #import "LGAutoPkgReport.h"
 
@@ -139,7 +139,7 @@
 {
     LGAutoPkgReport *a_report = [[LGAutoPkgReport alloc] initWithReportDictionary:report];
     a_report.error = error;
-    a_report.tools = [[LGToolStatus new] installedTools];
+    a_report.tools = [[LGToolManager new] installedTools];
 
     if (a_report.updatesToReport) {
         [self sendEmailNotification:a_report.emailSubjectString message:a_report.emailMessageString];
