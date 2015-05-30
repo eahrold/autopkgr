@@ -100,6 +100,11 @@ typedef NS_ENUM(OSStatus, LGToolInstallStatus) {
 
 @interface LGTool : NSObject
 /**
+ *  Name of the Tool
+ */
++ (NSString *)name;
+
+/**
  * Check if the tool meets system requirements to proceed with installation.
  *
  *  @param error Populated error object if requirements are not met.
@@ -199,6 +204,9 @@ typedef NS_ENUM(OSStatus, LGToolInstallStatus) {
 
 // Mapped title for an install button.
 @property (copy, nonatomic, readonly) NSString *installButtonTitle;
+
+// Mapped bool for whether the button should be enabled.
+@property (assign, readonly) BOOL installButtonEnabled;
 
 // Mapped bool for whether tool needs installed or updated.
 @property (assign, readonly) BOOL needsInstalled;

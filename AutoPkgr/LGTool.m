@@ -614,6 +614,21 @@ void subclassMustConformToProtocol(id className)
     return [title stringByAppendingString:_name];
 }
 
+- (BOOL)installButtonEnabled {
+    switch (self.status) {
+        case kLGToolNotInstalled: {}
+        case kLGToolUpdateAvailable: {
+            return YES;
+        }
+        case kLGToolUpToDate: {
+            return (_typeFlags & kLGToolTypeUninstallableTool);
+        }
+        default: {
+            break;
+        }
+    }
+}
+
 - (BOOL)needsInstalled
 {
     switch (self.status) {

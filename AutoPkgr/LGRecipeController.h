@@ -30,6 +30,4 @@
  */
 - (void)reload;
 
-- (NSMenu *)contextualMenuForRecipeAtRow:(NSInteger)row;
-
 @end

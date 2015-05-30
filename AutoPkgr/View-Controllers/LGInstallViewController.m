@@ -3,20 +3,29 @@
 //  AutoPkgr
 //
 //  Created by Eldon on 5/20/15.
-//  Copyright (c) 2015 The Linde Group, Inc. All rights reserved.
+//  Copyright 2015 Eldon Ahrold.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.//
 
 #import "LGInstallViewController.h"
-#import "LGAutoPkgSchedule.h"
 #import "LGAutoPkgr.h"
+
+#import "LGAutoPkgSchedule.h"
 #import "LGToolStatus.h"
 #import "LGDisplayStatusDelegate.h"
+#import "LGToolStatusTableCellView.h"
 
-@interface LGInstallViewController (){
-    LGAutoPkgTool *_autoPkgTool;
-    LGGitTool *_gitTool;
-}
-
+@interface LGInstallViewController ()<NSTableViewDataSource, NSTableViewDelegate>
 @end
 
 @implementation LGInstallViewController
@@ -24,22 +33,22 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do view setup here.
+
 }
 
 - (void)awakeFromNib {
-    LGDefaults *_defaults = [LGDefaults standardUserDefaults];
-    // Set launch at login button
-    _launchAtLoginButton.state = [LGAutoPkgSchedule willLaunchAtLogin];
+    if (!self.awake) {
+        self.awake = YES;
+        // Set launch at login button
+        _launchAtLoginButton.state = [LGAutoPkgSchedule willLaunchAtLogin];
 
-    // Set display mode button
-    LGApplicationDisplayStyle displayStyle = _defaults.applicationDisplayStyle;
+        // Set display mode button
+        LGDefaults *defaults = [LGDefaults standardUserDefaults];
+        LGApplicationDisplayStyle displayStyle = defaults.applicationDisplayStyle;
 
-    _hideInDock.state = !(displayStyle & kLGDisplayStyleShowDock);
-    _showInMenuButton.state = (displayStyle & kLGDisplayStyleShowMenu);
-
-    // Check to see what's installed, and what needs updating
-    [self refreshToolsStatus:self];
-
+        _hideInDock.state = !(displayStyle & kLGDisplayStyleShowDock);
+        _showInMenuButton.state = (displayStyle & kLGDisplayStyleShowMenu);
+    }
 }
 
 - (NSString *)tabLabel {
@@ -76,36 +85,6 @@
     }
 }
 
-- (void)refreshToolsStatus:(id)sender
-{
-    if (!_autoPkgTool) {
-        _autoPkgTool = [[LGAutoPkgTool alloc] init];
-        _autoPkgTool.progressDelegate = self.progressDelegate;
-        _installAutoPkgButton.target = _autoPkgTool;
-    }
-
-    [_autoPkgTool getInfo:^(LGToolInfo *info) {
-        _installAutoPkgButton.enabled = info.needsInstalled;
-        _installAutoPkgButton.title = info.installButtonTitle;
-        _autoPkgStatusIcon.image = info.statusImage;
-        _autoPkgStatusLabel.stringValue = info.statusString;
-        _installAutoPkgButton.action = info.targetAction;
-    }];
-
-    if (!_gitTool) {
-        _gitTool = [[LGGitTool alloc] init];
-        _gitTool.progressDelegate = self.progressDelegate;
-        _installGitButton.target = _gitTool;
-    }
-
-    [_gitTool getInfo:^(LGToolInfo *info) {
-        _installGitButton.enabled = info.needsInstalled;
-        _installGitButton.title = info.installButtonTitle;
-        _gitStatusLabel.stringValue = info.statusString;
-        _gitStatusIcon.image = info.statusImage;
-        _installGitButton.action = info.targetAction;
-    }];
-}
 
 - (IBAction)launchAtLogin:(NSButton *)sender
 {
@@ -113,5 +92,33 @@
         sender.state = !sender.state;
     }
 }
+
+#pragma mark - Table View Delegate
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView {
+    return _toolManager.installedTools.count;
+}
+
+- (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row {
+
+    __block LGToolStatusTableCellView *statusCell = nil;
+    if ([tableColumn.identifier isEqualToString:@"statusCell"]) {
+        statusCell = [tableView makeViewWithIdentifier:tableColumn.identifier owner:self];
+
+        LGTool *tool = _toolManager.installedTools[row];
+        tool.progressDelegate = self.progressDelegate;
+        statusCell.installButton.target = tool;
+
+        [tool getInfo:^(LGToolInfo *info) {
+            statusCell.imageView.image = info.statusImage;
+            statusCell.textField.stringValue = info.statusString;
+
+            statusCell.installButton.title = info.installButtonTitle;
+            statusCell.installButton.action = info.targetAction;
+            statusCell.installButton.enabled = info.installButtonEnabled;
+        }];
+    }
+    return statusCell;
+}
+
 
 @end

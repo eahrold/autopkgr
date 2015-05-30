@@ -1,5 +1,8 @@
-// LGHourPickerMenu.h
-// 
+//
+//  LGToolStatusTableCellView.m
+//  AutoPkgr
+//
+//  Created by Eldon on 5/29/15.
 //  Copyright 2015 Eldon Ahrold.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +17,14 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-#import <Cocoa/Cocoa.h>
+#import "LGToolStatusTableCellView.h"
 
-@interface LGHourPickerMenu : NSMenu
-@end
+@implementation LGToolStatusTableCellView
 
-@interface LGDayPickerMenu : NSMenu
+- (void)drawRect:(NSRect)dirtyRect {
+    [super drawRect:dirtyRect];
+    
+    // Drawing code here.
+}
+
 @end

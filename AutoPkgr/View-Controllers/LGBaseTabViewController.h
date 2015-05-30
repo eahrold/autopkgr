@@ -17,5 +17,6 @@
 @property (unsafe_unretained) NSWindow *modalWindow;
 
 @property (copy, readonly) NSString *tabLabel;
+@property (nonatomic) BOOL awake;
 
 @end

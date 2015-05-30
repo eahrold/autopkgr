@@ -32,7 +32,6 @@
 
 #pragma mark - Class constants
 @interface LGJSSImporter ()
-@property (copy, nonatomic) LGJSSImporterTool *jssImporterTool;
 @end
 
 NSPredicate *jdsFilterPredicate()
@@ -51,7 +50,6 @@ NSPredicate *jdsFilterPredicate()
     LGJSSDistributionPointsPrefPanel *_preferencePanel;
 
     BOOL _serverReachable;
-    BOOL _installRequestedDuringConnect;
 }
 
 - (void)awakeFromNib
@@ -61,12 +59,6 @@ NSPredicate *jdsFilterPredicate()
     }
 
     _defaults = [LGJSSImporterDefaults new];
-    _installRequestedDuringConnect = NO;
-
-    _jssReloadServerBT.action = @selector(testCredentials:);
-    _jssReloadServerBT.title = @"Verify";
-    _jssStatusLight.hidden = YES;
-
 
     // Disable the Add / Remove distPoint buttons
     // until a row is selected
@@ -86,47 +78,23 @@ NSPredicate *jdsFilterPredicate()
 - (void)connectToTool {
     BOOL isInstalled = [LGJSSImporterTool isInstalled];
 
-    // Show installer status
-    _jssInstallStatusLight.hidden = !isInstalled;
-    _jssInstallStatusTF.hidden = !isInstalled;
-    _jssInstallButton.hidden = !isInstalled;
+    __weak typeof(self) __weak_self = self;
+    [_jssImporterTool addInfoUpdateHandler:^(LGToolInfo *info) {
+        // Update the button.
 
-    // Setup the JSSImporterTool
-    if (!_jssImporterTool) {
-        _jssImporterTool = [[LGJSSImporterTool alloc] init];
-        _jssInstallButton.target = _jssImporterTool;
-
-        if (_progressDelegate) {
-            _jssImporterTool.progressDelegate = _progressDelegate;
+        if (info.status == kLGToolNotInstalled){
+            __weak_self.jssReloadServerBT.title = @"Install";
+            __weak_self.jssReloadServerBT.target = __weak_self.jssImporterTool;
+            __weak_self.jssReloadServerBT.action = @selector(install:);
+        } else {
+            __weak_self.jssReloadServerBT.title = @"Verify";
+            __weak_self.jssReloadServerBT.target = __weak_self;
+            __weak_self.jssReloadServerBT.action = @selector(testCredentials:);
         }
+    }];
 
-        __weak typeof(self) __weak_self = self;
-        [_jssImporterTool addInfoUpdateHandler:^(LGToolInfo *info) {
-            // Update the button.
-            __weak_self.jssInstallButton.enabled = YES; // Enabled
-            __weak_self.jssInstallButton.action = info.targetAction; // Selector
-            __weak_self.jssInstallButton.title = info.installButtonTitle; // Title
-            __weak_self.jssInstallButton.hidden = (info.status == kLGToolNotInstalled);
 
-            __weak_self.jssInstallStatusLight.image = info.statusImage;
-            __weak_self.jssInstallStatusLight.hidden = (info.status == kLGToolNotInstalled);
-
-            __weak_self.jssInstallStatusTF.stringValue = info.statusString;
-            __weak_self.jssInstallStatusTF.hidden = (info.status == kLGToolNotInstalled);
-
-            if (info.status == kLGToolNotInstalled){
-                __weak_self.jssReloadServerBT.title = @"Install";
-                __weak_self.jssReloadServerBT.target = __weak_self.jssImporterTool;
-                __weak_self.jssReloadServerBT.action = @selector(install:);
-            } else {
-                __weak_self.jssReloadServerBT.title = @"Verify";
-                __weak_self.jssReloadServerBT.target = __weak_self;
-                __weak_self.jssReloadServerBT.action = @selector(testCredentials:);
-            }
-        }];
-    }
-
-    if (isInstalled) {
+    if (!isInstalled) {
         [_jssImporterTool refresh];
     } else {
         // have the tool take over controll of the "verify / connect" button on the F&I tab.
@@ -134,8 +102,6 @@ NSPredicate *jdsFilterPredicate()
         _jssReloadServerBT.target = _jssImporterTool;
         _jssReloadServerBT.action = @selector(install:);
 
-        _jssInstallButton.title = @"Install";
-        _jssInstallButton.action = @selector(install:);
     }
 }
 
@@ -429,58 +395,6 @@ NSPredicate *jdsFilterPredicate()
     }
 
     return password;
-}
-
-- (BOOL)promptForInstall
-{
-    BOOL required = NO;
-
-    if (![[_jssImporterTool class] isInstalled]) {
-        NSLog(@"Prompting for JSSImporter installation.");
-        NSAlert *alert = [NSAlert alertWithMessageText:@"Install JSSImporter?"
-                                         defaultButton:@"Install"
-                                       alternateButton:@"Cancel"
-                                           otherButton:nil
-                             informativeTextWithFormat:@"JSSImporter is not currently installed. Would you like to install it now?"];
-
-        NSInteger button = [alert runModal];
-        if (button == NSAlertDefaultReturn) {
-            [_jssImporterTool install:_jssInstallButton];
-        } else {
-            _installRequestedDuringConnect = NO;
-            NSLog(@"Installation of JSSImporter was canceled.");
-        }
-        return YES;
-    }
-    return required;
-}
-
-#pragma mark - Table View Contextual menu
-- (NSMenu *)contextualMenuForDistributionPoint:(NSDictionary *)distPoint
-{
-    NSMenu *menu = [[NSMenu alloc] init];
-
-    if (distPoint) {
-        if (distPoint[kLGJSSDistPointTypeKey]) {
-            NSMenuItem *editItem = [[NSMenuItem alloc] initWithTitle:@"Edit Distribution Point" action:@selector(editDistributionPoint:) keyEquivalent:@""];
-            editItem.target = self;
-            editItem.representedObject = distPoint;
-            [menu addItem:editItem];
-        }
-
-        NSString *name = distPoint[kLGJSSDistPointNameKey] ?: distPoint[kLGJSSDistPointURLKey];
-        NSString *removeString = [NSString stringWithFormat:@"Remove %@", name];
-        NSMenuItem *removeItem = [[NSMenuItem alloc] initWithTitle:removeString action:@selector(removeDistributionPoint:) keyEquivalent:@""];
-        removeItem.target = self;
-        removeItem.representedObject = distPoint;
-        [menu addItem:removeItem];
-    } else {
-        NSMenuItem *addItem = [[NSMenuItem alloc] initWithTitle:@"Add New Distribution Point" action:@selector(addDistributionPoint:) keyEquivalent:@""];
-        addItem.target = self;
-        [menu addItem:addItem];
-    }
-
-    return menu;
 }
 
 #pragma mark - JSS Distribution Point Preference Panel

@@ -21,22 +21,12 @@
 
 #import "LGConfigurationWindowController.h"
 #import "LGAutoPkgr.h"
-#import "LGDefaults.h"
-#import "LGEmailer.h"
-#import "LGHostInfo.h"
-#import "LGAutoPkgTask.h"
-#import "LGInstaller.h"
-#import "LGAutoPkgSchedule.h"
 #import "LGProgressDelegate.h"
-#import "LGDisplayStatusDelegate.h"
-#import "LGPasswords.h"
-#import "LGTestPort.h"
-#import "LGAutoPkgRecipe.h"
 #import "LGToolStatus.h"
 
 @interface LGConfigurationWindowController () {
-    LGDefaults *_defaults;
-    LGAutoPkgTaskManager *_taskManager;
+    LGToolStatus *_toolManager;
+    BOOL _awake;
 }
 
 @property (weak) IBOutlet NSTabView *tabViews;
@@ -48,52 +38,63 @@
 
 - (instancetype)init {
     if (self = [super initWithWindowNibName:NSStringFromClass([self class])]) {
-        _defaults = [LGDefaults standardUserDefaults];
+
         _installView = [[LGInstallViewController alloc] initWithProgressDelegate:self];
         _scheduleView = [[LGScheduleViewController alloc] initWithProgressDelegate:self];
-
         _recipeRepoView = [[LGRecipeReposViewController alloc] initWithProgressDelegate:self];
         _notificationView = [[LGNotificationsViewController alloc] initWithProgressDelegate:self];
         _toolsView = [[LGToolsViewController alloc] initWithProgressDelegate:self];
+
+        // The toolManager is required for the following views.
+        _toolManager = [[LGToolStatus alloc] init];
+        _installView.toolManager = _toolManager;
+        _toolsView.toolManager = _toolManager;
     }
     return self;
 }
+
 - (instancetype)initWithProgressDelegate:(id<LGProgressDelegate>)progressDelegate {
     if (self = [self init]) {
+        /* In the main init method, the progress delegate is set as self by default,
+         * but with the installView and schedule view want their progress delegate  */
         _installView.progressDelegate = progressDelegate;
         _scheduleView.progressDelegate = progressDelegate;
     }
     return self;
 }
 
-- (void)awakeFromNib {
+- (void)windowDidLoad {
     [super windowDidLoad];
+}
 
-    /* Set up all of the tabs. */
-    NSArray *tabs = @[_installView,
-                      _recipeRepoView,
-                      _scheduleView,
-                      _notificationView,
-                      _toolsView];
+- (void)awakeFromNib {
+    if (!_awake) {
+        // Awake from nib can get called multiple times, but happens early,
+        // So add code here that you want executed prior to the window showing.
+        _awake = YES;
 
-    for (LGBaseTabViewController *viewController in tabs) {
-        NSTabViewItem *tabItem = [[NSTabViewItem alloc] init];
-        tabItem.identifier = NSStringFromClass([viewController class]);
-        tabItem.label = viewController.tabLabel;
-        tabItem.view = viewController.view;
-        [_tabViews addTabViewItem:tabItem];
+        /* Set up all of the tabs. */
+        NSArray *tabs = @[_installView,
+                          _recipeRepoView,
+                          _scheduleView,
+                          _notificationView,
+                          _toolsView];
+
+        for (LGBaseTabViewController *viewController in tabs) {
+            NSTabViewItem *tabItem = [[NSTabViewItem alloc] init];
+            tabItem.identifier = NSStringFromClass([viewController class]);
+            tabItem.label = viewController.tabLabel;
+            tabItem.view = viewController.view;
+            [_tabViews addTabViewItem:tabItem];
+        }
+
+        /* Make any modifications needed for specific tools*/
+
+        /* The Cancel button is part of the progress panel
+         * but the _scheduleView should controll it. */
+        _scheduleView.cancelButton = _cancelAutoPkgRunButton;
+        _toolsView.modalWindow = self.window;
     }
-
-    /* Make any modifications needed for specific tools*/
-    _scheduleView.cancelButton = _cancelAutoPkgRunButton;
-
-    _toolsView.modalWindow = self.window;
-
-    _toolsView.jssImporter.jssInstallButton = _installView.installJSSImporterButton;
-    _toolsView.jssImporter.jssInstallStatusLight = _installView.jssImporterStatusIcon;
-    _toolsView.jssImporter.jssInstallStatusTF = _installView.jssImporterStatusLabel;
-    [_toolsView.jssImporter connectToTool];
-
 }
 
 #pragma mark - Tab View Delegate

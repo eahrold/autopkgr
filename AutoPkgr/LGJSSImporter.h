@@ -25,7 +25,11 @@
 #import "LGProgressDelegate.h"
 #import "LGTableView.h"
 
+@class LGJSSImporterTool;
+
 @interface LGJSSImporter : NSObject <NSTableViewDataSource, NSTableViewDelegate>
+
+@property (strong) LGJSSImporterTool *jssImporterTool;
 
 @property (strong) IBOutlet LGTableView *jssDistributionPointTableView;
 @property (weak) IBOutlet NSTextField *jssURLTF;
@@ -35,15 +39,11 @@
 @property (weak) IBOutlet NSProgressIndicator *jssStatusSpinner;
 @property (weak) IBOutlet NSImageView *jssStatusLight;
 
-@property (weak, nonatomic) IBOutlet NSButton *jssInstallButton;
-@property (weak, nonatomic) IBOutlet NSImageView *jssInstallStatusLight;
-@property (weak, nonatomic) IBOutlet NSTextField *jssInstallStatusTF;
-
 @property (weak) IBOutlet NSButton *jssEditDistPointBT;
 @property (weak) IBOutlet NSButton *jssRemoveDistPointBT;
 @property (weak) IBOutlet NSButton *jssUseMasterJDS;
 
-@property (weak) IBOutlet NSWindow *modalWindow;
+@property (weak) NSWindow *modalWindow;
 
 // Progress delegate (object used to send updates to status menu item)
 @property (weak) id<LGProgressDelegate> progressDelegate;
@@ -52,8 +52,6 @@
 - (IBAction)removeDistributionPoint:(id)sender;
 - (IBAction)editDistributionPoint:(id)sender;
 - (IBAction)enableMasterJDS:(NSButton *)sender;
-
-- (NSMenu *)contextualMenuForDistributionPoint:(NSDictionary *)distPoint;
 
 /**
  *  Connect the LGJSSimporterTool and have it assume responsibility for the IBOutlets that it manages.

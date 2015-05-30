@@ -1,6 +1,6 @@
 // LGToolsStatus.h
 // 
-// Copyright 2015 The Linde Group, Inc.
+//  Copyright 2015 Eldon Ahrold.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -35,16 +35,40 @@
  *
  *  @return Array of subclassed LGTools
  */
-+ (NSArray *)allTools;
+@property (strong, readonly) NSArray *allTools;
 
 /**
  *  Get an array of all installed associated tools;
  *  @note if the tools +isInstalled method retruns NO, the tool will not be added to the array.
  *
  *  @return Array of installed subclassed LGTools
-
  */
-+ (NSArray *)installedTools;
+@property (strong, readonly) NSArray *installedTools;
+
+/**
+ *  Get an array of all installed associated tools;
+ *  @note if the tools +isInstalled method retruns NO, the tool will not be added to the array.
+ *
+ *  @return Array of installed subclassed LGTools
+ */
+@property (strong, readonly) NSArray *requiredTools;
+
+/**
+ *  Get an array of all installed associated tools;
+ *  @note if the tools +isInstalled method retruns NO, the tool will not be added to the array.
+ *
+ *  @return Array of installed subclassed LGTools
+ */
+@property (strong, readonly) NSArray *optionalTools;
+
+/**
+ *  Return the instance of the LGTool for a particular class.
+ *
+ *  @param toolClass Subclass of the LGTool to obtain an instance for.
+ *
+ *  @return LGTool (subclass) instance.
+ */
+- (id)toolOfClass:(Class)toolClass;
 
 /**
  *  Check if required items are installed

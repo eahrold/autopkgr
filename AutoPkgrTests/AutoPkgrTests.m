@@ -62,7 +62,7 @@
 #pragma mark - LGTools
 - (void)testToolStatus
 {
-    NSArray *toolStatus = [LGToolStatus installedTools];
+    NSArray *toolStatus = [[LGToolStatus new] installedTools];
     XCTAssertNotNil(toolStatus, @"Tool array should not be nil");
 }
 
@@ -467,7 +467,7 @@
 
     LGAutoPkgReport *report = [[LGAutoPkgReport alloc] initWithReportDictionary:reportDict];
     report.error = error;
-    report.tools = [LGToolStatus installedTools];
+    report.tools = [[LGToolStatus new] installedTools];
 
     report.reportedItemFlags = kLGReportItemsAll;
 

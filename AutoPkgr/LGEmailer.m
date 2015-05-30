@@ -139,7 +139,7 @@
 {
     LGAutoPkgReport *a_report = [[LGAutoPkgReport alloc] initWithReportDictionary:report];
     a_report.error = error;
-    a_report.tools = [LGToolStatus installedTools];
+    a_report.tools = [[LGToolStatus new] installedTools];
 
     if (a_report.updatesToReport) {
         [self sendEmailNotification:a_report.emailSubjectString message:a_report.emailMessageString];

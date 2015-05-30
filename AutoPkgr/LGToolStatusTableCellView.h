@@ -1,5 +1,8 @@
-// LGHourPickerMenu.h
-// 
+//
+//  LGToolStatusTableCellView.h
+//  AutoPkgr
+//
+//  Created by Eldon on 5/29/15.
 //  Copyright 2015 Eldon Ahrold.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,8 +19,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface LGHourPickerMenu : NSMenu
-@end
+@interface LGToolStatusTableCellView : NSTableCellView
 
-@interface LGDayPickerMenu : NSMenu
+@property (assign) IBOutlet NSButton *installButton;
 @end

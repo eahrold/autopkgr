@@ -90,6 +90,8 @@
 		BE4DD5471B126E2800854FD8 /* LGSchedulePickerMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = BE4DD5461B126E2800854FD8 /* LGSchedulePickerMenu.m */; };
 		BE4DD5481B126E2800854FD8 /* LGSchedulePickerMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = BE4DD5461B126E2800854FD8 /* LGSchedulePickerMenu.m */; };
 		BE57AC2A19BA3BBC00BB17B1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BE57AC2C19BA3BBC00BB17B1 /* Localizable.strings */; };
+		BE5E55981B1958E50025CFD3 /* LGToolStatusTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = BE5E55971B1958E50025CFD3 /* LGToolStatusTableCellView.m */; };
+		BE5E55991B1958E50025CFD3 /* LGToolStatusTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = BE5E55971B1958E50025CFD3 /* LGToolStatusTableCellView.m */; };
 		BE67E8751A44E10500484151 /* LGRecipeSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = BE67E8731A44E10500484151 /* LGRecipeSearch.m */; };
 		BE67E8761A44E10500484151 /* LGRecipeSearchPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = BE67E8741A44E10500484151 /* LGRecipeSearchPanel.xib */; };
 		BE67E8771A44F02B00484151 /* LGRecipeSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = BE67E8731A44E10500484151 /* LGRecipeSearch.m */; };
@@ -330,6 +332,8 @@
 		BE4DD5451B126E2800854FD8 /* LGSchedulePickerMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGSchedulePickerMenu.h; sourceTree = "<group>"; };
 		BE4DD5461B126E2800854FD8 /* LGSchedulePickerMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGSchedulePickerMenu.m; sourceTree = "<group>"; };
 		BE57AC2B19BA3BBC00BB17B1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		BE5E55961B1958E50025CFD3 /* LGToolStatusTableCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGToolStatusTableCellView.h; sourceTree = "<group>"; };
+		BE5E55971B1958E50025CFD3 /* LGToolStatusTableCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGToolStatusTableCellView.m; sourceTree = "<group>"; };
 		BE67E8721A44E10500484151 /* LGRecipeSearch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGRecipeSearch.h; sourceTree = "<group>"; };
 		BE67E8731A44E10500484151 /* LGRecipeSearch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGRecipeSearch.m; sourceTree = "<group>"; };
 		BE67E8741A44E10500484151 /* LGRecipeSearchPanel.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LGRecipeSearchPanel.xib; sourceTree = "<group>"; };
@@ -777,6 +781,8 @@
 				BE32178D19EDA15400A92E5A /* LGTableView.m */,
 				BE4DD5451B126E2800854FD8 /* LGSchedulePickerMenu.h */,
 				BE4DD5461B126E2800854FD8 /* LGSchedulePickerMenu.m */,
+				BE5E55961B1958E50025CFD3 /* LGToolStatusTableCellView.h */,
+				BE5E55971B1958E50025CFD3 /* LGToolStatusTableCellView.m */,
 			);
 			name = "UI Subclasses";
 			sourceTree = "<group>";
@@ -1193,6 +1199,7 @@
 				BE87994B1995BA410082472B /* LGDefaults.m in Sources */,
 				BE344F551ABFBEAB00500AAE /* LGAutoPkgReport.m in Sources */,
 				BE38EA8E1B0CFE68009FCBEB /* LGInstallViewController.m in Sources */,
+				BE5E55981B1958E50025CFD3 /* LGToolStatusTableCellView.m in Sources */,
 				BE38EA951B0CFE95009FCBEB /* LGRecipeReposViewController.m in Sources */,
 				1AC86D3D195E0AC6006FDD2B /* LGHostInfo.m in Sources */,
 				BEC1258719F0465F006696C4 /* LGAutoPkgTask.m in Sources */,
@@ -1256,6 +1263,7 @@
 				BEEFE6CF1AEC761F00882C89 /* LGJSSImporterTool.m in Sources */,
 				BEFC3C7C1A3DF16700C789E9 /* LGPopularRepositories.m in Sources */,
 				BEE211271AF9DCBB00A3C2E1 /* LGUninstaller.m in Sources */,
+				BE5E55991B1958E50025CFD3 /* LGToolStatusTableCellView.m in Sources */,
 				BEEFE6B81AE9D01200882C89 /* LGAutoPkgErrorHandler.m in Sources */,
 				BEEFE6D01AEDF5BE00882C89 /* LGGitTool.m in Sources */,
 				BE38EAA41B0CFEBB009FCBEB /* LGToolsViewController.m in Sources */,

@@ -1,6 +1,6 @@
 // LGToolsStatus.m
 //
-// Copyright 2015 The Linde Group, Inc.
+//  Copyright 2015 Eldon Ahrold.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,55 +16,121 @@
 //
 
 #import "LGToolStatus.h"
+#import "NSArray+filtered.h"
 
 static NSArray *__toolClasses;
+static NSArray *__optionalToolsClasses;
+static NSArray *__requiredToolsClasses;
 
 @implementation LGToolStatus
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
+@synthesize allTools = _allTools, optionalTools = _optionalTools, requiredTools = _requiredTools, installedTools = _installedTools;
+
+
++ (void)load
+{
+    // At +load create what are essentially static const arrays.
+    static dispatch_once_t allToolsToken;
+    dispatch_once(&allToolsToken, ^{
         // As needed add additional tools to this array.
         __toolClasses = @[
-                          [LGGitTool class],
                           [LGAutoPkgTool class],
+                          [LGGitTool class],
                           [LGJSSImporterTool class],
                           [LGMunkiTool class],
                           ];
+
+        __requiredToolsClasses = @[
+                            [LGGitTool class],
+                            [LGAutoPkgTool class],
+                            ];
+
+
+        /* The optional tools will be everything after the first two
+         * This should grow as AutoPkgr starts handling a wider scope 
+         * of tools and this should eliminate having to continuously modifying this. */
+        NSIndexSet *idxSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(__requiredToolsClasses.count, (__toolClasses.count)-(__requiredToolsClasses.count))];
+
+        __optionalToolsClasses = [__toolClasses objectsAtIndexes:idxSet];
     });
-
 }
 
-+ (NSArray *)allTools {
-    return [self allToolsOnlyIfInstalled:NO];
-}
-
-+ (NSArray *)installedTools {
-    return [self allToolsOnlyIfInstalled:YES];
-}
-
-+ (NSArray *)allToolsOnlyIfInstalled:(BOOL)onlyIfInstalled
+- (NSArray *)allTools
 {
+    if (!_allTools) {
+        NSMutableArray *initedTools = [NSMutableArray arrayWithCapacity:__toolClasses.count];
 
-    NSMutableArray *initedTools = [NSMutableArray arrayWithCapacity:__toolClasses.count];
-
-    for (Class toolClass in __toolClasses) {
-        // Using the class method check determine if the tool is installed
-        // If it's do not add it to the array.
-        if (!onlyIfInstalled || (onlyIfInstalled && [toolClass isInstalled])) {
-            id tool = [[toolClass alloc] init];
-            if (tool) {
+        for (Class toolClass in __toolClasses) {
+            id tool = nil;
+            if ((tool = [[toolClass alloc] init])) {
                 [initedTools addObject:tool];
             }
         }
+        _allTools = [initedTools copy];
     }
-    return [initedTools copy];
+    return _allTools;
+}
+
+- (NSArray *)installedTools
+{
+    if (!_installedTools) {
+        NSMutableArray *installedTools = nil;
+        for (LGTool *tool in self.allTools) {
+            if (installedTools || (installedTools = [NSMutableArray new])){
+                if ([[tool class] isInstalled]) {
+                    [installedTools addObject:tool];
+                }
+            }
+        }
+        _installedTools = [installedTools copy];
+    }
+    return _installedTools;
+}
+
+- (NSArray *)optionalTools
+{
+    if (!_optionalTools) {
+        NSMutableArray *optionalTools = nil;
+        for (LGTool *tool in self.allTools) {
+            if (optionalTools || (optionalTools = [NSMutableArray new])){
+                if ([__optionalToolsClasses containsObject:[tool class]]) {
+                    [optionalTools addObject:tool];
+                }
+            }
+        }
+        _optionalTools = [optionalTools copy];
+    }
+    return _optionalTools;
+}
+
+- (NSArray *)requiredTools
+{
+    if (!_requiredTools) {
+        NSMutableArray *requiredTool = nil;
+        for (LGTool *tool in self.allTools) {
+            if (requiredTool || (requiredTool = [NSMutableArray new])){
+                if ([__requiredToolsClasses containsObject:[tool class]]) {
+                    [requiredTool addObject:tool];
+                }
+            }
+        }
+        _requiredTools = [requiredTool copy];
+    }
+    return _requiredTools;
 }
 
 #pragma mark - Class Methods
+- (id)toolOfClass:(Class)toolClass {
+    return [self.allTools filteredArrayByClass:toolClass].firstObject;
+}
+
 + (BOOL)requiredItemsInstalled
 {
-    return ([LGAutoPkgTool isInstalled] &&
-            [LGGitTool isInstalled]);
+    for (Class toolClass in __requiredToolsClasses) {
+        if (![toolClass isInstalled]) {
+            return NO;
+        }
+    }
+    return YES;
 }
 
 + (void)displayRequirementsAlertOnWindow:(NSWindow *)window
