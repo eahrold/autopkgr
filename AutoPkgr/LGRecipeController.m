@@ -198,11 +198,8 @@ static NSString *const kLGAutoPkgRecipeIsEnabledKey = @"isEnabled";
 #pragma mark - Contextual Menu
 - (NSMenu *)contextualMenuForRow:(NSInteger)row
 {
-    NSMenu *menu;
-
+    NSMenu *menu = [[NSMenu alloc] init];
     LGAutoPkgRecipe *recipe = [_searchedRecipes objectAtIndex:row];
-
-    menu = [[NSMenu alloc] init];
 
     NSMenuItem *infoItem = [[NSMenuItem alloc] initWithTitle:@"Get Info" action:@selector(openInfoPanelFromMenu:) keyEquivalent:@""];
     infoItem.representedObject = recipe;
