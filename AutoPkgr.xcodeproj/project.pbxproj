@@ -679,8 +679,7 @@
 				1AC9841C195CEC350071CAB3 /* LGConfigurationWindowController.h */,
 				1AC9841D195CEC350071CAB3 /* LGConfigurationWindowController.m */,
 				1AC9841E195CEC360071CAB3 /* LGConfigurationWindowController.xib */,
-				BEE346751B15FF27001526AD /* LGJSSImporter.h */,
-				BEE346761B15FF27001526AD /* LGJSSImporter.m */,
+				BE5E559C1B1A5B6E0025CFD3 /* Tool Views */,
 				BE38EAB21B0D1C2D009FCBEB /* Tab Views */,
 				BE9FD4BA1B15746500BB2DA9 /* Panels / Popovers */,
 				BE6B1CF71B1286BD00578F97 /* UI Subclasses */,
@@ -772,6 +771,15 @@
 				BEEFE6C11AEBCC7C00882C89 /* LGToolManager.m */,
 			);
 			name = "Tool Manager";
+			sourceTree = "<group>";
+		};
+		BE5E559C1B1A5B6E0025CFD3 /* Tool Views */ = {
+			isa = PBXGroup;
+			children = (
+				BEE346751B15FF27001526AD /* LGJSSImporter.h */,
+				BEE346761B15FF27001526AD /* LGJSSImporter.m */,
+			);
+			name = "Tool Views";
 			sourceTree = "<group>";
 		};
 		BE6B1CF71B1286BD00578F97 /* UI Subclasses */ = {
