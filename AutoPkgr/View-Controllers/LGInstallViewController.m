@@ -23,7 +23,7 @@
 #import "LGAutoPkgSchedule.h"
 #import "LGToolManager.h"
 #import "LGDisplayStatusDelegate.h"
-#import "LGToolStatusTableCellView.h"
+#import "LGTableCellViews.h"
 
 @interface LGInstallViewController ()<NSTableViewDataSource, NSTableViewDelegate>
 @end
@@ -107,8 +107,17 @@
         LGTool *tool = _toolManager.installedTools[row];
         tool.progressDelegate = self.progressDelegate;
         statusCell.installButton.target = tool;
+        statusCell.installButton.enabled = NO;
+        statusCell.installButton.title = [@"Install " stringByAppendingString:[[tool class] name]];
+        statusCell.textField.stringValue = [[[tool class] name] stringByAppendingString:@": checking status"];
+
+        statusCell.imageView.hidden = YES;
+        [statusCell.progressIndicator startAnimation:nil];
 
         [tool getInfo:^(LGToolInfo *info) {
+            [statusCell.progressIndicator stopAnimation:nil];
+
+            statusCell.imageView.hidden = NO;
             statusCell.imageView.image = info.statusImage;
             statusCell.textField.stringValue = info.statusString;
 

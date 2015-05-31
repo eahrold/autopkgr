@@ -29,3 +29,6 @@
 @property (nonatomic, readonly) NSRect contextualMenuMouseLocal;
 
 @end
+
+@interface LGInstallTableView : NSTableView
+@end

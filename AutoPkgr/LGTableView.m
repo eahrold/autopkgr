@@ -38,3 +38,17 @@
 }
 
 @end
+
+@implementation LGInstallTableView
+
+- (NSColor *)backgroundColor {
+    return [NSColor clearColor];
+}
+
+- (void)scrollWheel:(NSEvent *)theEvent {
+    if (self.numberOfRows > 4) {
+        [super scrollWheel:theEvent];
+    }
+}
+
+@end

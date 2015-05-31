@@ -28,6 +28,14 @@
 
 - (instancetype)initWithRecipeFile:(NSURL *)recipeFile isOverride:(BOOL)isOverride;
 
+/**
+ *  Enable a recipe using a IBObject.
+ *
+ *  @param sender object sending message.
+ *  @note this is basically a proxy that changes the `enabled` property to the `sender.state`.
+ */
+- (IBAction)enableRecipe:(NSButton *)sender;
+
 @property (copy, nonatomic, readonly) NSDictionary *recipePlist;
 
 @property (copy, nonatomic, readonly) NSString *Identifier;

@@ -38,8 +38,10 @@
 }
 
 - (void)awakeFromNib {
-    NSLog(@"waking up.");
-    _popRepoTableViewHandler.progressDelegate = self.progressDelegate;
+    if (!self.awake) {
+        self.awake = YES;
+        _popRepoTableViewHandler.progressDelegate = self.progressDelegate;
+    }
 }
 
 - (NSString *)tabLabel {

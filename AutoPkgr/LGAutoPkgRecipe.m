@@ -229,6 +229,16 @@ static dispatch_queue_t autopkgr_recipe_write_queue()
 }
 
 #pragma mark - Enabled
+- (void)enableRecipe:(NSButton *)sender {
+    if ([sender isKindOfClass:[NSButton class]]) {
+        self.enabled = sender.state;
+        // Double check that enabling of the recipe was successful.
+        dispatch_async(autopkgr_recipe_write_queue(), ^{
+            sender.state = [[[self class] activeRecipes] containsObject:self.Identifier];
+        });
+    }
+}
+
 - (BOOL)isEnabled
 {
     if (_enabledInitialized == -1) {
