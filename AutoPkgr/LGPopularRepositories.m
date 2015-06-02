@@ -22,60 +22,12 @@
 #import "LGPopularRepositories.h"
 #import "LGAutoPkgr.h"
 #import "LGRecipeSearch.h"
+#import "LGAutoPkgRepo.h"
+#import "LGTableCellViews.h"
 
 @implementation LGPopularRepositories {
     LGRecipeSearch *_searchPanel;
-}
-
-- (id)init
-{
-    self = [super init];
-
-    if (self) {
-        _awake = NO;
-
-        NSArray *recipeRepos = [LGGitHubJSONLoader getAutoPkgRecipeRepos];
-
-        if (recipeRepos != nil) {
-            _popularRepos = [recipeRepos arrayByAddingObject:kLGJSSDefaultRepo];
-        } else {
-            _popularRepos = @[ @"https://github.com/autopkg/recipes.git",
-                               @"https://github.com/autopkg/keeleysam-recipes.git",
-                               @"https://github.com/autopkg/hjuutilainen-recipes.git",
-                               @"https://github.com/autopkg/timsutton-recipes.git",
-                               @"https://github.com/autopkg/nmcspadden-recipes.git",
-                               @"https://github.com/autopkg/jleggat-recipes.git",
-                               @"https://github.com/autopkg/jaharmi-recipes.git",
-                               @"https://github.com/autopkg/jessepeterson-recipes.git",
-                               @"https://github.com/autopkg/dankeller-recipes.git",
-                               @"https://github.com/autopkg/hansen-m-recipes.git",
-                               @"https://github.com/autopkg/scriptingosx-recipes.git",
-                               @"https://github.com/autopkg/derak-recipes.git",
-                               @"https://github.com/autopkg/sheagcraig-recipes.git",
-                               @"https://github.com/autopkg/arubdesu-recipes.git",
-                               @"https://github.com/autopkg/jps3-recipes.git",
-                               @"https://github.com/autopkg/joshua-d-miller-recipes.git",
-                               @"https://github.com/autopkg/gerardkok-recipes.git",
-                               @"https://github.com/autopkg/swy-recipes.git",
-                               @"https://github.com/autopkg/lashomb-recipes.git",
-                               @"https://github.com/autopkg/rustymyers-recipes.git",
-                               @"https://github.com/autopkg/luisgiraldo-recipes.git",
-                               @"https://github.com/autopkg/justinrummel-recipes.git",
-                               @"https://github.com/autopkg/n8felton-recipes.git",
-                               @"https://github.com/autopkg/groob-recipes.git",
-                               @"https://github.com/autopkg/jazzace-recipes.git",
-                               ];
-        }
-
-        [self assembleRepos];
-
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(reload)
-                                                     name:kLGNotificationReposModified
-                                                   object:nil];
-    }
-
-    return self;
+    BOOL _forceStatusUpdate;
 }
 
 - (void)dealloc
@@ -83,10 +35,19 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (void)awakeFromNib {
+    if (!_awake) {
+        _awake = YES;
+        [_repoSearch setTarget:self];
+        [_repoSearch setAction:@selector(executeRepoSearch:)];
+        
+        [self reload];
+    }
+}
+
 - (void)repoEditDidEndWithError:(NSError *)error withTableView:(NSTableView *)tableView
 {
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        _activeRepos = [LGAutoPkgTask repoList];
         [tableView reloadData];
         [_progressDelegate stopProgress:error];
     }];
@@ -94,23 +55,15 @@
 
 - (void)reload
 {
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [self assembleRepos];
+    [LGAutoPkgRepo commonRepos:^(NSArray *repos) {
+        NSLog(@"Reloading...");
+        NSSortDescriptor *starDescriptor = [[NSSortDescriptor alloc]
+                                                        initWithKey:NSStringFromSelector(@selector(stars))
+                                                        ascending:NO];
+
+        _popularRepos = [repos sortedArrayUsingDescriptors:@[starDescriptor]];
+        [self executeRepoSearch:nil];
     }];
-}
-
-- (void)assembleRepos
-{
-    _activeRepos = [LGAutoPkgTask repoList];
-    NSMutableArray *workingPR = [_popularRepos mutableCopy];
-    for (NSDictionary *dict in _activeRepos) {
-        if (![workingPR containsObject:dict[kLGAutoPkgRepoURLKey]]) {
-            [workingPR addObject:dict[kLGAutoPkgRepoURLKey]];
-        }
-    }
-
-    _popularRepos = [workingPR copy];
-    [self executeRepoSearch:nil];
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
@@ -118,81 +71,149 @@
     return [_searchedRepos count];
 }
 
-- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
-{
-    if ([[tableColumn identifier] isEqualToString:@"repoCheckbox"]) {
-        NSString *repo = [_searchedRepos objectAtIndex:row];
-        NSPredicate *repoPred = [NSPredicate predicateWithFormat:@"%K == %@", kLGAutoPkgRepoURLKey, repo];
-        return @([[_activeRepos filteredArrayUsingPredicate:repoPred] count] != 0);
-    } else if ([[tableColumn identifier] isEqualToString:@"repoURL"]) {
-        return [_searchedRepos objectAtIndex:row];
+- (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row {
+
+    LGAutoPkgRepo *repo = [_searchedRepos objectAtIndex:row];
+    LGRepoStatusCellView *statusCell = [tableView makeViewWithIdentifier:tableColumn.identifier owner:self];
+
+    if ([[tableColumn identifier] isEqualToString:NSStringFromSelector(@selector(isInstalled))]) {
+        statusCell.enabledCheckBox.state = repo.isInstalled;
+        statusCell.enabledCheckBox.tag = row;
+        statusCell.enabledCheckBox.action = @selector(enableRecipe:);
+        statusCell.enabledCheckBox.target = self;
+
+    } else if ([[tableColumn identifier] isEqualToString:NSStringFromSelector(@selector(cloneURL))]) {
+        statusCell.textField.stringValue = repo.cloneURL.absoluteString;
+    } else if ([[tableColumn identifier] isEqualToString:NSStringFromSelector(@selector(stars))]) {
+        if (repo.homeURL && (repo.stars > 0)) {
+            statusCell.textField.stringValue = [@"\u2605 " stringByAppendingString:@(repo.stars).stringValue];
+        }
+    } else if ([[tableColumn identifier] isEqualToString:@"status"]) {
+        statusCell.imageView.hidden = YES;
+        repo.statusChangeBlock = ^(LGAutoPkgRepoStatus status) {
+            [statusCell.progressIndicator stopAnimation:self];
+            switch (status) {
+                case kLGAutoPkgRepoNotInstalled: {
+                    statusCell.imageView.hidden = YES;
+                    break;
+                }
+                case kLGAutoPkgRepoUpdateAvailable: {
+                    statusCell.imageView.image = [NSImage LGStatusUpdateAvailable];
+                    statusCell.imageView.hidden = NO;
+                    break;
+                }
+                case kLGAutoPkgRepoUpToDate: {
+                    statusCell.imageView.image = [NSImage LGStatusUpToDate];
+                    statusCell.imageView.hidden = NO;
+                    break;
+                }
+            }
+        };
+
+        if (repo.isInstalled) {
+            [statusCell.progressIndicator startAnimation:self];
+            statusCell.imageView.image = [NSImage LGStatusUpdateAvailable];
+
+            // Calling checkRepoStatus will execute the repo.statusChangeBlock.
+            [repo checkRepoStatus:nil];
+        }
     }
-    return nil;
+    return statusCell;
 }
 
-- (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+- (void)tableView:(NSTableView *)tableView sortDescriptorsDidChange:(NSArray *)oldDescriptors
 {
-    if ([[tableColumn identifier] isEqualToString:@"repoCheckbox"]) {
-        NSString *repo = [_searchedRepos objectAtIndex:row];
-        BOOL add = [object isEqual:@YES];
+    [_searchedRepos sortUsingDescriptors:tableView.sortDescriptors];
+    [tableView reloadData];
+}
 
-        NSString *message = [NSString stringWithFormat:@"%@ %@", add ? @"Adding" : @"Removing", repo];
-        NSLog(@"%@", message);
-        [_progressDelegate startProgressWithMessage:message];
-        if (add) {
-            [LGAutoPkgTask repoAdd:repo reply:^(NSError *error) {
-                [self repoEditDidEndWithError:error withTableView:tableView];
-            }];
-        } else {
-            [LGAutoPkgTask repoRemove:repo reply:^(NSError *error) {
-                [self repoEditDidEndWithError:error withTableView:tableView];
-            }];
-        }
+- (void)enableRecipe:(NSButton *)sender {
+    BOOL add = sender.state;
+    LGAutoPkgRepo *repo = _searchedRepos[sender.tag];
+
+    NSString *message = [NSString stringWithFormat:@"%@ %@", add ? @"Adding" : @"Removing", repo.cloneURL];
+    NSLog(@"%@", message);
+    [_progressDelegate startProgressWithMessage:message];
+    if (add) {
+        [repo install:^(NSError *error) {
+            [_progressDelegate stopProgress:error];
+        }];
+    } else {
+        [repo remove:^(NSError *error) {
+            [_progressDelegate stopProgress:error];
+        }];
+    }
+}
+
+- (void)updateRepo:(id)sender {
+    if ([sender isKindOfClass:[NSMenuItem class]]) {
+        LGAutoPkgRepo *repo = [sender representedObject];
+        [_progressDelegate startProgressWithMessage:@"Updating"];
+        [repo updateRepo:^(NSError *error) {
+            [_progressDelegate stopProgress:error];
+        }];
     }
 }
 
 - (void)executeRepoSearch:(id)sender
 {
-    if (_awake == NO) {
-        _searchedRepos = [NSArray arrayWithArray:_popularRepos];
-        return;
-    }
-
     [_popularRepositoriesTableView beginUpdates];
     [_popularRepositoriesTableView removeRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, _searchedRepos.count)] withAnimation:NSTableViewAnimationEffectNone];
 
     if (_repoSearch.stringValue.length == 0) {
-        _searchedRepos = _popularRepos;
+        _searchedRepos = [_popularRepos mutableCopy];
     } else {
-        NSPredicate *searchPredicate = [NSPredicate predicateWithFormat:@"SELF CONTAINS[CD] %@", _repoSearch.stringValue];
-        _searchedRepos = [_popularRepos filteredArrayUsingPredicate:searchPredicate];
+        NSPredicate *searchPredicate = [NSPredicate predicateWithFormat:@"%K.absoluteString CONTAINS[CD] %@", NSStringFromSelector(@selector(cloneURL)),_repoSearch.stringValue];
+        _searchedRepos = [[_popularRepos filteredArrayUsingPredicate:searchPredicate] mutableCopy];
     }
 
     [_popularRepositoriesTableView insertRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, _searchedRepos.count)] withAnimation:NSTableViewAnimationEffectNone];
     [_popularRepositoriesTableView endUpdates];
 }
 
-- (void)awakeFromNib
-{
-    _awake = YES;
-    [_repoSearch setTarget:self];
-    [_repoSearch setAction:@selector(executeRepoSearch:)];
-}
-
 -(NSMenu *)contextualMenuForRow:(NSInteger)row
 {
-    return nil;
 
-    // TODO: Eventually this could be setup for something
-    // The AutoPkgTask repo-list needs to be reworked to send back an array of dicts.
+    LGAutoPkgRepo *repo = _searchedRepos[row];
     NSMenu *menu = [[NSMenu alloc] init];
-    NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"Reveal in Finder"
-                                                  action:nil
-                                           keyEquivalent:@""];
-    [menu addItem:item];
+
+    // Update Repo...
+    NSMenuItem *updateItem = [[NSMenuItem alloc] initWithTitle:@"Update Repo"
+                                                        action:@selector(updateRepo:)
+                                                 keyEquivalent:@""];
+    updateItem.target = self;
+    updateItem.representedObject = repo;
+
+    [menu addItem:updateItem];
+
+    // Commits ...
+    if (repo.commitsURL) {
+        NSMenuItem *commitsItem = [[NSMenuItem alloc] initWithTitle:@"Open Commits Page"
+                                                             action:@selector(viewCommitsOnGitHub:)
+                                                      keyEquivalent:@""];
+        commitsItem.target = repo;
+        [menu addItem:commitsItem];
+    }
+
+    if (repo.path) {
+        NSMenuItem *clipboardItem = [[NSMenuItem alloc] initWithTitle:@"Copy path to clipboard"
+                                                             action:@selector(copyToPasteboard:)
+                                                      keyEquivalent:@""];
+        clipboardItem.representedObject = repo.path;
+        clipboardItem.target = self;
+        [menu addItem:clipboardItem];
+    }
+
     return menu;
 }
 
+- (void)copyToPasteboard:(id)sender {
+    if ([sender isKindOfClass:[NSMenuItem class]]) {
+        NSString *string = [sender representedObject];
+        [[NSPasteboard generalPasteboard] declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
+        [[NSPasteboard generalPasteboard] setString:string forType:NSStringPboardType];
+    }
+}
 #pragma mark - Search Panel
 - (IBAction)openSearchPanel:(id)sender
 {

@@ -28,9 +28,7 @@
 @interface LGPopularRepositories : NSObject <NSApplicationDelegate, NSTableViewDelegate, LGTableViewDataSource> {
 
     NSArray *_popularRepos;
-    NSArray *_activeRepos;
-    NSArray *_searchedRepos;
-    LGGitHubJSONLoader *_jsonLoader;
+    NSMutableArray *_searchedRepos;
     BOOL _awake;
 }
 
