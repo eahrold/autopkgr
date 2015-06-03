@@ -170,9 +170,8 @@ static NSString *const kLGAutoPkgRecipeCurrentStatusKey = @"currentStatus";
         NSLog(@"%@", message);
     };
 
-
     NSIndexSet *rowIdxSet = [[NSIndexSet alloc] initWithIndex:recipeRow];
-    NSIndexSet *colIdxSet = [[NSIndexSet alloc] initWithIndex:_recipeTableView.tableColumns.count-1];
+    NSIndexSet *colIdxSet = [[NSIndexSet alloc] initWithIndex:[_recipeTableView columnWithIdentifier:kLGAutoPkgRecipeCurrentStatusKey]];
     [_recipeTableView reloadDataForRowIndexes:rowIdxSet columnIndexes:colIdxSet];
 
     [runTask launchInBackground:^(NSError *error) {
