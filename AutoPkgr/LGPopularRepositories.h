@@ -25,19 +25,11 @@
 #import "LGRecipeController.h"
 #import "LGProgressDelegate.h"
 
-@interface LGPopularRepositories : NSObject <NSApplicationDelegate, NSTableViewDelegate, LGTableViewDataSource> {
-
-    NSArray *_popularRepos;
-    NSMutableArray *_searchedRepos;
-    BOOL _awake;
-}
+@interface LGPopularRepositories : NSObject <NSApplicationDelegate, NSTableViewDelegate, LGTableViewDataSource>
 
 - (void)reload;
 
 @property (weak) IBOutlet NSWindow *modalWindow;
-
-@property (weak) IBOutlet LGTableView *popularRepositoriesTableView;
-@property (weak) IBOutlet NSSearchField *repoSearch;
 @property (weak) id<LGProgressDelegate> progressDelegate;
 
 @end

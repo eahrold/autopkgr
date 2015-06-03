@@ -25,8 +25,20 @@
 #import "LGAutoPkgRepo.h"
 #import "LGTableCellViews.h"
 
+@interface LGPopularRepositories ()
+
+@property (copy, nonatomic) NSArray *repos;
+@property (copy, nonatomic) NSMutableArray *searchedRepos;
+
+@property (weak) IBOutlet LGTableView *popularRepositoriesTableView;
+@property (weak) IBOutlet NSSearchField *repoSearch;
+
+@end
+
 @implementation LGPopularRepositories {
     LGRecipeSearch *_searchPanel;
+
+    BOOL _awake;
     BOOL _updateRepoInternally;
 }
 
@@ -40,7 +52,8 @@
         _awake = YES;
         [_repoSearch setTarget:self];
         [_repoSearch setAction:@selector(executeRepoSearch:)];
-        
+
+
         [self reload];
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reload) name:kLGNotificationReposModified object:nil];
@@ -51,12 +64,13 @@
 {
     if (!_updateRepoInternally) {
         [LGAutoPkgRepo commonRepos:^(NSArray *repos) {
-            NSLog(@"Reloading...");
-            NSSortDescriptor *starDescriptor = [[NSSortDescriptor alloc]
-                                                initWithKey:NSStringFromSelector(@selector(stars))
-                                                ascending:NO];
+            DevLog(@"Reloading...");
 
-            _popularRepos = [repos sortedArrayUsingDescriptors:@[starDescriptor]];
+            NSArray *sortDescriptors = _popularRepositoriesTableView.sortDescriptors ?:
+            @[[NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(stars)) ascending:NO]];
+
+            _repos = [repos sortedArrayUsingDescriptors:sortDescriptors];
+
             [self executeRepoSearch:nil];
         }];
     }
@@ -162,10 +176,10 @@
     [_popularRepositoriesTableView removeRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, _searchedRepos.count)] withAnimation:NSTableViewAnimationEffectNone];
 
     if (_repoSearch.stringValue.length == 0) {
-        _searchedRepos = [_popularRepos mutableCopy];
+        _searchedRepos = [_repos mutableCopy];
     } else {
         NSPredicate *searchPredicate = [NSPredicate predicateWithFormat:@"%K.absoluteString CONTAINS[CD] %@", NSStringFromSelector(@selector(cloneURL)),_repoSearch.stringValue];
-        _searchedRepos = [[_popularRepos filteredArrayUsingPredicate:searchPredicate] mutableCopy];
+        _searchedRepos = [[_repos filteredArrayUsingPredicate:searchPredicate] mutableCopy];
     }
 
     [_popularRepositoriesTableView insertRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, _searchedRepos.count)] withAnimation:NSTableViewAnimationEffectNone];

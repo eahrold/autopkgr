@@ -94,6 +94,8 @@
          * but the _scheduleView should controll it. */
         _scheduleView.cancelButton = _cancelAutoPkgRunButton;
         _toolsView.modalWindow = self.window;
+
+        _recipeRepoView.modalWindow = self.window;
     }
 }
 

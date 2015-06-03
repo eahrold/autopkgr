@@ -27,6 +27,7 @@
 @end
 
 @implementation LGRecipeReposViewController
+@synthesize modalWindow = _modalWindow;
 
 - (instancetype)init {
     return (self = [super initWithNibName:NSStringFromClass([self class]) bundle:nil]);
@@ -42,6 +43,11 @@
         self.awake = YES;
         _popRepoTableViewHandler.progressDelegate = self.progressDelegate;
     }
+}
+
+- (void)setModalWindow:(NSWindow *)modalWindow {
+    _modalWindow = modalWindow;
+    _popRepoTableViewHandler.modalWindow = modalWindow;
 }
 
 - (NSString *)tabLabel {
