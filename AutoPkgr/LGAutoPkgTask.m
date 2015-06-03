@@ -731,11 +731,12 @@ typedef void (^AutoPkgReplyErrorBlock)(NSError *error);
         if (!self.task.isRunning) {
             NSData *data;
             if ([self.task.standardOutput isKindOfClass:[NSPipe class]]) {
+                data = [[self.task.standardOutput fileHandleForReading] readDataToEndOfFile];
+
                 // If standardOutData exists then the sdtout was gathered progressively
                 if (self.standardOutData) {
+                    [self.standardOutData appendData:data];
                     data = [self.standardOutData copy];
-                } else {
-                    data = [[self.task.standardOutput fileHandleForReading] readDataToEndOfFile];
                 }
             }
             LGAutoPkgResultHandler *resultHandler = [[LGAutoPkgResultHandler alloc] initWithData:data verb:_verb];
