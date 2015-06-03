@@ -60,16 +60,16 @@ static NSMutableDictionary *_identifierURLStore = nil;
 
 - (instancetype)initWithRecipeFile:(NSURL *)recipeFile isOverride:(BOOL)isOverride
 {
-    if (self = [super init]) {
-        if ((_recipePlist = [NSDictionary dictionaryWithContentsOfURL:recipeFile]) == nil) {
-            return nil;
-        }
+    // Don't Initialize anything if we can't determine a recipe identifier.
+    NSDictionary *reciptPlist = [NSDictionary dictionaryWithContentsOfURL:recipeFile];
+    NSString *identifier = reciptPlist[kLGAutoPkgRecipeIdentifierKey] ?: reciptPlist[@"Input"][@"IDENTIFIER"];
+
+    if (identifier && (self = [super init])) {
+        _recipePlist = reciptPlist;
+        _Identifier = identifier;
+
         _recipeFileURL = recipeFile;
-
         _Name = [[recipeFile lastPathComponent] stringByDeletingPathExtension];
-
-        // There are two ways the identifiers are commonly referred to.
-        _Identifier = _recipePlist[kLGAutoPkgRecipeIdentifierKey] ?: _recipePlist[@"Input"][@"IDENTIFIER"];
 
         _FilePath = recipeFile.path;
         _isOverride = isOverride;
