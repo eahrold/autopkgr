@@ -27,7 +27,7 @@
 
 @implementation LGPopularRepositories {
     LGRecipeSearch *_searchPanel;
-    BOOL _forceStatusUpdate;
+    BOOL _updateRepoInternally;
 }
 
 - (void)dealloc
@@ -42,28 +42,25 @@
         [_repoSearch setAction:@selector(executeRepoSearch:)];
         
         [self reload];
-    }
-}
 
-- (void)repoEditDidEndWithError:(NSError *)error withTableView:(NSTableView *)tableView
-{
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [tableView reloadData];
-        [_progressDelegate stopProgress:error];
-    }];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reload) name:kLGNotificationReposModified object:nil];
+    }
 }
 
 - (void)reload
 {
-    [LGAutoPkgRepo commonRepos:^(NSArray *repos) {
-        NSLog(@"Reloading...");
-        NSSortDescriptor *starDescriptor = [[NSSortDescriptor alloc]
-                                                        initWithKey:NSStringFromSelector(@selector(stars))
-                                                        ascending:NO];
+    if (!_updateRepoInternally) {
+        [LGAutoPkgRepo commonRepos:^(NSArray *repos) {
+            NSLog(@"Reloading...");
+            NSSortDescriptor *starDescriptor = [[NSSortDescriptor alloc]
+                                                initWithKey:NSStringFromSelector(@selector(stars))
+                                                ascending:NO];
 
-        _popularRepos = [repos sortedArrayUsingDescriptors:@[starDescriptor]];
-        [self executeRepoSearch:nil];
-    }];
+            _popularRepos = [repos sortedArrayUsingDescriptors:@[starDescriptor]];
+            [self executeRepoSearch:nil];
+        }];
+    }
+    _updateRepoInternally = NO;
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
@@ -79,13 +76,14 @@
     if ([[tableColumn identifier] isEqualToString:NSStringFromSelector(@selector(isInstalled))]) {
         statusCell.enabledCheckBox.state = repo.isInstalled;
         statusCell.enabledCheckBox.tag = row;
-        statusCell.enabledCheckBox.action = @selector(enableRecipe:);
+        statusCell.enabledCheckBox.action = @selector(enableRepo:);
         statusCell.enabledCheckBox.target = self;
 
     } else if ([[tableColumn identifier] isEqualToString:NSStringFromSelector(@selector(cloneURL))]) {
         statusCell.textField.stringValue = repo.cloneURL.absoluteString;
     } else if ([[tableColumn identifier] isEqualToString:NSStringFromSelector(@selector(stars))]) {
         if (repo.homeURL && (repo.stars > 0)) {
+            // u2650 is the star symbol.
             statusCell.textField.stringValue = [@"\u2605 " stringByAppendingString:@(repo.stars).stringValue];
         }
     } else if ([[tableColumn identifier] isEqualToString:@"status"]) {
@@ -127,7 +125,9 @@
     [tableView reloadData];
 }
 
-- (void)enableRecipe:(NSButton *)sender {
+- (void)enableRepo:(NSButton *)sender {
+    _updateRepoInternally = YES;
+
     BOOL add = sender.state;
     LGAutoPkgRepo *repo = _searchedRepos[sender.tag];
 
@@ -146,6 +146,7 @@
 }
 
 - (void)updateRepo:(id)sender {
+    _updateRepoInternally = YES;
     if ([sender isKindOfClass:[NSMenuItem class]]) {
         LGAutoPkgRepo *repo = [sender representedObject];
         [_progressDelegate startProgressWithMessage:@"Updating"];

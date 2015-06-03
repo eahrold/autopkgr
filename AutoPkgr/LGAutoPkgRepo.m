@@ -189,8 +189,6 @@ static NSArray *_popularRepos;
         } else {
             [self statusDidChange:kLGAutoPkgRepoNotInstalled];
         }
-    } else {
-//        reply(_status);
     }
 }
 
@@ -239,7 +237,11 @@ static NSArray *_popularRepos;
                 }
             }
         }];
-        
+
+        for (LGAutoPkgRepo *repo in commonRepos) {
+            repo->_checkStatusTimeStamp = nil;
+        }
+
         dispatch_async(dispatch_get_main_queue(), ^{
             reply([commonRepos copy]);
         });
