@@ -19,8 +19,8 @@
 
 #import "LGRecipeReposViewController.h"
 #import "LGAutoPkgTask.h"
-#import "LGRecipeController.h"
-#import "LGPopularRepositories.h"
+#import "LGRecipeTableViewController.h"
+#import "LGRepoTableViewController.h"
 
 @interface LGRecipeReposViewController ()
 

@@ -26,7 +26,6 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" headerView="A8F-FX-vOe" viewBased="YES" id="n0R-ew-DOT" customClass="LGTableView">
-                                <rect key="frame" x="0.0" y="0.0" width="581" height="19"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <size key="intercellSpacing" width="3" height="2"/>
                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -453,13 +452,13 @@
                 <constraint firstAttribute="trailing" secondItem="Su6-Sd-cOj" secondAttribute="trailing" constant="17" id="uwY-es-Lps"/>
             </constraints>
         </customView>
-        <customObject id="n5R-1c-D0m" customClass="LGPopularRepositories">
+        <customObject id="n5R-1c-D0m" customClass="LGRepoTableViewController">
             <connections>
                 <outlet property="popularRepositoriesTableView" destination="n0R-ew-DOT" id="t0V-Gq-p8n"/>
                 <outlet property="repoSearch" destination="Su6-Sd-cOj" id="qOW-Kc-M4F"/>
             </connections>
         </customObject>
-        <customObject id="kUD-K3-5P5" customClass="LGRecipeController">
+        <customObject id="kUD-K3-5P5" customClass="LGRecipeTableViewController">
             <connections>
                 <outlet property="recipeSearchField" destination="8hi-WA-S41" id="aFE-fe-lph"/>
                 <outlet property="recipeTableView" destination="HAz-3M-Rgt" id="bqE-uJ-i5n"/>

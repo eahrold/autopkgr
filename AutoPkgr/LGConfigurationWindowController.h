@@ -29,7 +29,7 @@
 #import "LGNotificationsViewController.h"
 #import "LGToolsViewController.h"
 
-@class LGPopularRepositories, LGRecipeController;
+@class LGRepoTableViewController, LGRecipeTableViewController;
 
 @interface LGConfigurationWindowController : NSWindowController <NSWindowDelegate, NSTabViewDelegate, LGProgressDelegate>
 

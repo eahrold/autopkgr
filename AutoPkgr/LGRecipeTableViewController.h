@@ -1,10 +1,10 @@
 //
-//  LGApplications.h
+//  LGRecipeTableViewController.h
 //  AutoPkgr
 //
-//  Created by Josh Senick on 7/10/14.
+//  Created by Eldon Ahrold on 6/3/2015.
 //
-//  Copyright 2014-2015 The Linde Group, Inc.
+//  Copyright 2015 Eldon Ahrold
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #import "LGAutoPkgTask.h"
 #import "LGTableView.h"
 
-@interface LGRecipeController : NSObject <NSApplicationDelegate, NSTableViewDelegate, LGTableViewDataSource>
+@interface LGRecipeTableViewController : NSObject <NSApplicationDelegate, NSTableViewDelegate, LGTableViewDataSource>
 
 /**
  * Reload the LGRecipe table view and rebuild the recipe array.

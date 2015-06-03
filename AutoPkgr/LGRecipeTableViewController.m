@@ -1,10 +1,10 @@
 //
-//  LGApplications.m
+//  LGRecipeTableViewController.m
 //  AutoPkgr
 //
-//  Created by Josh Senick on 7/10/14.
+//  Created by Eldon Ahrold on 6/3/2015.
 //
-//  Copyright 2014-2015 The Linde Group, Inc.
+//  Copyright 2015 Eldon Ahrold
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 //  limitations under the License.
 //
 
-#import "LGRecipeController.h"
+#import "LGRecipeTableViewController.h"
 #import "LGAutoPkgr.h"
 #import "LGAutoPkgRecipe.h"
 
@@ -28,7 +28,7 @@
 
 #import "LGTableCellViews.h"
 
-@interface LGRecipeController ()<NSWindowDelegate, NSPopoverDelegate>
+@interface LGRecipeTableViewController ()<NSWindowDelegate, NSPopoverDelegate>
 
 @property (copy, nonatomic) NSMutableArray *recipes;
 @property (copy, nonatomic) NSMutableArray *searchedRecipes;
@@ -38,7 +38,7 @@
 
 @end
 
-@implementation LGRecipeController {
+@implementation LGRecipeTableViewController {
     NSMutableDictionary *_runTaskDictionary;
     NSString *_currentRunningRecipe;
     BOOL _isAwake;
